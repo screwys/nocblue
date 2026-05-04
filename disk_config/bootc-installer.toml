@@ -1,0 +1,5 @@
+# Intentionally empty.
+#
+# The GitHub bootc-image-builder action requires a real config-file path.
+# Do not add Anaconda kickstart here; the public ISO uses bootc-installer,
+# not the unattended anaconda-iso path.
