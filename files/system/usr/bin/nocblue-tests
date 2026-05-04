@@ -46,7 +46,20 @@ test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
 test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
 test -L /etc/systemd/system/rpm-ostree-countme.timer
 test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
+for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; do
+    test -L "/etc/systemd/system/${masked_unit}"
+    test "$(readlink "/etc/systemd/system/${masked_unit}")" = "/dev/null"
+done
 ! grep -RIn '^countme=1$' /etc/yum.repos.d /usr/etc/yum.repos.d >/dev/null 2>&1
+test -f /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.dmesg_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.unprivileged_bpf_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^net.ipv6.conf.default.use_tempaddr = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^LLMNR=false$' /etc/systemd/resolved.conf.d/10-disable-llmnr.conf
+grep -q '^ipv6.ip6-privacy=2$' /usr/lib/NetworkManager/conf.d/40-nocblue-privacy.conf
+grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
+grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
+grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-brew-formulae.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service

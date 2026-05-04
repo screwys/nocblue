@@ -168,7 +168,11 @@ modules:
         - input-remapper.service
         - firewalld.service
       masked:
+        - geoclue.service
         - rpm-ostree-countme.timer
+        - sshd.service
+        - sshd.socket
+        - sshd-keygen.target
     user:
       enabled:
         - nocblue-user-defaults.service
