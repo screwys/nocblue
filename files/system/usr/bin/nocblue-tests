@@ -22,7 +22,8 @@ else
     exit 1
 fi
 
-rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux proton-vpn-gnome-desktop >/dev/null
+rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop >/dev/null
+! rpm -q protonvpn-stable-release >/dev/null 2>&1
 for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
         printf 'removed terminal package is still installed: %s\n' "${pkg}" >&2
