@@ -155,6 +155,7 @@ modules:
           - org.signal.Signal
           - com.github.zocker_160.SyncThingy
           - com.valvesoftware.Steam
+          - net.davidotek.pupgui2
           - net.lutris.Lutris
           - org.freedesktop.Platform.VulkanLayer.MangoHud//25.08
           - org.freedesktop.Platform.VulkanLayer.MangoHud//24.08

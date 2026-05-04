@@ -127,6 +127,7 @@ grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/flatpaks.t
 grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^com.github.zocker_160.SyncThingy$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/flatpaks.txt
+grep -q '^net.davidotek.pupgui2$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.freedesktop.Platform.VulkanLayer.MangoHud//' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.freedesktop.Platform.VulkanLayer.gamescope//' /usr/share/nocblue/manifests/flatpaks.txt
