@@ -23,6 +23,11 @@ else
 fi
 
 rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as >/dev/null
+rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
+test -f /boot/efi/EFI/fedora/shimx64.efi
+test -f /boot/efi/EFI/fedora/mmx64.efi
+test -f /boot/efi/EFI/fedora/gcdx64.efi
+test -f /usr/share/grub/unicode.pf2
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
 for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
