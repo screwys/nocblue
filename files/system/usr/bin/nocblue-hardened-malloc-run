@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+best_microarch() {
+    /usr/lib64/ld-linux-x86-64.so.2 --help 2>/dev/null |
+        awk '/x86-64-v[0-9].*supported, searched/ { print $1; exit }'
+}
+
+find_hardened_malloc() {
+    local uarch
+    uarch="$(best_microarch || true)"
+
+    if [[ -n "${uarch}" && -r "/usr/lib64/glibc-hwcaps/${uarch}/libhardened_malloc.so" ]]; then
+        printf '/usr/lib64/glibc-hwcaps/%s/libhardened_malloc.so\n' "${uarch}"
+        return 0
+    fi
+
+    if [[ -r /usr/lib64/libhardened_malloc.so ]]; then
+        printf '/usr/lib64/libhardened_malloc.so\n'
+        return 0
+    fi
+
+    printf 'hardened_malloc library not found\n' >&2
+    return 1
+}
+
+if [[ "$#" -lt 1 ]]; then
+    printf 'usage: %s COMMAND [ARGS...]\n' "$0" >&2
+    exit 2
+fi
+
+preload="$(find_hardened_malloc)"
+if [[ -r /usr/lib64/libno_rlimit_as.so ]]; then
+    preload="${preload} /usr/lib64/libno_rlimit_as.so"
+fi
+
+export LD_PRELOAD="${preload}"
+exec "$@"

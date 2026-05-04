@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop >/dev/null
+rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as >/dev/null
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
 for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
@@ -44,6 +44,7 @@ test -f /usr/lib/systemd/system/flatpak-system-update.timer
 grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
 test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 test -L /etc/systemd/system/rpm-ostree-countme.timer
 test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
 for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; do
@@ -61,6 +62,7 @@ grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
 grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-brew-formulae.service
+test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.timer
@@ -70,6 +72,15 @@ test -x /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'flatpak run --system io.github.Foldex.AdwSteamGtk' /usr/bin/nocblue-apply-adwsteamgtk
 ! grep -q 'flatpak install --user' /usr/bin/nocblue-apply-adwsteamgtk
 test -x /usr/bin/nocblue-fix-flatpak-icons
+test -x /usr/bin/nocblue-hardened-malloc-run
+test -x /usr/bin/nocblue-apply-hardened-malloc
+grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/trivalent' /usr/share/applications/trivalent.desktop
+test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.Papers$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator

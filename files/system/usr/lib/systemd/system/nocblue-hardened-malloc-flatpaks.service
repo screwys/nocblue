@@ -1,0 +1,11 @@
+[Unit]
+Description=Apply hardened malloc to selected nocblue Flatpaks
+After=nocblue-flatpak-overrides.service
+Wants=nocblue-flatpak-overrides.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-apply-hardened-malloc
+
+[Install]
+WantedBy=multi-user.target
