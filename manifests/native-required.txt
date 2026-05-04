@@ -27,6 +27,9 @@ flatpak
 shim-x64
 grub2-efi-x64-cdboot
 grub2-tools
+anaconda-core
+anaconda-install-env-deps
+python3-mako
 mokutil
 openssl
 kmod
