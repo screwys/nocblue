@@ -32,11 +32,12 @@ if ! command -v flatpak >/dev/null 2>&1; then
 fi
 
 host_lib="$(find_hardened_malloc)"
-flatpak_lib="/var/run/host${host_lib}"
+flatpak_lib="/var/lib/nocblue/hardened-malloc/libhardened_malloc.so"
+install -D -m 0644 "${host_lib}" "${flatpak_lib}"
 
 while IFS= read -r app_id; do
     [[ -z "${app_id}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
     if flatpak info --system "${app_id}" >/dev/null 2>&1; then
-        flatpak override --system --filesystem=host-os:ro --env="LD_PRELOAD=${flatpak_lib}" "${app_id}"
+        flatpak override --system --filesystem="${flatpak_lib}:ro" --env="LD_PRELOAD=${flatpak_lib}" "${app_id}"
     fi
 done < "${manifest}"

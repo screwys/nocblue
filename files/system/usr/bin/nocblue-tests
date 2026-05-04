@@ -74,6 +74,8 @@ grep -q 'flatpak run --system io.github.Foldex.AdwSteamGtk' /usr/bin/nocblue-app
 test -x /usr/bin/nocblue-fix-flatpak-icons
 test -x /usr/bin/nocblue-hardened-malloc-run
 test -x /usr/bin/nocblue-apply-hardened-malloc
+grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
+! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
 grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/trivalent' /usr/share/applications/trivalent.desktop
 test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
