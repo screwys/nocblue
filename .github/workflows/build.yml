@@ -55,7 +55,7 @@ jobs:
       id-token: write
     steps:
       - name: build custom image
-        uses: blue-build/github-action@v1.11
+        uses: blue-build/github-action@v1.11.1
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
