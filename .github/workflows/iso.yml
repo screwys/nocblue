@@ -42,6 +42,13 @@ jobs:
       - name: checkout
         uses: actions/checkout@v6
 
+      - name: validate installer args
+        run: |
+          set -euo pipefail
+          grep -q -- "types: bootc-installer" .github/workflows/iso.yml
+          grep -q -- "--installer-payload-ref=" .github/workflows/iso.yml
+          test -f disk_config/bootc-installer.toml
+
       - name: build iso
         id: build
         uses: osbuild/bootc-image-builder-action@v0.0.2
@@ -51,7 +58,7 @@ jobs:
           image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           chown: ${{ env.USER_UID }}:${{ env.USER_GID }}
           types: bootc-installer
-          additional-args: --use-librepo=True --rootfs=btrfs
+          additional-args: --use-librepo=True --rootfs=btrfs --installer-payload-ref=${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
 
       - name: upload iso
         uses: actions/upload-artifact@v7
