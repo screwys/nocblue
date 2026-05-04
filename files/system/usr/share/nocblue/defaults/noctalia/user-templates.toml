@@ -1,0 +1,11 @@
+[config]
+
+[templates]
+
+[templates.vesktop-flatpak]
+input_path = "/etc/xdg/quickshell/noctalia-shell/Assets/Templates/discord-midnight.css"
+output_path = "~/.var/app/dev.vencord.Vesktop/config/vesktop/themes/noctalia.theme.css"
+
+[templates.steam-flatpak]
+input_path = "/etc/xdg/quickshell/noctalia-shell/Assets/Templates/steam.css"
+output_path = "~/.var/app/com.valvesoftware.Steam/.steam/steam/steamui/skins/Material-Theme/css/main/colors/matugen.css"

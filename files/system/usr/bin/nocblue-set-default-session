@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+session_id="niri"
+root="${NOCBLUE_ROOT:-}"
+
+root_path() {
+    printf '%s%s\n' "${root}" "$1"
+}
+
+desktop_file="$(root_path "/usr/share/wayland-sessions/${session_id}.desktop")"
+if [[ ! -f "${desktop_file}" ]]; then
+    printf 'missing %s; cannot set default graphical session\n' "${desktop_file}" >&2
+    exit 1
+fi
+
+templates_dir="$(root_path /etc/accountsservice/user-templates)"
+users_dir="$(root_path /var/lib/AccountsService/users)"
+state_dir="$(root_path /var/lib/nocblue)"
+state_file="${state_dir}/session-defaults.done"
+passwd_file="$(root_path /etc/passwd)"
+
+install -d -m 0755 "${templates_dir}" "${users_dir}" "${state_dir}"
+
+for template in standard administrator; do
+    install -D -m 0644 /dev/stdin "${templates_dir}/${template}" <<'TEMPLATE'
+[Template]
+#EnvironmentFiles=/etc/os-release;
+
+[User]
+Session=niri
+Icon=${HOME}/.face
+TEMPLATE
+done
+
+current_session() {
+    local file="$1"
+    [[ -f "${file}" ]] || return 0
+
+    awk -F= '
+        /^\[User\][[:space:]]*$/ { in_user=1; next }
+        /^\[/ { in_user=0 }
+        in_user && $1 == "Session" { print $2; exit }
+    ' "${file}"
+}
+
+should_update_session() {
+    local file="$1"
+    local current
+    current="$(current_session "${file}")"
+
+    case "${current}" in
+        "" | gnome | gnome-classic | gnome-xorg | default)
+            return 0
+            ;;
+        "${session_id}")
+            return 1
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+set_user_session() {
+    local file="$1"
+    local tmp
+
+    tmp="$(mktemp)"
+    if [[ -f "${file}" ]]; then
+        awk -v session="${session_id}" '
+            function emit_session() {
+                if (!wrote_session) {
+                    print "Session=" session
+                    wrote_session=1
+                }
+            }
+
+            /^\[User\][[:space:]]*$/ {
+                if (in_user) {
+                    emit_session()
+                }
+                in_user=1
+                saw_user=1
+                print
+                next
+            }
+
+            /^\[/ {
+                if (in_user) {
+                    emit_session()
+                }
+                in_user=0
+                print
+                next
+            }
+
+            in_user && /^(Session|XSession)=/ {
+                next
+            }
+
+            {
+                print
+            }
+
+            END {
+                if (!saw_user) {
+                    print ""
+                    print "[User]"
+                    print "Session=" session
+                } else if (in_user) {
+                    emit_session()
+                }
+            }
+        ' "${file}" > "${tmp}"
+    else
+        {
+            printf '[User]\n'
+            printf 'Session=%s\n' "${session_id}"
+            printf 'SystemAccount=false\n'
+        } > "${tmp}"
+    fi
+
+    install -D -m 0600 "${tmp}" "${file}"
+    rm -f "${tmp}"
+}
+
+if [[ -f "${passwd_file}" ]]; then
+    while IFS=: read -r user _ uid _ _ _ _; do
+        [[ "${uid}" =~ ^[0-9]+$ ]] || continue
+        (( uid >= 1000 && uid < 60000 )) || continue
+        [[ "${user}" != nobody ]] || continue
+
+        user_file="${users_dir}/${user}"
+        if should_update_session "${user_file}"; then
+            set_user_session "${user_file}"
+        fi
+    done < "${passwd_file}"
+fi
+
+touch "${state_file}"

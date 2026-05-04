@@ -1,0 +1,11 @@
+[Unit]
+Description=Apply nocblue Flatpak overrides
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-apply-flatpak-overrides
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=Set nocblue default graphical session to niri
+ConditionPathExists=!/var/lib/nocblue/session-defaults.done
+Wants=accounts-daemon.service
+After=local-fs.target accounts-daemon.service
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-set-default-session
+
+[Install]
+WantedBy=graphical.target

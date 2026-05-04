@@ -1,0 +1,27 @@
+{
+    "providers": {
+        "claude": {
+            "enabled": false,
+            "statsPath": "",
+            "credentialsPath": ""
+        },
+        "codex": {
+            "enabled": false
+        },
+        "copilot": {
+            "enabled": false
+        },
+        "openrouter": {
+            "enabled": false,
+            "apiKey": ""
+        },
+        "zen": {
+            "enabled": false,
+            "apiKey": ""
+        }
+    },
+    "barDisplayMode": "active",
+    "barCycleIntervalSec": 5,
+    "barMetric": "prompts",
+    "refreshIntervalSec": 30
+}

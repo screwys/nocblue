@@ -1,0 +1,11 @@
+[Unit]
+Description=Apply nocblue Noctalia color scheme once
+After=graphical-session.target nocblue-user-defaults.service
+ConditionPathExists=!%h/.local/state/nocblue/noctalia-theme.v1.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-apply-noctalia-theme
+
+[Install]
+WantedBy=default.target

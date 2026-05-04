@@ -1,0 +1,6 @@
+# Remove GNOME terminal apps from the Silverblue base. Ghostty is the terminal.
+ptyxis
+gnome-terminal
+gnome-terminal-nautilus
+gnome-console
+kgx

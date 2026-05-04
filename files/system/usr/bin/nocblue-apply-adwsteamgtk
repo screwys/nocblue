@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$(id -u)" -eq 0 ]]; then
+    printf 'nocblue-apply-adwsteamgtk must run as the target user\n' >&2
+    exit 1
+fi
+
+state_dir="${HOME}/.local/state/nocblue"
+stamp="${state_dir}/adwsteamgtk.done"
+install -d -m 0755 "${state_dir}"
+
+if [[ -e "${stamp}" ]]; then
+    exit 0
+fi
+
+for _ in {1..6}; do
+    if flatpak info --system com.valvesoftware.Steam >/dev/null 2>&1 &&
+        flatpak info --system io.github.Foldex.AdwSteamGtk >/dev/null 2>&1; then
+        flatpak run --system io.github.Foldex.AdwSteamGtk --install --options 'rounded_corners:true;win_controls:adwaita;win_controls_layout:auto'
+        touch "${stamp}"
+        exit 0
+    fi
+
+    sleep 30
+done
+
+printf 'AdwSteamGtk or Steam Flatpak is not ready yet; will retry later\n' >&2
+exit 75

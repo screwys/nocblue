@@ -1,0 +1,79 @@
+# Core session and desktop
+niri
+xwayland-satellite
+noctalia-shell
+ghostty
+fish
+fastfetch
+just
+gnome-keyring
+dbus-tools
+polkit
+lxqt-policykit
+nautilus
+nautilus-python
+xdg-desktop-portal-gnome
+xdg-desktop-portal-gtk
+qt6ct
+fcitx5
+fcitx5-mozc
+fcitx5-configtool
+fcitx5-gtk
+fcitx5-qt
+candy-icon-theme
+google-noto-sans-cjk-fonts
+firewalld
+flatpak
+mokutil
+openssl
+kmod
+cryptsetup
+tpm2-tools
+xz
+zstd
+dracut
+
+# Wayland tools
+wl-clipboard
+grim
+slurp
+wf-recorder
+cliphist
+wl-mirror
+wtype
+brightnessctl
+ddcutil
+libnotify
+ImageMagick
+tesseract
+tesseract-langpack-eng
+tesseract-langpack-jpn
+tesseract-langpack-jpn_vert
+
+# KDE Connect
+kde-connect
+kde-connect-nautilus
+
+# Local services
+radicale3
+radicale3-selinux
+
+# Gaming and performance
+input-remapper
+libinput-utils
+steam-devices
+gamescope
+mangohud
+vulkan-tools
+vkBasalt
+
+# Browsers and editor
+firefox
+librewolf
+trivalent
+trivalent-selinux
+zed
+torbrowser-launcher
+
+# Proton VPN
+libappindicator-gtk3

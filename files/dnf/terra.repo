@@ -1,0 +1,24 @@
+[terra]
+name=Terra $releasever
+baseurl=https://repos.fyralabs.com/terra$releasever
+metadata_expire=6h
+type=rpm
+gpgcheck=1
+gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+countme=1
+
+[terra-extras]
+name=Terra $releasever (Extras)
+baseurl=https://repos.fyralabs.com/terra$releasever-extras
+metadata_expire=6h
+type=rpm
+gpgcheck=1
+gpgkey=https://repos.fyralabs.com/terra$releasever/key.asc
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+countme=1
+priority=150

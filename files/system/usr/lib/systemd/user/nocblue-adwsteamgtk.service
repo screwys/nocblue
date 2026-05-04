@@ -1,0 +1,9 @@
+[Unit]
+Description=Apply the nocblue Steam GTK skin
+After=network-online.target graphical-session.target nocblue-user-defaults.service
+Wants=network-online.target
+ConditionPathExists=!%h/.local/state/nocblue/adwsteamgtk.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-apply-adwsteamgtk

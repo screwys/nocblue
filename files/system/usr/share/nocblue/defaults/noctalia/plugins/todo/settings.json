@@ -1,0 +1,10 @@
+{
+    "todos": [],
+    "pages": [
+        {
+            "id": 0,
+            "name": "Tasks"
+        }
+    ],
+    "selectedPageId": 0
+}

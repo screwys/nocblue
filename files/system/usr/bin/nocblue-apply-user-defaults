@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$(id -u)" -eq 0 ]]; then
+    printf 'nocblue-apply-user-defaults must run as the target user\n' >&2
+    exit 1
+fi
+
+state_dir="${HOME}/.local/state/nocblue"
+mkdir -p "${state_dir}"
+version_stamp="${state_dir}/user-defaults.v5.done"
+defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
+
+copy_if_missing() {
+    local src="$1"
+    local dst="$2"
+    if [[ ! -e "${dst}" ]]; then
+        install -D -m 0644 "${src}" "${dst}"
+    fi
+}
+
+copy_if_missing_or_legacy() {
+    local src="$1"
+    local dst="$2"
+    local legacy_check="$3"
+
+    if [[ ! -e "${dst}" ]] || "${legacy_check}" "${dst}"; then
+        install -D -m 0644 "${src}" "${dst}"
+    fi
+}
+
+legacy_noctalia_settings() {
+    python3 - "$1" <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    raise SystemExit(1)
+
+launcher = data.get("appLauncher", {})
+dock = data.get("dock", {})
+general = data.get("general", {})
+is_legacy = (
+    launcher.get("pinnedApps") == [
+        "librewolf",
+        "firefox",
+        "trivalent",
+        "dev.zed.Zed",
+        "com.valvesoftware.Steam",
+        "net.lutris.Lutris",
+        "dev.vencord.Vesktop",
+        "proton.vpn.app.gtk",
+        "org.gnome.Nautilus",
+    ]
+    and dock.get("pinnedApps") == [
+        "librewolf",
+        "dev.zed.Zed",
+        "org.gnome.Nautilus",
+        "com.valvesoftware.Steam",
+        "dev.vencord.Vesktop",
+    ]
+    and general.get("wallpaperPath", "") == ""
+)
+is_previous_public_default = (
+    launcher.get("pinnedApps") == [
+        "proton.vpn.app.gtk",
+        "librewolf",
+        "firefox",
+        "trivalent",
+        "dev.zed.Zed",
+        "org.gnome.Nautilus",
+        "io.github.kolunmi.Bazaar",
+        "io.github.alyraffauf.Switchyard",
+        "com.github.tchx84.Flatseal",
+        "com.github.marhkb.Pods",
+        "org.signal.Signal",
+        "com.valvesoftware.Steam",
+        "net.lutris.Lutris",
+        "dev.vencord.Vesktop",
+        "com.mitchellh.ghostty",
+        "torbrowser",
+    ]
+    and general.get("avatarImage", "") == ""
+    and data.get("bar", {}).get("screenOverrides") == []
+    and [item.get("id") for item in data.get("bar", {}).get("widgets", {}).get("left", [])] == [
+        "Launcher",
+        "SystemMonitor",
+        "AudioVisualizer",
+        "ActiveWindow",
+        "MediaMini",
+        "plugin:todo",
+    ]
+)
+raise SystemExit(0 if is_legacy or is_previous_public_default else 1)
+PY
+}
+
+legacy_ghostty_config() {
+    grep -qx 'font-family = JetBrainsMono Nerd Font' "$1"
+}
+
+legacy_wallpaper_cache() {
+    python3 - "$1" <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    raise SystemExit(1)
+
+raise SystemExit(0 if data.get("defaultWallpaper", "").startswith("/etc/xdg/quickshell/noctalia-shell/") else 1)
+PY
+}
+
+legacy_niri_config() {
+    grep -q 'spawn-at-startup "waybar"' "$1" && ! grep -q 'noctalia-shell' "$1"
+}
+
+copy_if_missing_or_legacy "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json" legacy_noctalia_settings
+copy_if_missing "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json"
+copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"
+copy_if_missing_or_legacy "${defaults_dir}/noctalia/cache/wallpapers.json" "${HOME}/.cache/noctalia/wallpapers.json" legacy_wallpaper_cache
+for colorscheme in "${defaults_dir}"/noctalia/colorschemes/*/*.json; do
+    [[ -f "${colorscheme}" ]] || continue
+    scheme_name="$(basename "$(dirname "${colorscheme}")")"
+    copy_if_missing "${colorscheme}" "${HOME}/.config/noctalia/colorschemes/${scheme_name}/$(basename "${colorscheme}")"
+done
+for plugin_settings in "${defaults_dir}"/noctalia/plugins/*/settings.json; do
+    [[ -f "${plugin_settings}" ]] || continue
+    plugin_name="$(basename "$(dirname "${plugin_settings}")")"
+    copy_if_missing "${plugin_settings}" "${HOME}/.config/noctalia/plugins/${plugin_name}/settings.json"
+done
+copy_if_missing_or_legacy "${defaults_dir}/niri/config.kdl" "${HOME}/.config/niri/config.kdl" legacy_niri_config
+copy_if_missing "${defaults_dir}/xdg/mimeapps.list" "${HOME}/.config/mimeapps.list"
+copy_if_missing "${defaults_dir}/zed/settings.json" "${HOME}/.config/zed/settings.json"
+copy_if_missing_or_legacy "${defaults_dir}/ghostty/config" "${HOME}/.config/ghostty/config" legacy_ghostty_config
+copy_if_missing "${defaults_dir}/ghostty/themes/noctalia" "${HOME}/.config/ghostty/themes/noctalia"
+copy_if_missing "${defaults_dir}/btop/btop.conf" "${HOME}/.config/btop/btop.conf"
+copy_if_missing "${defaults_dir}/fish/config.fish" "${HOME}/.config/fish/config.fish"
+copy_if_missing "${defaults_dir}/gtk-3.0/gtk.css" "${HOME}/.config/gtk-3.0/gtk.css"
+copy_if_missing "${defaults_dir}/gtk-3.0/noctalia.css" "${HOME}/.config/gtk-3.0/noctalia.css"
+copy_if_missing "${defaults_dir}/gtk-4.0/gtk.css" "${HOME}/.config/gtk-4.0/gtk.css"
+copy_if_missing "${defaults_dir}/gtk-4.0/noctalia.css" "${HOME}/.config/gtk-4.0/noctalia.css"
+copy_if_missing "${defaults_dir}/qt6ct/qt6ct.conf" "${HOME}/.config/qt6ct/qt6ct.conf"
+copy_if_missing "${defaults_dir}/switchyard/config.toml" "${HOME}/.var/app/io.github.alyraffauf.Switchyard/config/switchyard/config.toml"
+for nautilus_extension in "${defaults_dir}"/nautilus/*.py; do
+    [[ -f "${nautilus_extension}" ]] || continue
+    copy_if_missing "${nautilus_extension}" "${HOME}/.local/share/nautilus-python/extensions/$(basename "${nautilus_extension}")"
+done
+
+if command -v gsettings >/dev/null 2>&1; then
+    gsettings set org.gnome.desktop.interface icon-theme "Candy" || true
+    gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" || true
+fi
+
+if command -v xdg-mime >/dev/null 2>&1; then
+    while IFS=$'\t' read -r mime desktop; do
+        [[ -z "${mime}" || "${mime}" =~ ^# ]] && continue
+        xdg-mime default "${desktop}" "${mime}" || true
+    done < "${defaults_dir}/xdg/mime-defaults.tsv"
+fi
+if command -v xdg-settings >/dev/null 2>&1; then
+    xdg-settings set default-web-browser io.github.alyraffauf.Switchyard.desktop || true
+fi
+
+touch "${state_dir}/user-defaults.done"
+touch "${version_stamp}"

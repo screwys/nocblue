@@ -1,0 +1,10 @@
+[Unit]
+Description=Fix known Flatpak SVG icons for Qt renderers
+After=graphical-session.target nocblue-user-defaults.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-fix-flatpak-icons
+
+[Install]
+WantedBy=default.target

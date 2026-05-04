@@ -1,0 +1,2 @@
+com.github.marhkb.Pods
+io.gitlab.news_flash.NewsFlash

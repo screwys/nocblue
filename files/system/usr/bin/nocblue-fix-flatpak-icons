@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+default_manifest="/usr/share/nocblue/manifests/flatpak-icon-fixes.txt"
+
+find_flatpak_svg() {
+    local app_id="$1"
+    local root svg
+
+    for root in /var/lib/flatpak/app "${HOME}/.local/share/flatpak/app"; do
+        [[ -d "${root}/${app_id}" ]] || continue
+        svg="$(find "${root}/${app_id}" -name "${app_id}.svg" -path "*/scalable/*" 2>/dev/null | head -n 1)"
+        if [[ -n "${svg}" ]]; then
+            printf '%s\n' "${svg}"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+fix_icon() {
+    local app_id="$1"
+    local svg dest
+
+    svg="$(find_flatpak_svg "${app_id}" || true)"
+    if [[ -z "${svg}" ]]; then
+        printf 'SKIP: no SVG icon found for %s\n' "${app_id}"
+        return 0
+    fi
+
+    if ! tr '\n' ' ' < "${svg}" | grep -q '<clipPath[^>]*>.*<rect'; then
+        printf 'SKIP: %s SVG has no clipPath rect issue\n' "${app_id}"
+        return 0
+    fi
+
+    dest="${HOME}/.local/share/icons/hicolor/scalable/apps/${app_id}.svg"
+    mkdir -p "$(dirname "${dest}")"
+
+    if python3 - "${svg}" "${dest}" <<'PY'
+import re
+import sys
+
+src, dest = sys.argv[1], sys.argv[2]
+
+with open(src, encoding="utf-8") as f:
+    svg = f.read()
+
+bad_ids = set(
+    re.findall(
+        r'<clipPath\s+id="([^"]+)"[^>]*>\s*<rect\s+height="[^"]+"\s+width="[^"]+"\s*/>\s*</clipPath>',
+        svg,
+    )
+)
+
+if not bad_ids:
+    raise SystemExit(1)
+
+for cid in bad_ids:
+    svg = re.sub(
+        r'\s*<clipPath\s+id="' + re.escape(cid) + r'"[^>]*>.*?</clipPath>',
+        "",
+        svg,
+        flags=re.DOTALL,
+    )
+    svg = svg.replace(f'clip-path="url(#{cid})"', "")
+
+svg = re.sub(
+    r'\s*<filter\s+id="[^"]*"[^>]*>\s*<feColorMatrix[^/]*/>\s*</filter>',
+    "",
+    svg,
+    flags=re.DOTALL,
+)
+svg = re.sub(
+    r'\s*<mask\s+id="[^"]*"[^>]*>\s*<g\s+filter="url\(#[^)]*\)"[^>]*>\s*<rect[^/]*/>\s*</g>\s*</mask>',
+    "",
+    svg,
+    flags=re.DOTALL,
+)
+svg = re.sub(r'\s+mask="url\(#[^)]*\)"', "", svg)
+
+with open(dest, "w", encoding="utf-8") as f:
+    f.write(svg)
+PY
+    then
+        printf 'FIX: %s -> %s\n' "${app_id}" "${dest}"
+    else
+        printf 'SKIP: %s has no fixable pattern\n' "${app_id}"
+    fi
+}
+
+if [[ "$#" -gt 0 ]]; then
+    for app_id in "$@"; do
+        [[ -n "${app_id}" ]] && fix_icon "${app_id}"
+    done
+elif [[ -f "${default_manifest}" ]]; then
+    while IFS= read -r app_id; do
+        [[ -z "${app_id}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
+        fix_icon "${app_id}"
+    done < "${default_manifest}"
+else
+    printf 'No Flatpak icon fix manifest found: %s\n' "${default_manifest}" >&2
+    exit 1
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q -t -f "${HOME}/.local/share/icons/hicolor" >/dev/null 2>&1 || true
+fi

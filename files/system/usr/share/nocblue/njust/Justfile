@@ -1,0 +1,53 @@
+default:
+    just --justfile {{justfile()}} --list
+
+status:
+    rpm-ostree status || true
+    bootc status || true
+
+update:
+    sudo bootc upgrade
+    flatpak update --system -y
+    sudo nocblue-install-brew-formulae || true
+
+auto-update-status:
+    systemctl status nocblue-bootc-upgrade.timer --no-pager || true
+    systemctl list-timers nocblue-bootc-upgrade.timer --no-pager || true
+
+rollback:
+    sudo rpm-ostree rollback
+
+flatpaks:
+    bluebuild-flatpak-manager || true
+
+flatpak-icon-fixes:
+    nocblue-fix-flatpak-icons
+
+flatpak-overrides:
+    sudo nocblue-apply-flatpak-overrides
+
+brew:
+    sudo nocblue-install-brew-formulae
+
+secureboot-check:
+    mokutil --sb-state || true
+    mokutil --list-enrolled | grep -E "nocblue|ublue kernel" || true
+
+fde-list:
+    nocblue-fde-helper list
+
+fde-status device:
+    nocblue-fde-helper status "{{device}}"
+
+fde-tpm2 device pin="yes" pcrs="7":
+    sudo nocblue-fde-helper tpm2-enroll "{{device}}" "{{pin}}" "{{pcrs}}"
+
+fde-recovery-key device:
+    sudo nocblue-fde-helper recovery-key "{{device}}"
+
+openrazer-check:
+    rpm -q openrazer-meta
+    find /usr/lib/modules -type f -name "razer*.ko*" -print
+
+tests:
+    nocblue-tests

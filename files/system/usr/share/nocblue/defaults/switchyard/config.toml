@@ -1,0 +1,9 @@
+prompt_on_click = false
+favorite_browser = 'librewolf.desktop'
+hidden_browsers = []
+check_default_browser = false
+show_app_names = false
+force_dark_mode = true
+stay_alive = true
+sanitize_links = true
+rules = []

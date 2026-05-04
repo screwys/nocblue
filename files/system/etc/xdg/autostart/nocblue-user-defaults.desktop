@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=nocblue user defaults
+Exec=/usr/bin/systemctl --user start nocblue-user-defaults.service
+OnlyShowIn=niri;
+X-GNOME-Autostart-enabled=true
+NoDisplay=true

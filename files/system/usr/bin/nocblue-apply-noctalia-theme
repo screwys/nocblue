@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir="${HOME}/.local/state/nocblue"
+stamp="${state_dir}/noctalia-theme.v1.done"
+settings="${HOME}/.config/noctalia/settings.json"
+
+mkdir -p "${state_dir}"
+
+if [[ -e "${stamp}" || ! -f "${settings}" ]]; then
+    exit 0
+fi
+
+scheme="$(python3 - "${settings}" <<'PY'
+import json
+import sys
+
+try:
+    data = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    raise SystemExit(1)
+
+scheme = data.get("colorSchemes", {}).get("predefinedScheme", "")
+print(scheme)
+PY
+)"
+
+if [[ -z "${scheme}" ]]; then
+    exit 0
+fi
+
+for _ in {1..30}; do
+    pid="$(pgrep -u "${USER}" -f 'qs -c noctalia-shell' | head -n 1 || true)"
+    if [[ -n "${pid}" ]] && qs ipc --pid "${pid}" call colorScheme set "${scheme}" >/dev/null 2>&1; then
+        touch "${stamp}"
+        exit 0
+    fi
+    sleep 1
+done
+
+exit 0

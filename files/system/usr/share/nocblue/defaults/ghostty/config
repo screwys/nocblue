@@ -1,0 +1,76 @@
+# Theme (Noctalia-managed)
+theme = noctalia
+
+# Font
+font-family = MesloLGS Nerd Font
+font-size = 12
+font-thicken = true
+adjust-cell-height = 2
+
+# Shell
+command = /bin/fish
+shell-integration = detect
+shell-integration-features = cursor,sudo,title
+
+# Scrollback
+scrollback-limit = 10000000
+scrollbar = never
+
+# Cursor and mouse
+cursor-style = bar
+cursor-style-blink = true
+mouse-hide-while-typing = true
+cursor-click-to-move = false
+copy-on-select = clipboard
+
+# Notifications
+desktop-notifications = true
+notify-on-command-finish = unfocused
+notify-on-command-finish-action = notify
+notify-on-command-finish-after = 5s
+
+# Window
+window-decoration = auto
+window-padding-x = 8
+window-padding-y = 6
+window-padding-color = background
+confirm-close-surface = false
+gtk-single-instance = true
+
+# Clipboard
+clipboard-read = ask
+clipboard-write = allow
+clipboard-paste-protection = true
+clipboard-paste-bracketed-safe = true
+clipboard-trim-trailing-spaces = true
+
+# Splits
+unfocused-split-opacity = 0.85
+split-inherit-working-directory = true
+
+# Performance
+linux-cgroup = single-instance
+link-url = true
+
+# Prompt navigation
+keybind = ctrl+shift+up=jump_to_prompt:-1
+keybind = ctrl+shift+down=jump_to_prompt:1
+
+# Font size adjustment
+keybind = ctrl+plus=increase_font_size:1
+keybind = ctrl+minus=decrease_font_size:1
+keybind = ctrl+zero=reset_font_size
+
+# Split management
+keybind = ctrl+shift+d=new_split:right
+keybind = ctrl+shift+enter=new_split:down
+keybind = ctrl+shift+h=goto_split:left
+keybind = ctrl+shift+l=goto_split:right
+keybind = ctrl+shift+k=goto_split:top
+keybind = ctrl+shift+j=goto_split:bottom
+keybind = ctrl+shift+e=equalize_splits
+keybind = ctrl+shift+f=toggle_split_zoom
+keybind = ctrl+shift+w=close_surface
+
+# Config reload
+keybind = ctrl+shift+comma=reload_config

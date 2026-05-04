@@ -1,0 +1,22 @@
+[Default Applications]
+x-scheme-handler/http=io.github.alyraffauf.Switchyard.desktop
+x-scheme-handler/https=io.github.alyraffauf.Switchyard.desktop
+x-scheme-handler/about=io.github.alyraffauf.Switchyard.desktop
+x-scheme-handler/unknown=io.github.alyraffauf.Switchyard.desktop
+text/html=io.github.alyraffauf.Switchyard.desktop
+application/xhtml+xml=io.github.alyraffauf.Switchyard.desktop
+application/json=dev.zed.Zed.desktop
+application/xml=dev.zed.Zed.desktop
+text/plain=dev.zed.Zed.desktop
+text/css=dev.zed.Zed.desktop
+text/javascript=dev.zed.Zed.desktop
+text/markdown=dev.zed.Zed.desktop
+application/x-shellscript=dev.zed.Zed.desktop
+inode/directory=org.gnome.Nautilus.desktop
+image/png=org.gnome.Loupe.desktop
+image/jpeg=org.gnome.Loupe.desktop
+image/webp=org.gnome.Loupe.desktop
+image/gif=org.gnome.Loupe.desktop
+application/pdf=org.gnome.Papers.desktop
+video/mp4=org.gnome.Showtime.desktop
+video/x-matroska=org.gnome.Showtime.desktop

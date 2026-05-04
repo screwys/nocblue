@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cmd="${1:-}"
+device="${2:-}"
+pin="${3:-no}"
+pcrs="${4:-7}"
+
+as_root() {
+    if [[ "$(id -u)" -eq 0 ]]; then
+        "$@"
+    else
+        sudo "$@"
+    fi
+}
+
+usage() {
+    cat <<'MSG'
+Usage:
+  nocblue-fde-helper list
+  nocblue-fde-helper status <luks-device>
+  nocblue-fde-helper tpm2-enroll <luks-device> [yes|no] [pcrs]
+  nocblue-fde-helper recovery-key <luks-device>
+
+Examples:
+  nocblue-fde-helper list
+  sudo nocblue-fde-helper tpm2-enroll /dev/nvme0n1pX yes 7
+MSG
+}
+
+luks_uuid_for() {
+    local dev="$1"
+    blkid -s UUID -o value "${dev}"
+}
+
+ensure_boot_options() {
+    local dev="$1"
+    local pin_value="$2"
+    local uuid="$3"
+    local opts="tpm2-device=auto,tpm2-pin=${pin_value}"
+    local karg="rd.luks.options=${uuid}=${opts}"
+
+    if [[ -f /etc/crypttab ]]; then
+        local backup="/etc/crypttab.nocblue-$(date -u +%Y%m%d%H%M%S).bak"
+        cp -a /etc/crypttab "${backup}"
+        awk -v uuid="${uuid}" -v dev="${dev}" -v opts="${opts}" '
+            function addopt(existing, opt, parts, i) {
+                split(opt, parts, ",")
+                for (i in parts) {
+                    if (existing !~ "(^|,)" parts[i] "(,|$)") {
+                        existing = existing "," parts[i]
+                    }
+                }
+                sub(/^,/, "", existing)
+                return existing
+            }
+            BEGIN { changed=0 }
+            /^[[:space:]]*#/ || NF == 0 { print; next }
+            {
+                target = ($2 == dev || $2 == "UUID=" uuid || $2 == "/dev/disk/by-uuid/" uuid)
+                if (target) {
+                    if (NF < 3) $3 = "none"
+                    if ($3 == "-") $3 = "none"
+                    if (NF < 4 || $4 == "-") $4 = opts
+                    else $4 = addopt($4, opts)
+                    changed=1
+                }
+                print
+            }
+            END {
+                if (changed == 0) {
+                    printf("nocblue: no matching crypttab entry for %s; kernel args were still added\n", uuid) > "/dev/stderr"
+                }
+            }
+        ' /etc/crypttab > /etc/crypttab.nocblue.tmp
+        install -m 0644 /etc/crypttab.nocblue.tmp /etc/crypttab
+        rm -f /etc/crypttab.nocblue.tmp
+        printf 'Backed up /etc/crypttab to %s\n' "${backup}"
+    fi
+
+    if command -v rpm-ostree >/dev/null 2>&1; then
+        rpm-ostree kargs --append-if-missing="${karg}"
+        printf 'Added kernel arg: %s\n' "${karg}"
+    else
+        printf 'rpm-ostree is unavailable; add this kernel arg manually: %s\n' "${karg}" >&2
+    fi
+}
+
+case "${cmd}" in
+    list)
+        lsblk -o NAME,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINTS
+        ;;
+    status)
+        [[ -n "${device}" ]] || { usage; exit 2; }
+        as_root cryptsetup luksDump "${device}"
+        ;;
+    tpm2-enroll)
+        [[ -n "${device}" ]] || { usage; exit 2; }
+        [[ "${pin}" == "yes" || "${pin}" == "no" ]] || { usage; exit 2; }
+        uuid="$(luks_uuid_for "${device}")"
+        [[ -n "${uuid}" ]] || { printf 'could not determine LUKS UUID for %s\n' "${device}" >&2; exit 1; }
+        as_root systemd-cryptenroll \
+            --wipe-slot=tpm2 \
+            --tpm2-device=auto \
+            --tpm2-pcrs="${pcrs}" \
+            --tpm2-with-pin="${pin}" \
+            "${device}"
+        ensure_boot_options "${device}" "${pin}" "${uuid}"
+        printf 'Reboot into the new deployment to test TPM2 unlock. Keep your recovery key available.\n'
+        ;;
+    recovery-key)
+        [[ -n "${device}" ]] || { usage; exit 2; }
+        as_root systemd-cryptenroll --recovery-key "${device}"
+        ;;
+    *)
+        usage
+        exit 2
+        ;;
+esac

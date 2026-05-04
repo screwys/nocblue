@@ -1,0 +1,7 @@
+{
+    "showTempValue": true,
+    "showTempUnit": true,
+    "showConditionIcon": true,
+    "tooltipOption": "everything",
+    "customColor": "none"
+}

@@ -1,0 +1,65 @@
+name: bluebuild
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: static checks
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: shell syntax
+        run: |
+          find files/scripts files/system/usr/bin -type f -print0 | xargs -0 -r bash -n
+
+      - name: repository shape
+        run: |
+          test -f recipes/recipe.yml
+          test ! -e Containerfile
+          test ! -d build_files
+          grep -q 'base-image: ghcr.io/ublue-os/silverblue-main' recipes/recipe.yml
+          grep -q 'image-version: 44' recipes/recipe.yml
+          grep -q 'noctalia-shell' recipes/recipe.yml
+          ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
+          grep -q '! rpm -q kernel-cachyos' files/system/usr/bin/nocblue-tests
+
+      - name: no private paths
+        run: |
+          ! grep -RInE '(/home/[[:alnum:]_.-]+/(\.config|Development|Server|Downloads|Documents|Pictures|Videos)|/mnt/[[:alnum:]_.-]+|wallpaperengine|workshop)' \
+            recipes files manifests README.md
+
+  bluebuild:
+    name: build image
+    needs: static
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: build custom image
+        uses: blue-build/github-action@v1.11
+        with:
+          recipe: recipe.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+          maximize_build_space: true
+          rechunk: false

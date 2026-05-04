@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v wf-recorder >/dev/null 2>&1; then
+    exec wf-recorder "$@"
+fi
+
+printf 'wl-screenrec compatibility command requires wf-recorder\n' >&2
+exit 127

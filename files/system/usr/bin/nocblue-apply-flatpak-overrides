@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if ! command -v flatpak >/dev/null 2>&1; then
+    printf 'flatpak is not installed\n' >&2
+    exit 1
+fi
+
+while read -r app_id override_args; do
+    [[ -z "${app_id:-}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
+    [[ -n "${override_args:-}" ]] || continue
+    if flatpak info --system "${app_id}" >/dev/null 2>&1; then
+        flatpak override --system ${override_args} "${app_id}"
+    fi
+done < /usr/share/nocblue/manifests/flatpak-overrides.txt

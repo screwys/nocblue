@@ -1,0 +1,6 @@
+[Template]
+#EnvironmentFiles=/etc/os-release;
+
+[User]
+Session=niri
+Icon=${HOME}/.face

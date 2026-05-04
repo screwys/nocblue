@@ -1,0 +1,5 @@
+net.lutris.Lutris --filesystem=home
+dev.vencord.Vesktop --nosocket=x11 --nosocket=system-bus
+com.belmoussaoui.Authenticator --unshare=network
+io.github.diegopvlk.Cine --nofilesystem=home
+org.gnome.Papers --nofilesystem=home
