@@ -154,6 +154,8 @@ done
 if command -v gsettings >/dev/null 2>&1; then
     gsettings set org.gnome.desktop.interface icon-theme "Candy" || true
     gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" || true
+    gsettings set org.gnome.desktop.privacy remember-recent-files false || true
+    gsettings set org.gnome.desktop.privacy recent-files-max-age 0 || true
 fi
 
 if command -v xdg-mime >/dev/null 2>&1; then

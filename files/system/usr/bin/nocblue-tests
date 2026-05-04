@@ -44,6 +44,9 @@ test -f /usr/lib/systemd/system/flatpak-system-update.timer
 grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
 test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+test -L /etc/systemd/system/rpm-ostree-countme.timer
+test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
+! grep -RIn '^countme=1$' /etc/yum.repos.d /usr/etc/yum.repos.d >/dev/null 2>&1
 test -f /usr/lib/systemd/system/nocblue-brew-formulae.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service

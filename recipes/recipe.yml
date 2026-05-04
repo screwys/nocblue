@@ -167,6 +167,8 @@ modules:
         - flatpak-system-update.timer
         - input-remapper.service
         - firewalld.service
+      masked:
+        - rpm-ostree-countme.timer
     user:
       enabled:
         - nocblue-user-defaults.service
