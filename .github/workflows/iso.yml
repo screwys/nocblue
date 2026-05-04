@@ -40,7 +40,7 @@ jobs:
           remove-codeql: true
 
       - name: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: build iso
         id: build
@@ -54,7 +54,7 @@ jobs:
           additional-args: --use-librepo=True --rootfs=btrfs
 
       - name: upload iso
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: nocblue-installer-iso
           path: ${{ steps.build.outputs.output-directory }}
