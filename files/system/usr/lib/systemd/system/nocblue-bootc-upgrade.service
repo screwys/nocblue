@@ -1,9 +1,0 @@
-[Unit]
-Description=Stage nocblue bootc image updates
-Documentation=man:bootc-upgrade(8)
-Wants=network-online.target
-After=network-online.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/bootc upgrade

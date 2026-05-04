@@ -11,8 +11,9 @@ update:
     sudo nocblue-install-brew-formulae || true
 
 auto-update-status:
-    systemctl status nocblue-bootc-upgrade.timer --no-pager || true
-    systemctl list-timers nocblue-bootc-upgrade.timer --no-pager || true
+    systemctl status bootc-fetch-apply-updates.timer --no-pager || true
+    systemctl status flatpak-system-update.timer --no-pager || true
+    systemctl list-timers bootc-fetch-apply-updates.timer flatpak-system-update.timer --no-pager || true
 
 rollback:
     sudo rpm-ostree rollback

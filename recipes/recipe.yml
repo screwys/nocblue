@@ -163,7 +163,8 @@ modules:
         - nocblue-brew-formulae.service
         - nocblue-flatpak-overrides.service
         - nocblue-session-defaults.service
-        - nocblue-bootc-upgrade.timer
+        - bootc-fetch-apply-updates.timer
+        - flatpak-system-update.timer
         - input-remapper.service
         - firewalld.service
     user:

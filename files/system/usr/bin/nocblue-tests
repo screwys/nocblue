@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent zed torbrowser-launcher magick tesseract; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent zed torbrowser-launcher magick tesseract ujust; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -37,9 +37,13 @@ grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 test -f /usr/lib/systemd/system/brew-setup.service
-test -f /usr/lib/systemd/system/nocblue-bootc-upgrade.service
-test -f /usr/lib/systemd/system/nocblue-bootc-upgrade.timer
-grep -q '^ExecStart=/usr/bin/bootc upgrade$' /usr/lib/systemd/system/nocblue-bootc-upgrade.service
+test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
+test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
+test -f /usr/lib/systemd/system/flatpak-system-update.service
+test -f /usr/lib/systemd/system/flatpak-system-update.timer
+grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
+test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
+test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
 test -f /usr/lib/systemd/system/nocblue-brew-formulae.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
@@ -58,6 +62,9 @@ test -f /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
 grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/settings.json
 grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
 test -f /usr/share/nocblue/manifests/brew-formulae.txt
+ujust --list | grep -q 'enroll-secure-boot-key'
+ujust --list | grep -q 'toggle-updates'
+ujust --list | grep -q 'clean-system'
 grep -q '^gh$' /usr/share/nocblue/manifests/brew-formulae.txt
 grep -q '^adb$' /usr/share/nocblue/manifests/brew-formulae.txt
 grep -q '^openjdk@17$' /usr/share/nocblue/manifests/brew-formulae.txt
