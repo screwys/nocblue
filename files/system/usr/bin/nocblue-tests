@@ -32,6 +32,7 @@ test -f /boot/efi/EFI/fedora/gcdx64.efi
 test -f /usr/share/grub/unicode.pf2
 test -x /usr/libexec/anaconda/run-anaconda
 test -f /usr/share/lorax/templates.d/99-generic/runtime-postinstall.tmpl
+test -d /mnt
 test -d /var/mnt
 python3 - <<'PY'
 import mako.template

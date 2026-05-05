@@ -19,7 +19,7 @@ install_efi shimx64.efi
 install_efi mmx64.efi
 install_efi gcdx64.efi
 
-install -d -m 0755 /var/mnt
+install -d -m 0755 /mnt /var/mnt
 
 ln -sfn Candy /usr/share/icons/candy-icons
 
