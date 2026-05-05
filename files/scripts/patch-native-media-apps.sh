@@ -61,8 +61,13 @@ EOF
 patch_showtime() {
     local site_packages
     site_packages="$(python3 - <<'PY'
-import site
-print(site.getsitepackages()[0])
+import importlib.util
+from pathlib import Path
+
+spec = importlib.util.find_spec("showtime")
+if spec is None or spec.origin is None:
+    raise SystemExit("showtime module not found")
+print(Path(spec.origin).parent.parent)
 PY
 )"
 
@@ -212,87 +217,6 @@ EOF
     install -D -m 0644 /dev/null /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
 }
 
-build_patched_loupe() {
-    local work topdir before after remove_list
-    work="$(mktemp -d /tmp/nocblue-loupe-build-XXXXXX)"
-    topdir="${work}/rpmbuild"
-    mkdir -p "${topdir}"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-
-    rpm -qa --qf '%{NAME}\n' | sort -u > "${work}/before-packages.txt"
-
-    dnf -y --setopt=install_weak_deps=False install dnf-plugins-core rpm-build patch
-    dnf download --source --destdir "${work}" loupe
-    rpm -ivh --define "_topdir ${topdir}" "${work}"/loupe-*.src.rpm
-
-    cat > "${topdir}/SOURCES/nocblue-loupe-reuse-window.patch" <<'EOF'
-diff --git a/src/application.rs b/src/application.rs
-index 526295f..c22756f 100644
---- a/src/application.rs
-+++ b/src/application.rs
-@@ -84,7 +84,11 @@ mod imp {
-         fn activate(&self) {
-             tracing::debug!("Showing window via 'activate'");
-             let application = self.obj();
--            let window = LpWindow::new(&*application);
-+            let window = application
-+                .windows()
-+                .into_iter()
-+                .find_map(|w| w.downcast::<LpWindow>().ok())
-+                .unwrap_or_else(|| LpWindow::new(&*application));
-             window.present();
-         }
-
-@@ -92,8 +96,13 @@ mod imp {
-         fn open(&self, files: &[gio::File], _hint: &str) {
-             tracing::debug!("Open {} file(s)", files.len());
-             let application = self.obj();
--            let win = LpWindow::new(&*application);
-+            let win = application
-+                .windows()
-+                .into_iter()
-+                .find_map(|w| w.downcast::<LpWindow>().ok())
-+                .unwrap_or_else(|| LpWindow::new(&*application));
-             win.image_view().set_images_from_files(files.to_vec());
-+            win.present();
-         }
-     }
-EOF
-
-    python3 - "${topdir}/SPECS/loupe.spec" <<'PY'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-if "nocblue-loupe-reuse-window.patch" not in text:
-    text = text.replace(
-        "Source1:        loupe-%{tarball_version}-vendor.tar.xz\n",
-        "Source1:        loupe-%{tarball_version}-vendor.tar.xz\nPatch100:      nocblue-loupe-reuse-window.patch\n",
-    )
-path.write_text(text, encoding="utf-8")
-PY
-
-    dnf -y builddep "${topdir}/SPECS/loupe.spec"
-    rpmbuild -bb --define "_topdir ${topdir}" "${topdir}/SPECS/loupe.spec"
-    loupe_rpm="$(find "${topdir}/RPMS" -type f -name 'loupe-[0-9]*.rpm' ! -name '*debuginfo*' ! -name '*debugsource*' -print -quit)"
-    test -n "${loupe_rpm}"
-    dnf -y install "${loupe_rpm}"
-    install -D -m 0644 "${topdir}/SOURCES/nocblue-loupe-reuse-window.patch" \
-        /usr/share/nocblue/media-patches/loupe-reuse-window.patch
-
-    rpm -qa --qf '%{NAME}\n' | sort -u > "${work}/after-packages.txt"
-    remove_list="${work}/build-only-packages.txt"
-    comm -13 "${work}/before-packages.txt" "${work}/after-packages.txt" |
-        grep -vxE '^(loupe)$' > "${remove_list}" || true
-
-    if [[ -s "${remove_list}" ]]; then
-        xargs -r dnf -y remove < "${remove_list}"
-    fi
-
-    rm -rf "${work}"
-}
-
 rpm -q loupe showtime >/dev/null
-build_patched_loupe
 patch_showtime
 install_media_launchers

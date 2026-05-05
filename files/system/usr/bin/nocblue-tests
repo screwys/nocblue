@@ -184,13 +184,14 @@ grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe %U$' /usr/share/applications/org.gno
 grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime %U$' /usr/share/applications/org.gnome.Showtime.desktop
 grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Loupe.service
 grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Showtime.service
-test -f /usr/share/nocblue/media-patches/loupe-reuse-window.patch
 test -f /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
 python3 - <<'PY'
+import importlib.util
 from pathlib import Path
-import site
 
-showtime_main = Path(site.getsitepackages()[0]) / "showtime" / "main.py"
+spec = importlib.util.find_spec("showtime")
+assert spec is not None and spec.submodule_search_locations
+showtime_main = Path(next(iter(spec.submodule_search_locations))) / "main.py"
 text = showtime_main.read_text(encoding="utf-8")
 assert "Reuse existing window or create a new one" in text
 assert "Open the given files in the existing window" in text
