@@ -37,7 +37,5 @@ install -D -m 0644 "${host_lib}" "${flatpak_lib}"
 
 while IFS= read -r app_id; do
     [[ -z "${app_id}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
-    if flatpak info --system "${app_id}" >/dev/null 2>&1; then
-        flatpak override --system --filesystem="${flatpak_lib}:ro" --env="LD_PRELOAD=${flatpak_lib}" "${app_id}"
-    fi
+    flatpak override --system --filesystem="${flatpak_lib}:ro" --env="LD_PRELOAD=${flatpak_lib}" "${app_id}"
 done < "${manifest}"

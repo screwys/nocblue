@@ -36,6 +36,8 @@ modules:
         - lxqt-policykit
         - nautilus
         - nautilus-python
+        - loupe
+        - showtime
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
         - qt6ct
@@ -48,12 +50,24 @@ modules:
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
+        - bubblewrap
+        - xdg-dbus-proxy
         - shim-x64
         - grub2-efi-x64-cdboot
         - grub2-tools
+        - anaconda
         - anaconda-core
+        - anaconda-dracut
         - anaconda-install-env-deps
+        - dracut-config-generic
+        - dracut-network
+        - net-tools
+        - squashfs-tools
+        - lorax-templates-generic
+        - biosdevname
+        - prefixdevname
         - python3-mako
+        - pipx
         - mokutil
         - openssl
         - kmod
@@ -64,6 +78,7 @@ modules:
         - xz
         - zstd
         - dracut
+        - patch
         - wl-clipboard
         - grim
         - slurp
@@ -129,8 +144,12 @@ modules:
 
   - type: script
     scripts:
+      - stage-noctalia-plugins.sh
+      - install-pywalfox.sh
+      - install-browser-policies.sh
       - install-protonvpn.sh
       - configure-hardened-malloc.sh
+      - patch-native-media-apps.sh
 
   - type: brew
     nofile-limits: true
@@ -146,8 +165,10 @@ modules:
           - studio.planetpeanut.Bobby
           - io.github.diegopvlk.Cine
           - org.gnome.Papers
-          - org.gnome.Loupe
-          - org.gnome.Showtime
+          - org.gtk.Gtk3theme.adw-gtk3
+          - org.gtk.Gtk3theme.adw-gtk3-dark
+          - org.gnome.gitlab.somas.Apostrophe
+          - it.mijorus.gearlever
           - com.github.tchx84.Flatseal
           - org.gnome.Fractal
           - io.github.ilya_zlobintsev.LACT
@@ -190,6 +211,7 @@ modules:
         - nocblue-user-defaults.service
         - nocblue-noctalia-theme.service
         - nocblue-adwsteamgtk.timer
+        - nocblue-icon-theme-sync.timer
         - nocblue-flatpak-icon-fixes.service
 
   - type: script

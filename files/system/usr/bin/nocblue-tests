@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent zed torbrowser-launcher magick tesseract ujust; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent zed torbrowser-launcher magick tesseract ujust loupe showtime bwrap xdg-dbus-proxy patch pywalfox; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -22,14 +22,17 @@ else
     exit 1
 fi
 
-rpm -q ghostty input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as >/dev/null
+rpm -q ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as >/dev/null
+rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
-rpm -q anaconda-core anaconda-install-env-deps python3-mako >/dev/null
+rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
 test -f /boot/efi/EFI/fedora/shimx64.efi
 test -f /boot/efi/EFI/fedora/mmx64.efi
 test -f /boot/efi/EFI/fedora/gcdx64.efi
 test -f /usr/share/grub/unicode.pf2
 test -x /usr/libexec/anaconda/run-anaconda
+test -f /usr/share/lorax/templates.d/99-generic/runtime-postinstall.tmpl
+test -d /var/mnt
 python3 - <<'PY'
 import mako.template
 PY
@@ -43,9 +46,57 @@ done
 
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
+test -x /usr/local/bin/pywalfox
+test -f /usr/lib/mozilla/native-messaging-hosts/pywalfox.json
+test -f /usr/lib64/firefox/distribution/policies.json
+test -f /usr/share/librewolf/distribution/policies.json
+test -f /etc/trivalent/policies/managed/nocblue-search.json
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+firefox = json.loads(Path("/usr/lib64/firefox/distribution/policies.json").read_text(encoding="utf-8"))
+librewolf = json.loads(Path("/usr/share/librewolf/distribution/policies.json").read_text(encoding="utf-8"))
+trivalent = json.loads(Path("/etc/trivalent/policies/managed/nocblue-search.json").read_text(encoding="utf-8"))
+pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
+
+shared = {
+    "jid1-BoFifL9Vbdl2zQ@jetpack": "decentraleyes",
+    "78272b6fa58f4a1abaac99321d503a20@proton.me": "proton-pass",
+    "vpn@proton.ch": "proton-vpn-firefox-extension",
+    "pywalfox@frewacom.org": "pywalfox",
+}
+
+firefox_settings = firefox["policies"]["ExtensionSettings"]
+librewolf_settings = librewolf["policies"]["ExtensionSettings"]
+for extension_id, slug in shared.items():
+    for settings in (firefox_settings, librewolf_settings):
+        policy = settings[extension_id]
+        assert policy["installation_mode"] == "normal_installed"
+        assert policy["private_browsing"] is True
+        assert f"/{slug}/" in policy["install_url"]
+
+ublock = firefox_settings["uBlock0@raymondhill.net"]
+assert ublock["installation_mode"] == "normal_installed"
+assert "/ublock-origin/" in ublock["install_url"]
+assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "normal_installed"
+assert librewolf["policies"]["DisableTelemetry"] is True
+
+assert trivalent["DefaultSearchProviderEnabled"] is True
+assert trivalent["DefaultSearchProviderName"] == "DuckDuckGo"
+assert trivalent["DefaultSearchProviderSearchURL"] == "https://duckduckgo.com/?q={searchTerms}"
+
+assert pywalfox["name"] == "pywalfox"
+assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]
+assert pywalfox["path"].endswith("/pywalfox/bin/main.sh")
+PY
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
+test -d /usr/share/icons/Candy
+test -L /usr/share/icons/candy-icons
+test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
+grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
 test -f /usr/lib/systemd/system/brew-setup.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
@@ -77,21 +128,80 @@ test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
-grep -q 'user-defaults.v5.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
+test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
+test -x /usr/bin/nocblue-sync-icon-theme
+grep -q 'user-defaults.v10.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
+grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
+grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
+grep -q 'rpm -q candy-icon-theme' /usr/bin/nocblue-sync-icon-theme
+grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
+grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
+grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
+grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
+grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
+grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
+grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
+grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test -x /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'flatpak run --system io.github.Foldex.AdwSteamGtk' /usr/bin/nocblue-apply-adwsteamgtk
 ! grep -q 'flatpak install --user' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'steam_ui_exists' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'adwaita_skin_installed' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'custom_css:true' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/bin/nocblue-apply-adwsteamgtk
+! grep -q 'matugen.css' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'repair_steam_prefix_links' /usr/bin/nocblue-apply-adwsteamgtk
+grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '\[templates.zed-native\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+test -f /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
+grep -q -- '--adw-window-bg-rgb' /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
+! grep -q 'Material-Theme' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
 test -x /usr/bin/nocblue-fix-flatpak-icons
 test -x /usr/bin/nocblue-hardened-malloc-run
+test -x /usr/bin/nocblue-bwrap-loupe
+test -x /usr/bin/nocblue-bwrap-showtime
+grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-loupe
+grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-showtime
 test -x /usr/bin/nocblue-apply-hardened-malloc
 grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
+! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
+! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-hardened-malloc
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
+grep -q '^net.lutris.Lutris .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q '^com.valvesoftware.Steam .*xdg-config/gtk' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q 'GTK_THEME' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/trivalent' /usr/share/applications/trivalent.desktop
+grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe %U$' /usr/share/applications/org.gnome.Loupe.desktop
+grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime %U$' /usr/share/applications/org.gnome.Showtime.desktop
+grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Loupe.service
+grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Showtime.service
+test -f /usr/share/nocblue/media-patches/loupe-reuse-window.patch
+test -f /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
+python3 - <<'PY'
+from pathlib import Path
+import site
+
+showtime_main = Path(site.getsitepackages()[0]) / "showtime" / "main.py"
+text = showtime_main.read_text(encoding="utf-8")
+assert "Reuse existing window or create a new one" in text
+assert "Open the given files in the existing window" in text
+compile(text, str(showtime_main), "exec")
+PY
 test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Papers$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
@@ -100,6 +210,16 @@ test -f /usr/share/backgrounds/nocblue/green-eyes.png
 test -f /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
 grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/settings.json
 grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
+test -f /usr/share/nocblue/defaults/gtk-3.0/settings.ini
+test -f /usr/share/nocblue/defaults/gtk-4.0/settings.ini
+grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
+grep -q '^gtk-application-prefer-dark-theme=1$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
+! grep -q '^gtk-icon-theme-name=' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
+grep -q '@define-color window_bg_color #1e1e2e' /usr/share/nocblue/defaults/gtk-3.0/noctalia.css
+grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
+! grep -q '^gtk-application-prefer-dark-theme' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
+! grep -q '^gtk-icon-theme-name=' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
+grep -q '@define-color window_bg_color #1e1e2e' /usr/share/nocblue/defaults/gtk-4.0/noctalia.css
 test -f /usr/share/nocblue/manifests/brew-formulae.txt
 ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
@@ -109,6 +229,9 @@ grep -q '^adb$' /usr/share/nocblue/manifests/brew-formulae.txt
 grep -q '^openjdk@17$' /usr/share/nocblue/manifests/brew-formulae.txt
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
+test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
+grep -q '"name": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/themes/noctalia.json
+grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
 grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^favorite_browser = '\''librewolf.desktop'\''$' /usr/share/nocblue/defaults/switchyard/config.toml
@@ -116,10 +239,53 @@ test -f /usr/share/nocblue/defaults/nautilus/copy_location.py
 test -f /usr/share/nocblue/defaults/nautilus/folder_icon.py
 test -f /usr/share/nocblue/defaults/nautilus/new_file.py
 python3 - <<'PY'
+import json
 from pathlib import Path
 
 for path in Path("/usr/share/nocblue/defaults/nautilus").glob("*.py"):
     compile(path.read_text(encoding="utf-8"), str(path), "exec")
+
+settings = json.loads(Path("/usr/share/nocblue/defaults/noctalia/settings.json").read_text(encoding="utf-8"))
+assert settings["colorSchemes"]["predefinedScheme"] == "Catppuccin Mocha Red"
+bar = settings["bar"]
+assert bar["monitors"] == []
+assert bar["screenOverrides"] == []
+assert [item["id"] for item in bar["widgets"]["left"]] == [
+    "Launcher",
+    "Clock",
+    "plugin:timer",
+    "plugin:weather-indicator",
+    "NotificationHistory",
+    "Volume",
+    "plugin:todo",
+    "plugin:clipper",
+    "plugin:noctalia-calculator",
+]
+assert [item["id"] for item in bar["widgets"]["right"]] == [
+    "MediaMini",
+    "Tray",
+    "VPN",
+    "SystemMonitor",
+]
+plugins = json.loads(Path("/usr/share/nocblue/defaults/noctalia/plugins.json").read_text(encoding="utf-8"))
+assert plugins["states"]["weather-indicator"]["enabled"] is True
+for plugin in [
+    "clipper",
+    "file-search",
+    "kaomoji-provider",
+    "niri-animation-picker",
+    "niri-overview-launcher",
+    "noctalia-calculator",
+    "notes-scratchpad",
+    "polkit-agent",
+    "pomodoro",
+    "screen-recorder",
+    "screen-toolkit",
+    "timer",
+    "todo",
+    "weather-indicator",
+]:
+    assert Path(f"/usr/share/nocblue/defaults/noctalia/plugins/{plugin}/manifest.json").is_file()
 PY
 
 test -f /etc/firewalld/services/kdeconnect.xml
@@ -129,10 +295,16 @@ grep -q '1714-1764' /etc/firewalld/services/kdeconnect.xml
 
 test -f /usr/share/nocblue/manifests/flatpaks.txt
 test -f /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
+flatpak info --system org.gtk.Gtk3theme.adw-gtk3 >/dev/null
+flatpak info --system org.gtk.Gtk3theme.adw-gtk3-dark >/dev/null
 grep -q '^com.github.marhkb.Pods$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
 grep -q '^io.gitlab.news_flash.NewsFlash$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
-grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/flatpaks.txt
+! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
+! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/flatpaks.txt
+grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/flatpaks.txt
+grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/flatpaks.txt
+grep -q '^org.gtk.Gtk3theme.adw-gtk3$' /usr/share/nocblue/manifests/flatpaks.txt
+grep -q '^org.gtk.Gtk3theme.adw-gtk3-dark$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^com.github.zocker_160.SyncThingy$' /usr/share/nocblue/manifests/flatpaks.txt

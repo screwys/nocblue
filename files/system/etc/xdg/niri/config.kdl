@@ -7,7 +7,7 @@ screenshot-path null
 environment {
     XCURSOR_SIZE "24"
     XCURSOR_THEME "default"
-    QS_ICON_THEME "Candy"
+    QS_ICON_THEME "candy-icons"
     SHELL "/bin/fish"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
     QT_QPA_PLATFORM "wayland"

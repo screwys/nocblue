@@ -21,7 +21,7 @@
     "screen-toolkit": { "enabled": true, "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins" },
     "timer": { "enabled": true, "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins" },
     "todo": { "enabled": true, "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins" },
-    "weather-indicator": { "enabled": false, "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins" }
+    "weather-indicator": { "enabled": true, "sourceUrl": "https://github.com/noctalia-dev/noctalia-plugins" }
   },
   "version": 2
 }

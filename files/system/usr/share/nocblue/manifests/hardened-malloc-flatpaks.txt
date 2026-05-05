@@ -1,4 +1,3 @@
 io.github.diegopvlk.Cine
-org.gnome.Loupe
 org.gnome.Papers
-org.gnome.Showtime
+org.gnome.gitlab.somas.Apostrophe

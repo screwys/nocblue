@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ -z "${XDG_RUNTIME_DIR:-}" || -z "${WAYLAND_DISPLAY:-}" ]]; then
+    printf 'nocblue-bwrap-loupe needs a Wayland user session\n' >&2
+    exit 1
+fi
+
+if [[ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]]; then
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR}/bus"
+fi
+
+declare -a extra_flags=()
+declare -a files=()
+
+decode_file_arg() {
+    local value="$1"
+    if [[ "${value}" == file://* ]]; then
+        value="${value#file://}"
+        python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${value}"
+    else
+        printf '%s\n' "${value}"
+    fi
+}
+
+for arg in "$@"; do
+    case "${arg}" in
+        --*) extra_flags+=("${arg}") ;;
+        *)
+            file="$(decode_file_arg "${arg}")"
+            files+=("$(realpath -m -- "${file}")")
+            ;;
+    esac
+done
+
+declare -a bwrap_args=()
+declare -A bound_dirs=()
+
+ro_bind_try() {
+    [[ -e "$1" ]] && bwrap_args+=(--ro-bind "$1" "$1") || true
+}
+
+bind_parent_if_needed() {
+    local file="$1"
+    local parent
+    parent="$(dirname -- "${file}")"
+    case "${parent}/" in
+        "${HOME}/"*) return 0 ;;
+    esac
+    [[ -n "${bound_dirs[${parent}]:-}" ]] && return 0
+    [[ -d "${parent}" ]] && bwrap_args+=(--ro-bind "${parent}" "${parent}") || true
+    bound_dirs["${parent}"]=1
+}
+
+bwrap_args+=(
+    --ro-bind /usr /usr
+    --ro-bind /etc /etc
+    --symlink /usr/lib /lib
+    --symlink /usr/lib /lib64
+    --symlink /usr/bin /bin
+    --symlink /usr/bin /sbin
+    --dev /dev
+    --proc /proc
+    --tmpfs /tmp
+)
+
+[[ -d /dev/dri ]] && bwrap_args+=(--dev-bind /dev/dri /dev/dri)
+bwrap_args+=(--ro-bind /sys /sys)
+
+bwrap_args+=(--ro-bind "${HOME}" "${HOME}")
+[[ -d /mnt ]] && bwrap_args+=(--ro-bind /mnt /mnt)
+[[ -d /media ]] && bwrap_args+=(--ro-bind /media /media)
+
+bwrap_args+=(
+    --tmpfs "${HOME}/.cache"
+    --tmpfs "${HOME}/.ssh"
+    --tmpfs "${HOME}/.gnupg"
+    --tmpfs "${HOME}/.pki"
+    --tmpfs "${HOME}/.config"
+)
+ro_bind_try "${HOME}/.config/gtk-3.0"
+ro_bind_try "${HOME}/.config/gtk-4.0"
+ro_bind_try "${HOME}/.config/dconf"
+
+bwrap_args+=(--tmpfs "${HOME}/.local")
+ro_bind_try "${HOME}/.local/share"
+bwrap_args+=(--tmpfs "${HOME}/.var")
+
+dbus_proxy_dir="$(mktemp -d /tmp/nocblue-loupe-dbus-XXXXXX)"
+dbus_proxy_socket="${dbus_proxy_dir}/bus"
+
+xdg-dbus-proxy "${DBUS_SESSION_BUS_ADDRESS}" "${dbus_proxy_socket}" \
+    --filter \
+    --talk=org.freedesktop.portal.Desktop \
+    --talk=org.freedesktop.portal.FileChooser \
+    --talk=org.gtk.vfs.Daemon \
+    --talk=org.gtk.vfs.Metadata \
+    --talk=ca.desrt.dconf \
+    --talk=org.a11y.Bus \
+    --talk=org.gnome.Loupe \
+    --talk=org.gnome.Loupe.* \
+    --own=org.gnome.Loupe \
+    --own=org.gnome.Loupe.* \
+    --call=org.freedesktop.DBus=* &
+dbus_proxy_pid=$!
+
+cleanup() {
+    kill "${dbus_proxy_pid}" >/dev/null 2>&1 || true
+    rm -rf "${dbus_proxy_dir}"
+}
+trap cleanup EXIT
+
+for _ in $(seq 1 50); do
+    [[ -S "${dbus_proxy_socket}" ]] && break
+    sleep 0.05
+done
+
+bwrap_args+=(
+    --tmpfs /run
+    --dir "${XDG_RUNTIME_DIR}"
+    --ro-bind "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}" "${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}"
+    --bind "${dbus_proxy_socket}" "${XDG_RUNTIME_DIR}/bus"
+    --unshare-net
+    --unshare-pid
+    --unshare-ipc
+    --die-with-parent
+    --setenv HOME "${HOME}"
+    --setenv XDG_RUNTIME_DIR "${XDG_RUNTIME_DIR}"
+    --setenv WAYLAND_DISPLAY "${WAYLAND_DISPLAY}"
+    --setenv XDG_SESSION_TYPE wayland
+    --setenv DBUS_SESSION_BUS_ADDRESS "unix:path=${XDG_RUNTIME_DIR}/bus"
+    --setenv GIO_USE_VFS local
+)
+
+[[ -n "${XCURSOR_THEME:-}" ]] && bwrap_args+=(--setenv XCURSOR_THEME "${XCURSOR_THEME}")
+[[ -n "${XCURSOR_SIZE:-}" ]] && bwrap_args+=(--setenv XCURSOR_SIZE "${XCURSOR_SIZE}")
+[[ -n "${GDK_BACKEND:-}" ]] && bwrap_args+=(--setenv GDK_BACKEND "${GDK_BACKEND}")
+[[ -n "${GTK_THEME:-}" ]] && bwrap_args+=(--setenv GTK_THEME "${GTK_THEME}")
+
+for file in "${files[@]}"; do
+    bind_parent_if_needed "${file}"
+done
+
+bwrap "${bwrap_args[@]}" /usr/bin/nocblue-hardened-malloc-run /usr/bin/loupe "${extra_flags[@]}" "${files[@]}"

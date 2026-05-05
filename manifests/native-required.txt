@@ -12,6 +12,8 @@ polkit
 lxqt-policykit
 nautilus
 nautilus-python
+loupe
+showtime
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
 qt6ct
@@ -24,20 +26,35 @@ candy-icon-theme
 google-noto-sans-cjk-fonts
 firewalld
 flatpak
+bubblewrap
+xdg-dbus-proxy
 shim-x64
 grub2-efi-x64-cdboot
 grub2-tools
+anaconda
 anaconda-core
+anaconda-dracut
 anaconda-install-env-deps
+dracut-config-generic
+dracut-network
+net-tools
+squashfs-tools
+lorax-templates-generic
+biosdevname
+prefixdevname
 python3-mako
+pipx
 mokutil
 openssl
 kmod
 cryptsetup
 tpm2-tools
+hardened_malloc
+no_rlimit_as
 xz
 zstd
 dracut
+patch
 
 # Wayland tools
 wl-clipboard

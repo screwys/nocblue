@@ -7,23 +7,88 @@ if [[ "$(id -u)" -eq 0 ]]; then
 fi
 
 state_dir="${HOME}/.local/state/nocblue"
-stamp="${state_dir}/adwsteamgtk.done"
+stamp="${state_dir}/adwsteamgtk.v3.done"
+steam_app_home="${HOME}/.var/app/com.valvesoftware.Steam"
+steam_prefix="${steam_app_home}/.local/share/Steam"
+steam_dot="${steam_app_home}/.steam"
+theme_css="${HOME}/.var/app/io.github.Foldex.AdwSteamGtk/config/AdwSteamGtk/custom.css"
 install -d -m 0755 "${state_dir}"
 
 if [[ -e "${stamp}" ]]; then
     exit 0
 fi
 
+repair_steam_prefix_links() {
+    local name path backup
+
+    install -d -m 0755 "${steam_prefix}" "${steam_dot}"
+
+    for name in root steam; do
+        path="${steam_dot}/${name}"
+        if [[ -L "${path}" ]]; then
+            continue
+        fi
+
+        if [[ -e "${path}" ]]; then
+            if [[ -d "${path}" && ! -e "${path}/steam.sh" && ! -e "${path}/config/config.vdf" && ! -d "${path}/steamapps" ]]; then
+                backup="${state_dir}/${name}.$(date +%Y%m%d%H%M%S).backup"
+                mv "${path}" "${backup}"
+            else
+                return 1
+            fi
+        fi
+
+        ln -s "${steam_prefix}" "${path}"
+    done
+}
+
+steam_ui_exists() {
+    for path in \
+        "${steam_dot}/steam/steamui/css/library.css" \
+        "${HOME}/.steam/steam/steamui/css/library.css" \
+        "${steam_prefix}/steamui/css/library.css"; do
+        [[ -f "${path}" ]] && return 0
+    done
+
+    return 1
+}
+
+adwaita_skin_installed() {
+    local library_css="${steam_prefix}/steamui/css/library.css"
+    local custom_css="${steam_prefix}/steamui/libraryroot.custom.css"
+    local adwaita_css="${steam_prefix}/steamui/adwaita/adwaita.css"
+    local copied_theme="${steam_prefix}/steamui/adwaita/custom/custom.css"
+
+    [[ -s "${library_css}" ]] || return 1
+    [[ -s "${custom_css}" ]] || return 1
+    [[ -s "${adwaita_css}" ]] || return 1
+    [[ -s "${copied_theme}" ]] || return 1
+    grep -q 'steamloopback.host/libraryroot.custom.css' "${library_css}" || return 1
+    grep -q 'steamloopback.host/adwaita/adwaita.css' "${custom_css}" || return 1
+    grep -q 'steamloopback.host/adwaita/custom/custom.css' "${custom_css}" || return 1
+}
+
+repair_steam_prefix_links || true
+
 for _ in {1..6}; do
-    if flatpak info --system com.valvesoftware.Steam >/dev/null 2>&1 &&
-        flatpak info --system io.github.Foldex.AdwSteamGtk >/dev/null 2>&1; then
-        flatpak run --system io.github.Foldex.AdwSteamGtk --install --options 'rounded_corners:true;win_controls:adwaita;win_controls_layout:auto'
+    if adwaita_skin_installed; then
         touch "${stamp}"
         exit 0
+    fi
+
+    if flatpak info --system com.valvesoftware.Steam >/dev/null 2>&1 &&
+        flatpak info --system io.github.Foldex.AdwSteamGtk >/dev/null 2>&1 &&
+        [[ -s "${theme_css}" ]] &&
+        steam_ui_exists; then
+        flatpak run --system io.github.Foldex.AdwSteamGtk --install --options 'custom_css:true;rounded_corners:true;win_controls:adwaita;win_controls_layout:auto'
+        if adwaita_skin_installed; then
+            touch "${stamp}"
+            exit 0
+        fi
     fi
 
     sleep 30
 done
 
-printf 'AdwSteamGtk or Steam Flatpak is not ready yet; will retry later\n' >&2
+printf 'AdwSteamGtk, Steam UI files, or Noctalia AdwSteamGtk theme output are not ready yet; will retry later\n' >&2
 exit 75

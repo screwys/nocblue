@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh nocblue Candy icon theme copy
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1d
+Persistent=true
+
+[Install]
+WantedBy=timers.target

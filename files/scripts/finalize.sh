@@ -19,5 +19,9 @@ install_efi shimx64.efi
 install_efi mmx64.efi
 install_efi gcdx64.efi
 
+install -d -m 0755 /var/mnt
+
+ln -sfn Candy /usr/share/icons/candy-icons
+
 find /etc/yum.repos.d -name '*.repo' -type f -print0 \
     | xargs -0 -r sed -i 's/^countme=1$/countme=0/'

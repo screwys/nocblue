@@ -462,7 +462,7 @@
         "smoothScrollEnabled": true,
         "telemetryEnabled": false,
         "wallpaperPath": "/usr/share/backgrounds/nocblue/green-eyes.png",
-        "iconTheme": "Candy"
+        "iconTheme": "candy-icons"
     },
     "hooks": {
         "colorGeneration": "",

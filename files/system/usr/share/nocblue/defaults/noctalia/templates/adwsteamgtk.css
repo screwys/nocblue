@@ -1,0 +1,77 @@
+:root {
+    --adw-accent-bg-rgb: {{colors.primary.default.rgb_csv}} !important;
+    --adw-accent-fg-rgb: {{colors.on_primary.default.rgb_csv}} !important;
+    --adw-accent-rgb: {{colors.primary.default.rgb_csv}} !important;
+
+    --adw-destructive-bg-rgb: {{colors.error_container.default.rgb_csv}} !important;
+    --adw-destructive-fg-rgb: {{colors.on_error_container.default.rgb_csv}} !important;
+    --adw-destructive-rgb: {{colors.error.default.rgb_csv}} !important;
+
+    --adw-success-bg-rgb: {{colors.tertiary_container.default.rgb_csv}} !important;
+    --adw-success-fg-rgb: {{colors.on_tertiary_container.default.rgb_csv}} !important;
+    --adw-success-rgb: {{colors.tertiary.default.rgb_csv}} !important;
+
+    --adw-warning-bg-rgb: {{colors.secondary_container.default.rgb_csv}} !important;
+    --adw-warning-fg-rgb: {{colors.on_secondary_container.default.rgb_csv}} !important;
+    --adw-warning-fg-a: 0.88 !important;
+    --adw-warning-rgb: {{colors.secondary.default.rgb_csv}} !important;
+
+    --adw-error-bg-rgb: {{colors.error_container.default.rgb_csv}} !important;
+    --adw-error-fg-rgb: {{colors.on_error_container.default.rgb_csv}} !important;
+    --adw-error-rgb: {{colors.error.default.rgb_csv}} !important;
+
+    --adw-window-bg-rgb: {{colors.background.default.rgb_csv}} !important;
+    --adw-window-fg-rgb: {{colors.on_background.default.rgb_csv}} !important;
+
+    --adw-view-bg-rgb: {{colors.surface.default.rgb_csv}} !important;
+    --adw-view-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+
+    --adw-headerbar-bg-rgb: {{colors.surface_container.default.rgb_csv}} !important;
+    --adw-headerbar-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+    --adw-headerbar-border-rgb: {{colors.outline_variant.default.rgb_csv}} !important;
+    --adw-headerbar-backdrop-rgb: {{colors.surface.default.rgb_csv}} !important;
+    --adw-headerbar-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-headerbar-shade-a: 0.36 !important;
+    --adw-headerbar-darker-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-headerbar-darker-shade-a: 0.72 !important;
+
+    --adw-sidebar-bg-rgb: {{colors.surface_container_low.default.rgb_csv}} !important;
+    --adw-sidebar-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+    --adw-sidebar-backdrop-rgb: {{colors.surface.default.rgb_csv}} !important;
+    --adw-sidebar-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-sidebar-shade-a: 0.24 !important;
+
+    --adw-secondary-sidebar-bg-rgb: {{colors.surface_container.default.rgb_csv}} !important;
+    --adw-secondary-sidebar-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+    --adw-secondary-sidebar-backdrop-rgb: {{colors.surface.default.rgb_csv}} !important;
+    --adw-secondary-sidebar-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-secondary-sidebar-shade-a: 0.24 !important;
+
+    --adw-card-bg-rgb: {{colors.surface_container_high.default.rgb_csv}} !important;
+    --adw-card-bg-a: 0.72 !important;
+    --adw-card-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+    --adw-card-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-card-shade-a: 0.24 !important;
+
+    --adw-dialog-bg-rgb: {{colors.surface_container_high.default.rgb_csv}} !important;
+    --adw-dialog-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+
+    --adw-popover-bg-rgb: {{colors.surface_container_high.default.rgb_csv}} !important;
+    --adw-popover-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+    --adw-popover-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-popover-shade-a: 0.24 !important;
+
+    --adw-banner-bg-rgb: {{colors.primary_container.default.rgb_csv}} !important;
+    --adw-banner-bg-a: 0.88 !important;
+    --adw-banner-fg-rgb: {{colors.on_primary_container.default.rgb_csv}} !important;
+
+    --adw-thumbnail-bg-rgb: {{colors.surface_container.default.rgb_csv}} !important;
+    --adw-thumbnail-fg-rgb: {{colors.on_surface.default.rgb_csv}} !important;
+
+    --adw-shade-rgb: {{colors.shadow.default.rgb_csv}} !important;
+    --adw-shade-a: 0.28 !important;
+
+    --adw-user-offline-rgb: {{colors.outline.default.rgb_csv}} !important;
+    --adw-user-online-rgb: {{colors.primary.default.rgb_csv}} !important;
+    --adw-user-ingame-rgb: {{colors.tertiary.default.rgb_csv}} !important;
+}

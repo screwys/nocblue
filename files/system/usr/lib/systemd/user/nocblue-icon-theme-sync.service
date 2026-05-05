@@ -1,0 +1,6 @@
+[Unit]
+Description=Sync nocblue Candy icon theme for sandboxed apps
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-sync-icon-theme

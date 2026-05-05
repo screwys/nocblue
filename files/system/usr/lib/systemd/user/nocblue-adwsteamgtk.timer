@@ -1,6 +1,6 @@
 [Unit]
 Description=Retry nocblue Steam GTK skin setup
-ConditionPathExists=!%h/.local/state/nocblue/adwsteamgtk.done
+ConditionPathExists=!%h/.local/state/nocblue/adwsteamgtk.v3.done
 
 [Timer]
 OnBootSec=5min
