@@ -1,5 +1,9 @@
 {
   "policies": {
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisableTelemetry": true,
+    "DontCheckDefaultBrowser": true,
     "ExtensionSettings": {
       "jid1-BoFifL9Vbdl2zQ@jetpack": {
         "install_url": "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes/latest.xpi",
@@ -26,6 +30,42 @@
         "installation_mode": "normal_installed",
         "private_browsing": true
       }
+    },
+    "FirefoxHome": {
+      "Highlights": false,
+      "Locked": false,
+      "Pocket": false,
+      "Snippets": false,
+      "SponsoredPocket": false,
+      "SponsoredStories": false,
+      "SponsoredTopSites": false,
+      "Stories": false
+    },
+    "FirefoxSuggest": {
+      "ImproveSuggest": false,
+      "Locked": false,
+      "SponsoredSuggestions": false,
+      "WebSuggestions": false
+    },
+    "ManualAppUpdateOnly": true,
+    "NoDefaultBookmarks": true,
+    "OfferToSaveLoginsDefault": false,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "SearchEngines": {
+      "Default": "DuckDuckGo",
+      "PreventInstalls": true
+    },
+    "SearchSuggestEnabled": false,
+    "SkipTermsOfUse": true,
+    "UserMessaging": {
+      "ExtensionRecommendations": false,
+      "FeatureRecommendations": false,
+      "FirefoxLabs": false,
+      "Locked": false,
+      "MoreFromMozilla": false,
+      "SkipOnboarding": true,
+      "UrlbarInterventions": false
     }
   }
 }

@@ -15,8 +15,10 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 mkdir -p \
     /etc/skel/.config/autostart \
+    /usr/lib64/firefox/distribution \
     /usr/share/anaconda/post-scripts \
     /usr/share/glib-2.0/schemas \
+    /var/lib/livesys/livesys-session-extra.d \
     /var/lib/rpm-state \
     /var/tmp
 chmod 1777 /var/tmp
@@ -50,6 +52,65 @@ sleep 2
 exec liveinst
 EOF
 chmod 0755 /usr/bin/nocblue-liveinst-once
+
+cat >/usr/lib64/firefox/distribution/policies.json <<'EOF'
+{
+  "policies": {
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DisableTelemetry": true,
+    "DontCheckDefaultBrowser": true,
+    "FirefoxHome": {
+      "Highlights": false,
+      "Locked": false,
+      "Pocket": false,
+      "Snippets": false,
+      "SponsoredPocket": false,
+      "SponsoredStories": false,
+      "SponsoredTopSites": false,
+      "Stories": false
+    },
+    "FirefoxSuggest": {
+      "ImproveSuggest": false,
+      "Locked": false,
+      "SponsoredSuggestions": false,
+      "WebSuggestions": false
+    },
+    "ManualAppUpdateOnly": true,
+    "NoDefaultBookmarks": true,
+    "OfferToSaveLoginsDefault": false,
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "SearchEngines": {
+      "Default": "DuckDuckGo",
+      "PreventInstalls": true
+    },
+    "SearchSuggestEnabled": false,
+    "SkipTermsOfUse": true,
+    "UserMessaging": {
+      "ExtensionRecommendations": false,
+      "FeatureRecommendations": false,
+      "FirefoxLabs": false,
+      "Locked": false,
+      "MoreFromMozilla": false,
+      "SkipOnboarding": true,
+      "UrlbarInterventions": false
+    }
+  }
+}
+EOF
+
+cat >/var/lib/livesys/livesys-session-extra.d/10-nocblue-live-user <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+if id liveuser >/dev/null 2>&1; then
+    usermod -c "Live User" liveuser || :
+    usermod -aG wheel liveuser || :
+    passwd -d liveuser || :
+fi
+EOF
+chmod 0755 /var/lib/livesys/livesys-session-extra.d/10-nocblue-live-user
 
 cat >/etc/skel/.config/autostart/nocblue-liveinst.desktop <<'EOF'
 [Desktop Entry]

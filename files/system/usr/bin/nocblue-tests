@@ -91,6 +91,21 @@ ublock = firefox_settings["uBlock0@raymondhill.net"]
 assert ublock["installation_mode"] == "normal_installed"
 assert "/ublock-origin/" in ublock["install_url"]
 assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "normal_installed"
+assert firefox["policies"]["DisableFirefoxStudies"] is True
+assert firefox["policies"]["DisablePocket"] is True
+assert firefox["policies"]["DisableTelemetry"] is True
+assert firefox["policies"]["DontCheckDefaultBrowser"] is True
+assert firefox["policies"]["ManualAppUpdateOnly"] is True
+assert firefox["policies"]["OfferToSaveLoginsDefault"] is False
+assert firefox["policies"]["OverrideFirstRunPage"] == ""
+assert firefox["policies"]["OverridePostUpdatePage"] == ""
+assert firefox["policies"]["SearchEngines"]["Default"] == "DuckDuckGo"
+assert firefox["policies"]["SearchEngines"]["PreventInstalls"] is True
+assert firefox["policies"]["SearchSuggestEnabled"] is False
+assert firefox["policies"]["SkipTermsOfUse"] is True
+assert firefox["policies"]["FirefoxSuggest"]["WebSuggestions"] is False
+assert firefox["policies"]["FirefoxSuggest"]["SponsoredSuggestions"] is False
+assert firefox["policies"]["UserMessaging"]["SkipOnboarding"] is True
 assert librewolf["policies"]["DisableTelemetry"] is True
 
 assert trivalent["DefaultSearchProviderEnabled"] is True

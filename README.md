@@ -8,3 +8,5 @@ For installation, use a Fedora Silverblue base and run:
 sudo bootc switch ghcr.io/screwys/nocblue:latest
 sudo systemctl reboot
 ```
+
+The release ISO is a live installer. In a VM, eject or detach the ISO after Anaconda finishes so the VM boots the installed system instead of starting the installer again.
