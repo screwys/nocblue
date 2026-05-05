@@ -60,6 +60,7 @@ jobs:
           grep -q -- 'passwd -d liveuser' iso_files/configure_iso_anaconda.sh
           grep -q -- '/etc/anaconda/conf.d/90-nocblue.conf' iso_files/configure_iso_anaconda.sh
           grep -q -- 'org.fedoraproject.Anaconda.Modules.Users' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'org.fedoraproject.Anaconda.Modules.Subscription' iso_files/configure_iso_anaconda.sh
           grep -q -- '/etc/skel/.config/noctalia' iso_files/configure_iso_anaconda.sh
           grep -q -- 'open-maximized true' iso_files/configure_iso_anaconda.sh
           forbidden_type='types: bootc''-installer'

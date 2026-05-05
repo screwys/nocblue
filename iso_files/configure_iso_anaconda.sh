@@ -49,6 +49,8 @@ kickstart_modules =
     org.fedoraproject.Anaconda.Modules.Services
     org.fedoraproject.Anaconda.Modules.Users
     org.fedoraproject.Anaconda.Modules.Timezone
+forbidden_modules =
+    org.fedoraproject.Anaconda.Modules.Subscription
 EOF
 
 cat >/usr/bin/nocblue-liveinst-once <<'EOF'
