@@ -14,7 +14,10 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
     gparted
 
 mkdir -p \
+    /etc/anaconda/conf.d \
     /etc/skel/.config/autostart \
+    /etc/skel/.config/niri \
+    /etc/skel/.config/noctalia \
     /usr/lib64/firefox/distribution \
     /usr/share/anaconda/post-scripts \
     /usr/share/glib-2.0/schemas \
@@ -33,6 +36,19 @@ ostreecontainer --url=${install_image} --transport=containers-storage --no-signa
 %post --log=/tmp/nocblue-bootc-origin.log
 bootc switch --mutate-in-place --transport registry ${install_image} || :
 %end
+EOF
+
+cat >/etc/anaconda/conf.d/90-nocblue.conf <<'EOF'
+# Keep Anaconda interactive enough for live USB installs.
+[Anaconda]
+kickstart_modules =
+    org.fedoraproject.Anaconda.Modules.Storage
+    org.fedoraproject.Anaconda.Modules.Runtime
+    org.fedoraproject.Anaconda.Modules.Network
+    org.fedoraproject.Anaconda.Modules.Security
+    org.fedoraproject.Anaconda.Modules.Services
+    org.fedoraproject.Anaconda.Modules.Users
+    org.fedoraproject.Anaconda.Modules.Timezone
 EOF
 
 cat >/usr/bin/nocblue-liveinst-once <<'EOF'
@@ -111,6 +127,31 @@ if id liveuser >/dev/null 2>&1; then
 fi
 EOF
 chmod 0755 /var/lib/livesys/livesys-session-extra.d/10-nocblue-live-user
+
+if [[ -d /usr/share/nocblue/defaults/noctalia ]]; then
+    cp -a /usr/share/nocblue/defaults/noctalia/. /etc/skel/.config/noctalia/
+    chmod -R a+rX /etc/skel/.config/noctalia
+fi
+
+install -D -m 0644 /etc/xdg/niri/config.kdl /etc/skel/.config/niri/config.kdl
+
+cat >>/etc/skel/.config/niri/config.kdl <<'EOF'
+
+window-rule {
+    match app-id=r"^(org\.fedoraproject\.Anaconda|anaconda|liveinst)$"
+    match title=r"(?i).*installation.*"
+    open-maximized true
+}
+EOF
+
+cat >>/etc/xdg/niri/config.kdl <<'EOF'
+
+window-rule {
+    match app-id=r"^(org\.fedoraproject\.Anaconda|anaconda|liveinst)$"
+    match title=r"(?i).*installation.*"
+    open-maximized true
+}
+EOF
 
 cat >/etc/skel/.config/autostart/nocblue-liveinst.desktop <<'EOF'
 [Desktop Entry]

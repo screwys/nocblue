@@ -58,6 +58,10 @@ jobs:
           live_firefox_policy="$(awk 'index($0, "cat >/usr/lib64/firefox/distribution/policies.json") { p = 1 } p { print } p && $0 == "EOF" { exit }' iso_files/configure_iso_anaconda.sh)"
           ! grep -q -- 'ExtensionSettings' <<< "${live_firefox_policy}"
           grep -q -- 'passwd -d liveuser' iso_files/configure_iso_anaconda.sh
+          grep -q -- '/etc/anaconda/conf.d/90-nocblue.conf' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'org.fedoraproject.Anaconda.Modules.Users' iso_files/configure_iso_anaconda.sh
+          grep -q -- '/etc/skel/.config/noctalia' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'open-maximized true' iso_files/configure_iso_anaconda.sh
           forbidden_type='types: bootc''-installer'
           forbidden_payload='--installer''-payload-ref='
           ! grep -q -- "${forbidden_type}" .github/workflows/iso.yml
