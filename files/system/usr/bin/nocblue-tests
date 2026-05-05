@@ -33,7 +33,9 @@ test -f /usr/share/grub/unicode.pf2
 test -x /usr/libexec/anaconda/run-anaconda
 test -f /usr/share/lorax/templates.d/99-generic/runtime-postinstall.tmpl
 test -d /mnt
+test ! -L /mnt
 test -d /var/mnt
+test ! -L /var/mnt
 python3 - <<'PY'
 import mako.template
 PY

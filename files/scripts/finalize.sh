@@ -19,7 +19,19 @@ install_efi shimx64.efi
 install_efi mmx64.efi
 install_efi gcdx64.efi
 
-install -d -m 0755 /mnt /var/mnt
+ensure_plain_dir() {
+    local path="${1}"
+
+    if [[ -L "${path}" || ( -e "${path}" && ! -d "${path}" ) ]]; then
+        rm -f "${path}"
+    fi
+
+    mkdir -p "${path}"
+    chmod 0755 "${path}"
+}
+
+ensure_plain_dir /mnt
+ensure_plain_dir /var/mnt
 
 ln -sfn Candy /usr/share/icons/candy-icons
 
