@@ -39,6 +39,10 @@ test ! -L /var/mnt
 test -d /var/tmp
 test ! -L /var/tmp
 test "$(stat -c %a /var/tmp)" = "1777"
+test -f /usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
+grep -qx 'tmpdir="/tmp"' /usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
+test -f /usr/lib/tmpfiles.d/nocblue-installer.conf
+grep -qx 'd /var/tmp 1777 root root -' /usr/lib/tmpfiles.d/nocblue-installer.conf
 python3 - <<'PY'
 import mako.template
 PY
