@@ -33,7 +33,6 @@ modules:
         - gnome-keyring
         - dbus-tools
         - polkit
-        - lxqt-policykit
         - nautilus
         - nautilus-python
         - loupe

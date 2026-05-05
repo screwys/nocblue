@@ -47,12 +47,13 @@ python3 - <<'PY'
 import mako.template
 PY
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
-for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx; do
+for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
-        printf 'removed terminal package is still installed: %s\n' "${pkg}" >&2
+        printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
     }
 done
+! grep -RIn 'lxqt-policykit-agent' /etc/xdg/niri /usr/share/nocblue/defaults/niri >/dev/null 2>&1
 
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
