@@ -47,6 +47,7 @@ jobs:
           grep -q -- "uses: ublue-os/titanoboa@main" .github/workflows/iso.yml
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
+          grep -q -- "iso-dest: nocblue-live-installer.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
           grep -q -- 'install_image="ghcr.io/screwys/nocblue:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
@@ -70,10 +71,12 @@ jobs:
           compression: squashfs
           kargs: ""
           builder-distro: fedora
-          iso-dest: ${{ github.workspace }}/output/nocblue-live-installer.iso
+          iso-dest: nocblue-live-installer.iso
 
       - name: checksum iso
         run: |
+          mkdir -p output
+          install -m 0644 "${{ steps.build.outputs.iso-dest }}" output/nocblue-live-installer.iso
           cd output
           sha256sum nocblue-live-installer.iso | tee nocblue-live-installer.iso.sha256
 
