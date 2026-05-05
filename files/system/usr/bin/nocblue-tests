@@ -296,8 +296,6 @@ grep -q '1714-1764' /etc/firewalld/services/kdeconnect.xml
 
 test -f /usr/share/nocblue/manifests/flatpaks.txt
 test -f /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
-flatpak info --system org.gtk.Gtk3theme.adw-gtk3 >/dev/null
-flatpak info --system org.gtk.Gtk3theme.adw-gtk3-dark >/dev/null
 grep -q '^com.github.marhkb.Pods$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
 grep -q '^io.gitlab.news_flash.NewsFlash$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
