@@ -15,6 +15,7 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 mkdir -p \
     /etc/anaconda/conf.d \
+    /etc/skel/.cache/noctalia \
     /etc/skel/.config/autostart \
     /etc/skel/.config/niri \
     /etc/skel/.config/noctalia \
@@ -51,6 +52,14 @@ kickstart_modules =
     org.fedoraproject.Anaconda.Modules.Timezone
 forbidden_modules =
     org.fedoraproject.Anaconda.Modules.Subscription
+
+[Network]
+default_on_boot = FIRST_WIRED_WITH_LINK
+
+[User Interface]
+hidden_spokes =
+hidden_webui_pages =
+can_change_users = True
 EOF
 
 cat >/usr/bin/nocblue-liveinst-once <<'EOF'
@@ -132,8 +141,42 @@ chmod 0755 /var/lib/livesys/livesys-session-extra.d/10-nocblue-live-user
 
 if [[ -d /usr/share/nocblue/defaults/noctalia ]]; then
     cp -a /usr/share/nocblue/defaults/noctalia/. /etc/skel/.config/noctalia/
+    python3 - <<'PY'
+import json
+from pathlib import Path
+
+path = Path("/etc/skel/.config/noctalia/settings.json")
+if path.exists():
+    data = json.loads(path.read_text(encoding="utf-8"))
+    data.setdefault("general", {})["showChangelogOnStartup"] = False
+    data.setdefault("general", {})["telemetryEnabled"] = False
+    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
     chmod -R a+rX /etc/skel/.config/noctalia
 fi
+
+cat >/etc/skel/.cache/noctalia/shell-state.json <<'EOF'
+{
+  "display": {},
+  "notificationsState": {
+    "lastSeenTs": 0
+  },
+  "changelogState": {
+    "lastSeenVersion": "v4.0.2"
+  },
+  "colorSchemesList": {
+    "schemes": [],
+    "timestamp": 0
+  },
+  "ui": {
+    "settingsSidebarExpanded": true
+  },
+  "telemetry": {
+    "instanceId": ""
+  },
+  "launcherUsage": {}
+}
+EOF
 
 install -D -m 0644 /etc/xdg/niri/config.kdl /etc/skel/.config/niri/config.kdl
 
