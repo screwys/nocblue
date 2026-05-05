@@ -21,17 +21,19 @@ install_efi gcdx64.efi
 
 ensure_plain_dir() {
     local path="${1}"
+    local mode="${2:-0755}"
 
     if [[ -L "${path}" || ( -e "${path}" && ! -d "${path}" ) ]]; then
         rm -f "${path}"
     fi
 
     mkdir -p "${path}"
-    chmod 0755 "${path}"
+    chmod "${mode}" "${path}"
 }
 
 ensure_plain_dir /mnt
 ensure_plain_dir /var/mnt
+ensure_plain_dir /var/tmp 1777
 
 ln -sfn Candy /usr/share/icons/candy-icons
 

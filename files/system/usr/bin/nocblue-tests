@@ -36,6 +36,9 @@ test -d /mnt
 test ! -L /mnt
 test -d /var/mnt
 test ! -L /var/mnt
+test -d /var/tmp
+test ! -L /var/tmp
+test "$(stat -c %a /var/tmp)" = "1777"
 python3 - <<'PY'
 import mako.template
 PY
