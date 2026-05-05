@@ -15,7 +15,6 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 mkdir -p \
     /etc/skel/.config/autostart \
-    /usr/local/bin \
     /usr/share/anaconda/post-scripts \
     /usr/share/glib-2.0/schemas \
     /var/lib/rpm-state \
@@ -34,7 +33,7 @@ bootc switch --mutate-in-place --transport registry ${install_image} || :
 %end
 EOF
 
-cat >/usr/local/bin/nocblue-liveinst-once <<'EOF'
+cat >/usr/bin/nocblue-liveinst-once <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -50,13 +49,13 @@ touch "${stamp}"
 sleep 2
 exec liveinst
 EOF
-chmod 0755 /usr/local/bin/nocblue-liveinst-once
+chmod 0755 /usr/bin/nocblue-liveinst-once
 
 cat >/etc/skel/.config/autostart/nocblue-liveinst.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
 Name=Install Nocblue
-Exec=/usr/local/bin/nocblue-liveinst-once
+Exec=/usr/bin/nocblue-liveinst-once
 X-GNOME-Autostart-enabled=true
 NoDisplay=true
 EOF
