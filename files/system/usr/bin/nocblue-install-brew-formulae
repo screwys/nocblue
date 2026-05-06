@@ -34,10 +34,22 @@ run_brew() {
 run_brew analytics off || true
 run_brew update || true
 
+failed=()
 while IFS= read -r formula; do
     [[ -z "${formula}" || "${formula}" =~ ^[[:space:]]*# ]] && continue
-    run_brew install "${formula}" || run_brew upgrade "${formula}" || true
+    if run_brew install "${formula}" || run_brew upgrade "${formula}"; then
+        :
+    else
+        failed+=("${formula}")
+    fi
 done < /usr/share/nocblue/manifests/brew-formulae.txt
+
+if [[ "${#failed[@]}" -gt 0 ]]; then
+    printf 'Homebrew baseline formula install failed for:\n' >&2
+    printf '  %s\n' "${failed[@]}" >&2
+    printf 'Leaving formula install unstamped so it retries later\n' >&2
+    exit 1
+fi
 
 run_brew upgrade || true
 touch "${stamp_dir}/brew-formulae.stamp"

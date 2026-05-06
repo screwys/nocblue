@@ -57,7 +57,8 @@ done
 
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
-test -x /usr/local/bin/pywalfox
+test -x /usr/bin/pywalfox
+test ! -e /usr/local/bin/pywalfox
 test -f /usr/lib/mozilla/native-messaging-hosts/pywalfox.json
 test -f /usr/lib64/firefox/distribution/policies.json
 test -f /usr/share/librewolf/distribution/policies.json
@@ -159,6 +160,10 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-icon-theme
+bash -n /usr/bin/nocblue-apply-user-defaults
+bash -n /usr/bin/nocblue-install-brew-formulae
+bash -n /usr/bin/nocblue-apply-adwsteamgtk
+bash -n /usr/bin/nocblue-sync-icon-theme
 grep -q 'user-defaults.v13.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
@@ -258,6 +263,7 @@ ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
 grep -q '^gh$' /usr/share/nocblue/manifests/brew-formulae.txt
+grep -q '^yt-dlp$' /usr/share/nocblue/manifests/brew-formulae.txt
 grep -q '^adb$' /usr/share/nocblue/manifests/brew-formulae.txt
 grep -q '^openjdk@17$' /usr/share/nocblue/manifests/brew-formulae.txt
 test -f /usr/share/nocblue/defaults/fish/config.fish

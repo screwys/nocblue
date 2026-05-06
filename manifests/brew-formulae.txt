@@ -10,6 +10,7 @@ fzf
 tree
 wget
 yq
+yt-dlp
 just
 direnv
 neovim
