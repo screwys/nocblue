@@ -133,6 +133,7 @@ firefox
 brave-origin-beta
 helium-bin
 librewolf
+mullvad-browser
 trivalent
 trivalent-selinux
 zed

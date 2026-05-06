@@ -113,7 +113,7 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"^(librewolf|firefox|org\.mozilla\.firefox|trivalent|brave-origin-beta|helium)$"
+    match app-id=r"^(librewolf|firefox|org\.mozilla\.firefox|mullvad-browser|Mullvad Browser|trivalent|brave-origin-beta|helium)$"
     open-maximized true
 }
 

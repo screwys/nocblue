@@ -15,10 +15,12 @@ modules:
   - type: dnf
     repos:
       files:
+        - niri.repo
         - terra.repo
         - secureblue-packages-fedora.repo
         - brave-browser-beta.repo
         - helium.repo
+        - mullvad.repo
         - https://repo.librewolf.net/librewolf.repo
         - https://repo.secureblue.dev/secureblue.repo
       nonfree: rpmfusion
@@ -153,6 +155,7 @@ modules:
         - brave-origin-beta
         - helium-bin
         - librewolf
+        - mullvad-browser
         - trivalent
         - trivalent-selinux
         - zed
