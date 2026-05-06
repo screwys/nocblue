@@ -4,7 +4,7 @@
 
 It also includes various patches for some apps. Steam has GTK theme; Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't use Gnome before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window.
 
-For installation, you can download the latest iso from GitHub actions. Alternatively, if you are on Fedora Silverblue/Universal Blue base (Bazzite/Aurora/Bluefin...) you can run:
+For installation, you need to be on Fedora Silverblue/Universal Blue base (Bazzite/Aurora/Bluefin...) and run:
 
 ```bash
 sudo bootc switch ghcr.io/screwys/nocblue:latest
