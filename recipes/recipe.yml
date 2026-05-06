@@ -49,6 +49,9 @@ modules:
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
+        - nm-connection-editor
+        - NetworkManager-tui
+        - network-manager-applet
         - bubblewrap
         - xdg-dbus-proxy
         - shim-x64
@@ -156,7 +159,7 @@ modules:
 
   - type: default-flatpaks
     configurations:
-      - notify: true
+      - notify: false
         scope: system
         install:
           - io.github.kolunmi.Bazaar
