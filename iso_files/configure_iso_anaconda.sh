@@ -13,6 +13,28 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
     btrfs-progs \
     gparted
 
+python3 - <<'PY'
+import gzip
+from pathlib import Path
+
+bundle = Path("/usr/share/cockpit/anaconda-webui/index.js.gz")
+marker = "about-modal-dropdown-item-network"
+condition = 'systemType==="BOOT_ISO"'
+replacement = 'systemType!=="__nocblue_hide_network__"'
+
+text = gzip.decompress(bundle.read_bytes()).decode("utf-8")
+network_item = text.find(marker)
+if network_item < 0:
+    raise SystemExit(f"could not find {marker} in {bundle}")
+
+condition_pos = text.rfind(condition, 0, network_item)
+if condition_pos < 0 or network_item - condition_pos > 400:
+    raise SystemExit("could not find the Anaconda WebUI network menu condition near the network item")
+
+text = text[:condition_pos] + replacement + text[condition_pos + len(condition):]
+bundle.write_bytes(gzip.compress(text.encode("utf-8"), mtime=0))
+PY
+
 mkdir -p \
     /etc/anaconda/conf.d \
     /etc/skel/.cache/noctalia \
