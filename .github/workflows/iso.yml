@@ -112,7 +112,7 @@ jobs:
           xorriso -osirrox on \
             -indev "${{ steps.build.outputs.iso-dest }}" \
             -extract /LiveOS/squashfs.img iso-inspect/squashfs.img
-          unsquashfs -q -d rootfs-inspect iso-inspect/squashfs.img var/lib/flatpak
+          unsquashfs -q -no-xattrs -d rootfs-inspect iso-inspect/squashfs.img var/lib/flatpak
 
           arch="$(uname -m)"
           missing=()
