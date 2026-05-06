@@ -19,7 +19,7 @@ rollback:
     sudo rpm-ostree rollback
 
 flatpaks:
-    bluebuild-flatpak-manager || true
+    flatpak list --system --app
 
 flatpak-icon-fixes:
     nocblue-fix-flatpak-icons

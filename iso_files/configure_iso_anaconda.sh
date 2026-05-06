@@ -11,7 +11,8 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
     libblockdev-dm \
     libblockdev-lvm \
     btrfs-progs \
-    gparted
+    gparted \
+    rsync
 
 mkdir -p \
     /etc/anaconda/conf.d \
@@ -34,8 +35,27 @@ fi
 cat >/usr/share/anaconda/interactive-defaults.ks <<EOF
 ostreecontainer --url=${install_image} --transport=containers-storage --no-signature-verification
 
+%include /usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks
+%include /usr/share/anaconda/post-scripts/nocblue-flatpak-restore-selinux-labels.ks
+
 %post --log=/tmp/nocblue-bootc-origin.log
 bootc switch --mutate-in-place --transport registry ${install_image} || :
+%end
+EOF
+
+cat >/usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks <<'EOF'
+%post --erroronfail --nochroot --log=/tmp/nocblue-install-flatpaks.log
+deployment="$(ostree rev-parse --repo=/mnt/sysimage/ostree/repo ostree/0/1/0)"
+target="/mnt/sysimage/ostree/deploy/default/deploy/${deployment}.0/var/lib"
+mkdir -p "${target}"
+rsync -aAXUHKP --open-noatime /var/lib/flatpak "${target}/"
+sync "${target}"
+%end
+EOF
+
+cat >/usr/share/anaconda/post-scripts/nocblue-flatpak-restore-selinux-labels.ks <<'EOF'
+%post --erroronfail --log=/tmp/nocblue-flatpak-restore-selinux-labels.log
+chcon -R -t var_lib_t /var/lib/flatpak
 %end
 EOF
 
@@ -245,6 +265,24 @@ sed -i 's@^\[Desktop Entry\]$@[Desktop Entry]\nHidden=true@' \
     /usr/share/anaconda/gnome/org.fedoraproject.welcome-screen.desktop 2>/dev/null || :
 
 flatpak config --system --set languages "*" 2>/dev/null || :
+if [[ -f /usr/share/nocblue/manifests/flatpaks.txt ]]; then
+    while IFS= read -r flatpak_ref; do
+        [[ -z "${flatpak_ref}" || "${flatpak_ref}" =~ ^# ]] && continue
+        flatpak info --system "${flatpak_ref}" >/dev/null
+    done < /usr/share/nocblue/manifests/flatpaks.txt
+fi
+
+cat >/etc/systemd/system/var-lib-flatpak.mount <<'EOF'
+[Mount]
+Type=none
+What=/var/lib/flatpak
+Where=/var/lib/flatpak
+Options=bind,ro
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable var-lib-flatpak.mount >/dev/null 2>&1 || :
 
 system_units=(
     bootc-fetch-apply-updates.timer
@@ -264,7 +302,6 @@ user_units=(
     nocblue-adwsteamgtk.timer
     nocblue-flatpak-icon-fixes.service
     nocblue-icon-theme-sync.timer
-    nocblue-noctalia-theme.service
     nocblue-user-defaults.service
 )
 

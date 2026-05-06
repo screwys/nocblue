@@ -49,8 +49,13 @@ jobs:
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
           grep -q -- "iso-dest: nocblue-44.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
+          grep -q -- "rsync" iso_files/configure_iso_anaconda.sh
           grep -q -- 'install_image="ghcr.io/screwys/nocblue:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
+          grep -q -- '%include /usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'rsync -aAXUHKP --open-noatime /var/lib/flatpak' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'flatpak info --system "${flatpak_ref}"' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'var-lib-flatpak.mount' iso_files/configure_iso_anaconda.sh
           grep -q -- '/usr/lib64/firefox/distribution/policies.json' iso_files/configure_iso_anaconda.sh
           grep -q -- '"SearchEngines"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'DuckDuckGo' iso_files/configure_iso_anaconda.sh
@@ -77,6 +82,8 @@ jobs:
           forbidden_payload='--installer''-payload-ref='
           ! grep -q -- "${forbidden_type}" .github/workflows/iso.yml
           ! grep -q -- "${forbidden_payload}" .github/workflows/iso.yml
+          ! grep -q -- 'type: default-flatpaks' recipes/recipe.yml
+          ! rg -n 'nocblue-noctalia-theme' recipes files/system/usr/lib/systemd/user files/system/usr/bin/nocblue-apply-user-defaults files/system/usr/share/nocblue/njust/Justfile
 
       - name: log in to ghcr
         run: |

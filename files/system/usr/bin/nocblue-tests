@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-rpm -q ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui network-manager-applet >/dev/null
+rpm -q ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet >/dev/null
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
 rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
@@ -157,7 +157,7 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-icon-theme
-grep -q 'user-defaults.v11.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v12.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -172,6 +172,9 @@ grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
+! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
+test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
+test ! -e /usr/bin/nocblue-apply-noctalia-theme
 test -x /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'flatpak run --system io.github.Foldex.AdwSteamGtk' /usr/bin/nocblue-apply-adwsteamgtk
 ! grep -q 'flatpak install --user' /usr/bin/nocblue-apply-adwsteamgtk

@@ -1,7 +1,7 @@
 [Unit]
 Description=Apply the nocblue Steam GTK skin
-After=network-online.target graphical-session.target nocblue-user-defaults.service nocblue-noctalia-theme.service
-Wants=network-online.target nocblue-noctalia-theme.service
+After=network-online.target graphical-session.target nocblue-user-defaults.service
+Wants=network-online.target
 ConditionPathExists=!%h/.local/state/nocblue/adwsteamgtk.v3.done
 
 [Service]

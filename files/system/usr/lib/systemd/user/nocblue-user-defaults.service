@@ -1,7 +1,7 @@
 [Unit]
 Description=Apply nocblue user defaults
 Before=graphical-session-pre.target
-ConditionPathExists=!%h/.local/state/nocblue/user-defaults.v11.done
+ConditionPathExists=!%h/.local/state/nocblue/user-defaults.v12.done
 
 [Service]
 Type=oneshot
