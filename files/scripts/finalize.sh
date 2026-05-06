@@ -37,9 +37,5 @@ ensure_plain_dir /var/tmp 1777
 
 ln -sfn Candy /usr/share/icons/candy-icons
 
-if [[ -f /usr/share/applications/firefox.desktop ]]; then
-    ln -sfn firefox.desktop /usr/share/applications/org.mozilla.firefox.desktop
-fi
-
 find /etc/yum.repos.d -name '*.repo' -type f -print0 \
     | xargs -0 -r sed -i 's/^countme=1$/countme=0/'

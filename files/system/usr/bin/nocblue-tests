@@ -162,8 +162,7 @@ test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
 grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
-test -L /usr/share/applications/org.mozilla.firefox.desktop
-test "$(readlink /usr/share/applications/org.mozilla.firefox.desktop)" = "firefox.desktop"
+test -f /usr/share/applications/org.mozilla.firefox.desktop
 test -f /usr/lib/systemd/system/brew-setup.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
