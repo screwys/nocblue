@@ -102,6 +102,58 @@ jobs:
           builder-distro: fedora
           iso-dest: nocblue-44.iso
 
+      - name: verify iso flatpaks
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends squashfs-tools xorriso
+
+          mkdir -p iso-inspect rootfs-inspect
+          xorriso -osirrox on \
+            -indev "${{ steps.build.outputs.iso-dest }}" \
+            -extract /LiveOS/squashfs.img iso-inspect/squashfs.img
+          unsquashfs -q -d rootfs-inspect iso-inspect/squashfs.img var/lib/flatpak
+
+          arch="$(uname -m)"
+          missing=()
+
+          flatpak_ref_exists() {
+            local ref="$1"
+            local kind=""
+            local app_id=""
+            local ref_arch="${arch}"
+            local branch="stable"
+
+            if [[ "${ref}" == app/* || "${ref}" == runtime/* ]]; then
+              IFS=/ read -r kind app_id ref_arch branch <<< "${ref}"
+              test -e "rootfs-inspect/var/lib/flatpak/${kind}/${app_id}/${ref_arch}/${branch}/active"
+              return
+            fi
+
+            if [[ "${ref}" == *//* ]]; then
+              app_id="${ref%%//*}"
+              branch="${ref##*//}"
+            else
+              app_id="${ref}"
+            fi
+
+            test -e "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/${branch}/active" \
+              || test -e "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/${branch}/active"
+          }
+
+          while IFS= read -r flatpak_ref; do
+            [[ -z "${flatpak_ref}" || "${flatpak_ref}" =~ ^# ]] && continue
+            if ! flatpak_ref_exists "${flatpak_ref}"; then
+              missing+=("${flatpak_ref}")
+            fi
+          done < files/system/usr/share/nocblue/manifests/flatpaks.txt
+
+          if [[ "${#missing[@]}" -gt 0 ]]; then
+            printf 'missing Flatpaks from ISO rootfs:\n' >&2
+            printf '  %s\n' "${missing[@]}" >&2
+            exit 1
+          fi
+
       - name: checksum iso
         run: |
           mkdir -p output
