@@ -44,7 +44,7 @@ modules:
         - fzf
         - tree
         - curl
-        - wget1-wget
+        - wget2-wget
         - unzip
         - yq
         - yt-dlp
