@@ -22,6 +22,8 @@
             "librewolf",
             "org.mozilla.firefox",
             "trivalent",
+            "com.brave.Origin.beta",
+            "helium",
             "dev.zed.Zed",
             "org.gnome.Nautilus",
             "io.github.kolunmi.Bazaar",
@@ -32,8 +34,7 @@
             "com.valvesoftware.Steam",
             "net.lutris.Lutris",
             "dev.vencord.Vesktop",
-            "com.mitchellh.ghostty",
-            "torbrowser"
+            "com.mitchellh.ghostty"
         ],
         "position": "center",
         "screenshotAnnotationTool": "",

@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent zed torbrowser-launcher magick tesseract ujust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf trivalent brave-origin-beta helium zed magick tesseract ujust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip lazygit nocblue-setup-android-sdk nocblue-ocr-japanese; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-rpm -q ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet >/dev/null
+rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget1-wget unzip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet >/dev/null
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
 rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
@@ -47,7 +47,7 @@ python3 - <<'PY'
 import mako.template
 PY
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
-for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit; do
+for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
@@ -63,6 +63,12 @@ test -f /usr/lib/mozilla/native-messaging-hosts/pywalfox.json
 test -f /usr/lib64/firefox/distribution/policies.json
 test -f /usr/share/librewolf/distribution/policies.json
 test -f /etc/trivalent/policies/managed/nocblue-search.json
+test -f /etc/trivalent/policies/managed/nocblue-extensions.json
+test -f /etc/trivalent/master_preferences
+test -f /etc/trivalent/trivalent.conf.d/20-nocblue.conf
+test -f /etc/brave/policies/managed/nocblue-extensions.json
+test -f /etc/chromium/policies/managed/nocblue-extensions.json
+test -f /etc/helium/policies/managed/nocblue-extensions.json
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -70,6 +76,11 @@ from pathlib import Path
 firefox = json.loads(Path("/usr/lib64/firefox/distribution/policies.json").read_text(encoding="utf-8"))
 librewolf = json.loads(Path("/usr/share/librewolf/distribution/policies.json").read_text(encoding="utf-8"))
 trivalent = json.loads(Path("/etc/trivalent/policies/managed/nocblue-search.json").read_text(encoding="utf-8"))
+trivalent_extensions = json.loads(Path("/etc/trivalent/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
+trivalent_preferences = json.loads(Path("/etc/trivalent/master_preferences").read_text(encoding="utf-8"))
+brave_extensions = json.loads(Path("/etc/brave/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
+chromium_extensions = json.loads(Path("/etc/chromium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
+helium_extensions = json.loads(Path("/etc/helium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 
 shared = {
@@ -77,6 +88,9 @@ shared = {
     "78272b6fa58f4a1abaac99321d503a20@proton.me": "proton-pass",
     "vpn@proton.ch": "proton-vpn-firefox-extension",
     "pywalfox@frewacom.org": "pywalfox",
+    "search@kagi.com": "kagi-search-for-firefox",
+    "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": "styl-us",
+    "firefox@tampermonkey.net": "tampermonkey",
 }
 
 firefox_settings = firefox["policies"]["ExtensionSettings"]
@@ -112,11 +126,35 @@ assert librewolf["policies"]["DisableTelemetry"] is True
 assert trivalent["DefaultSearchProviderEnabled"] is True
 assert trivalent["DefaultSearchProviderName"] == "DuckDuckGo"
 assert trivalent["DefaultSearchProviderSearchURL"] == "https://duckduckgo.com/?q={searchTerms}"
+assert trivalent_preferences["extensions"]["disabled"] is False
+
+chromium_ids = {
+    "ghmbeldphafepmbegfdlkpapadhbakde",
+    "jplgfhpmjnbigmhklmmbgecoobifkmpa",
+    "ldpochfccmkkmhdbclfhpagapcfdljkj",
+    "eimadpbcbfnmbkopoojfekhnkhdbieeh",
+    "clngdbkpkpeebahjckkjfobafhncgmne",
+    "dhdgffkkebhmkfjojejmpbldmpobfkfo",
+}
+for policy in (brave_extensions, chromium_extensions, helium_extensions):
+    settings = policy["ExtensionSettings"]
+    assert set(settings) == chromium_ids
+    assert "ExtensionInstallForcelist" not in policy
+    for extension_id in chromium_ids:
+        assert settings[extension_id]["installation_mode"] == "normal_installed"
+        assert settings[extension_id]["update_url"] == "https://clients2.google.com/service/update2/crx"
+
+trivalent_policy = trivalent_extensions["ExtensionSettings"]
+assert set(trivalent_policy) == {"ghmbeldphafepmbegfdlkpapadhbakde"}
+assert trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]["installation_mode"] == "normal_installed"
 
 assert pywalfox["name"] == "pywalfox"
 assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]
 assert pywalfox["path"].endswith("/pywalfox/bin/main.sh")
 PY
+grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
+grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
+grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
@@ -151,7 +189,6 @@ grep -q '^ipv6.ip6-privacy=2$' /usr/lib/NetworkManager/conf.d/40-nocblue-privacy
 grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
 grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
-test -f /usr/lib/systemd/system/nocblue-brew-formulae.service
 test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
@@ -160,10 +197,16 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-icon-theme
+test -x /usr/bin/nocblue-setup-android-sdk
+test -x /usr/bin/nocblue-ocr-japanese
+test ! -e /usr/lib/systemd/system/nocblue-brew-formulae.service
+test ! -e /usr/bin/nocblue-install-brew-formulae
+test ! -e /usr/share/nocblue/manifests/brew-formulae.txt
 bash -n /usr/bin/nocblue-apply-user-defaults
-bash -n /usr/bin/nocblue-install-brew-formulae
 bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-icon-theme
+bash -n /usr/bin/nocblue-setup-android-sdk
+bash -n /usr/bin/nocblue-ocr-japanese
 grep -q 'user-defaults.v13.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
@@ -178,7 +221,7 @@ grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
-grep -q 'normalize_noctalia_firefox_app_id' /usr/bin/nocblue-apply-user-defaults
+grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -258,14 +301,12 @@ grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-4.0/settings
 ! grep -q '^gtk-application-prefer-dark-theme' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
 ! grep -q '^gtk-icon-theme-name=' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
 grep -q '@define-color window_bg_color #1e1e2e' /usr/share/nocblue/defaults/gtk-4.0/noctalia.css
-test -f /usr/share/nocblue/manifests/brew-formulae.txt
+grep -q '^export ANDROID_HOME=' /etc/profile.d/nocblue.sh
+grep -q '^export ANDROID_SDK_ROOT=' /etc/profile.d/nocblue.sh
 ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
-grep -q '^gh$' /usr/share/nocblue/manifests/brew-formulae.txt
-grep -q '^yt-dlp$' /usr/share/nocblue/manifests/brew-formulae.txt
-grep -q '^adb$' /usr/share/nocblue/manifests/brew-formulae.txt
-grep -q '^openjdk@17$' /usr/share/nocblue/manifests/brew-formulae.txt
+ujust --list | grep -q 'android-sdk'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
@@ -288,8 +329,12 @@ settings = json.loads(Path("/usr/share/nocblue/defaults/noctalia/settings.json")
 assert settings["colorSchemes"]["predefinedScheme"] == "Catppuccin Mocha Red"
 assert "firefox" not in settings["appLauncher"]["pinnedApps"]
 assert "firefox" not in settings["dock"]["pinnedApps"]
+assert "torbrowser" not in settings["appLauncher"]["pinnedApps"]
+assert "torbrowser" not in settings["dock"]["pinnedApps"]
 assert "org.mozilla.firefox" in settings["appLauncher"]["pinnedApps"]
 assert "org.mozilla.firefox" in settings["dock"]["pinnedApps"]
+assert "com.brave.Origin.beta" in settings["appLauncher"]["pinnedApps"]
+assert "helium" in settings["appLauncher"]["pinnedApps"]
 bar = settings["bar"]
 assert bar["monitors"] == []
 assert bar["screenOverrides"] == []
@@ -354,6 +399,18 @@ grep -q '^net.davidotek.pupgui2$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.freedesktop.Platform.VulkanLayer.MangoHud//' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.freedesktop.Platform.VulkanLayer.gamescope//' /usr/share/nocblue/manifests/flatpaks.txt
+
+grep -q 'PYTHON_KEYRING_BACKEND "keyring.backends.SecretService.Keyring"' /etc/xdg/niri/config.kdl
+grep -q 'BROWSER "flatpak run io.github.alyraffauf.Switchyard"' /etc/xdg/niri/config.kdl
+grep -q 'PYTHONPATH "/usr/lib/python3.14/site-packages"' /etc/xdg/niri/config.kdl
+grep -q 'blur {' /etc/xdg/niri/config.kdl
+grep -q 'geometry-corner-radius 16' /etc/xdg/niri/config.kdl
+grep -q 'draw-border-with-background false' /etc/xdg/niri/config.kdl
+grep -q 'background-effect' /etc/xdg/niri/config.kdl
+grep -q 'title=r"^notificationtoasts_' /etc/xdg/niri/config.kdl
+grep -q 'XF86Launch5 hotkey-overlay-title="M2: OCR Japanese"' /etc/xdg/niri/config.kdl
+grep -q 'nocblue-ocr-japanese' /etc/xdg/niri/config.kdl
+grep -q 'toggle-column-tabbed-display' /etc/xdg/niri/config.kdl
 
 if command -v niri >/dev/null 2>&1; then
     niri validate -c /etc/xdg/niri/config.kdl

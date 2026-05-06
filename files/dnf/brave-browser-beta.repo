@@ -1,0 +1,7 @@
+[brave-browser-beta]
+name=Brave Browser Beta
+baseurl=https://brave-browser-rpm-beta.s3.brave.com/$basearch
+enabled=1
+gpgcheck=1
+gpgkey=https://brave-browser-rpm-beta.s3.brave.com/brave-core-beta.asc
+enabled_metadata=1

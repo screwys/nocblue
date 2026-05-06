@@ -17,6 +17,8 @@ modules:
       files:
         - terra.repo
         - secureblue-packages-fedora.repo
+        - brave-browser-beta.repo
+        - helium.repo
         - https://repo.librewolf.net/librewolf.repo
         - https://repo.secureblue.dev/secureblue.repo
       nonfree: rpmfusion
@@ -30,6 +32,45 @@ modules:
         - fish
         - fastfetch
         - just
+        - gh
+        - jq
+        - nodejs24-bin
+        - nodejs24-npm-bin
+        - pnpm
+        - ripgrep
+        - fd-find
+        - bat
+        - eza
+        - fzf
+        - tree
+        - curl
+        - wget1-wget
+        - unzip
+        - yq
+        - yt-dlp
+        - direnv
+        - neovim
+        - socat
+        - zoxide
+        - btop
+        - duf
+        - du-dust
+        - hyperfine
+        - tokei
+        - ShellCheck
+        - shfmt
+        - uv
+        - android-tools
+        - java-latest-openjdk-devel
+        - golang
+        - rust
+        - cargo
+        - gcc
+        - gcc-c++
+        - make
+        - cmake
+        - pkgconf-pkg-config
+        - openssl-devel
         - gnome-keyring
         - dbus-tools
         - polkit
@@ -109,11 +150,12 @@ modules:
         - vulkan-tools
         - vkBasalt
         - firefox
+        - brave-origin-beta
+        - helium-bin
         - librewolf
         - trivalent
         - trivalent-selinux
         - zed
-        - torbrowser-launcher
         - libappindicator-gtk3
     remove:
       auto-remove: false
@@ -148,6 +190,7 @@ modules:
   - type: script
     scripts:
       - stage-noctalia-plugins.sh
+      - install-lazygit.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
       - install-protonvpn.sh
@@ -161,7 +204,6 @@ modules:
   - type: systemd
     system:
       enabled:
-        - nocblue-brew-formulae.service
         - nocblue-flatpak-overrides.service
         - nocblue-hardened-malloc-flatpaks.service
         - nocblue-session-defaults.service

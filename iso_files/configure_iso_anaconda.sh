@@ -288,7 +288,6 @@ system_units=(
     bootc-fetch-apply-updates.timer
     flatpak-system-update.timer
     input-remapper.service
-    nocblue-brew-formulae.service
     nocblue-flatpak-overrides.service
     nocblue-hardened-malloc-flatpaks.service
     nocblue-session-defaults.service

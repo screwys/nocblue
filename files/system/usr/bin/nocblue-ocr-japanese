@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}"' EXIT
+
+geometry="$(slurp)" || exit 0
+image_path="${tmpdir}/ocr.png"
+text_path="${tmpdir}/ocr.txt"
+
+grim -g "${geometry}" "${image_path}"
+tesseract "${image_path}" "${tmpdir}/ocr" -l jpn >/dev/null 2>&1 || true
+
+if [[ -s "${text_path}" ]]; then
+    wl-copy < "${text_path}"
+    notify-send "OCR Japanese" "Copied text to clipboard"
+else
+    notify-send "OCR Japanese" "No text found"
+fi

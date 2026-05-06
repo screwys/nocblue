@@ -362,7 +362,7 @@ if data.get("theme") != wanted:
 PY
 }
 
-normalize_noctalia_firefox_app_id() {
+normalize_noctalia_browser_app_ids() {
     local settings_path="${HOME}/.config/noctalia/settings.json"
     [[ -f "${settings_path}" ]] || return 0
 
@@ -382,7 +382,19 @@ for section in ("appLauncher", "dock"):
     apps = data.get(section, {}).get("pinnedApps")
     if not isinstance(apps, list):
         continue
-    normalized = ["org.mozilla.firefox" if app == "firefox" else app for app in apps]
+    normalized = []
+    for app in apps:
+        if app == "firefox":
+            app = "org.mozilla.firefox"
+        if app == "torbrowser":
+            continue
+        normalized.append(app)
+    if section == "appLauncher" and "trivalent" in normalized:
+        trivalent_index = normalized.index("trivalent")
+        for browser in ("com.brave.Origin.beta", "helium"):
+            if browser not in normalized:
+                trivalent_index += 1
+                normalized.insert(trivalent_index, browser)
     if normalized != apps:
         data[section]["pinnedApps"] = normalized
         changed = True
@@ -566,7 +578,7 @@ if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settin
     install -D -m 0644 "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json"
     noctalia_settings_changed=1
 fi
-normalize_noctalia_firefox_app_id
+normalize_noctalia_browser_app_ids
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins
 copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"
 for noctalia_template in "${defaults_dir}"/noctalia/templates/*; do

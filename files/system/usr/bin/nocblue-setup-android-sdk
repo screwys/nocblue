@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+android_home="${ANDROID_HOME:-${HOME}/Android/Sdk}"
+android_api="${1:-36}"
+build_tools="${ANDROID_BUILD_TOOLS:-36.0.0}"
+repo_url="https://dl.google.com/android/repository/repository2-1.xml"
+repo_base="https://dl.google.com/android/repository"
+tmpdir="$(mktemp -d)"
+trap 'rm -rf "${tmpdir}"' EXIT
+
+install -d -m 0755 "${android_home}"
+curl -fsSL -o "${tmpdir}/repository2-1.xml" "${repo_url}"
+
+cmdline_zip="$(
+    python3 - "${tmpdir}/repository2-1.xml" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+
+root = ET.parse(sys.argv[1]).getroot()
+for package in root.iter():
+    if package.tag.endswith("remotePackage") and package.attrib.get("path") == "cmdline-tools;latest":
+        for archive in package.iter():
+            if not archive.tag.endswith("archive"):
+                continue
+            host_os = None
+            url = None
+            for child in archive.iter():
+                if child.tag.endswith("host-os"):
+                    host_os = child.text
+                elif child.tag.endswith("url"):
+                    url = child.text
+            if host_os == "linux" and url:
+                print(url)
+                raise SystemExit(0)
+raise SystemExit("linux command line tools package not found")
+PY
+)"
+
+curl -fL -o "${tmpdir}/cmdline-tools.zip" "${repo_base}/${cmdline_zip}"
+rm -rf "${android_home}/cmdline-tools/latest"
+install -d -m 0755 "${android_home}/cmdline-tools"
+unzip -q "${tmpdir}/cmdline-tools.zip" -d "${tmpdir}/cmdline-tools"
+mv "${tmpdir}/cmdline-tools/cmdline-tools" "${android_home}/cmdline-tools/latest"
+
+sdkmanager="${android_home}/cmdline-tools/latest/bin/sdkmanager"
+"${sdkmanager}" --sdk_root="${android_home}" --licenses
+"${sdkmanager}" --sdk_root="${android_home}" \
+    "platform-tools" \
+    "platforms;android-${android_api}" \
+    "build-tools;${build_tools}"
+
+printf 'android sdk installed at %s\n' "${android_home}"

@@ -8,7 +8,7 @@ status:
 update:
     sudo bootc upgrade
     flatpak update --system -y
-    sudo nocblue-install-brew-formulae || true
+    if command -v brew >/dev/null 2>&1; then brew update && brew upgrade; fi
 
 auto-update-status:
     systemctl status bootc-fetch-apply-updates.timer --no-pager || true
@@ -28,7 +28,11 @@ flatpak-overrides:
     sudo nocblue-apply-flatpak-overrides
 
 brew:
-    sudo nocblue-install-brew-formulae
+    brew update
+    brew upgrade
+
+android-sdk api="36" build_tools="36.0.0":
+    ANDROID_BUILD_TOOLS="{{build_tools}}" nocblue-setup-android-sdk "{{api}}"
 
 secureboot-check:
     mokutil --sb-state || true

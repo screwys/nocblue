@@ -7,8 +7,11 @@ screenshot-path null
 environment {
     XCURSOR_SIZE "24"
     XCURSOR_THEME "default"
+    PYTHON_KEYRING_BACKEND "keyring.backends.SecretService.Keyring"
+    BROWSER "flatpak run io.github.alyraffauf.Switchyard"
     QS_ICON_THEME "candy-icons"
     SHELL "/bin/fish"
+    PYTHONPATH "/usr/lib/python3.14/site-packages"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
     QT_QPA_PLATFORM "wayland"
     QT_QPA_PLATFORMTHEME "qt6ct"
@@ -84,6 +87,13 @@ layout {
     }
 }
 
+blur {
+    passes 3
+    offset 3.0
+    noise 0.02
+    saturation 1.5
+}
+
 layer-rule {
     match namespace="^noctalia-wallpaper.*"
     place-within-backdrop true
@@ -95,13 +105,51 @@ window-rule {
 }
 
 window-rule {
-    match app-id=r"^(librewolf|firefox|trivalent)$"
+    match app-id="org.gnome.Nautilus" is-floating=true
+    default-column-width { fixed 1500; }
+    default-window-height { fixed 1200; }
+    min-width 1500
+    min-height 1200
+}
+
+window-rule {
+    match app-id=r"^(librewolf|firefox|org\.mozilla\.firefox|trivalent|brave-origin-beta|helium)$"
     open-maximized true
 }
 
 window-rule {
-    geometry-corner-radius 12
+    match app-id=r"^org\.gnome\.Fractal$"
+    default-column-width { proportion 0.5; }
+    default-window-height { proportion 1.0; }
+    default-floating-position x=0 y=0 relative-to="right"
+    open-floating true
+    block-out-from "screencast"
+}
+
+window-rule {
+    match app-id="steam" title=r"^notificationtoasts_\d+_desktop$"
+    default-floating-position x=0 y=0 relative-to="bottom-right"
+    open-focused false
+}
+
+window-rule {
+    geometry-corner-radius 16
     clip-to-geometry true
+    draw-border-with-background false
+    opacity 0.9
+
+    background-effect {
+        blur true
+        xray false
+    }
+}
+
+window-rule {
+    match is-focused=true
+
+    background-effect {
+        blur true
+    }
 }
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "DISPLAY" "XDG_CURRENT_DESKTOP" "XDG_SESSION_TYPE" "NIRI_SOCKET"
@@ -112,10 +160,10 @@ binds {
     Mod+Shift+Escape { show-hotkey-overlay; }
 
     Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty"; }
-    Mod+Ctrl+Return hotkey-overlay-title="Open App Launcher: Noctalia" { spawn "sh" "-c" "qs -c noctalia-shell ipc call launcher toggle"; }
+    Mod+Ctrl+Return hotkey-overlay-title="Open App Launcher: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
     Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "librewolf"; }
-    Mod+E hotkey-overlay-title="Open Files: Nautilus" { spawn "nautilus"; }
-    Mod+Alt+L hotkey-overlay-title="Lock Screen: Noctalia" { spawn "sh" "-c" "qs -c noctalia-shell ipc call lockScreen lock"; }
+    Mod+Alt+L hotkey-overlay-title="Lock Screen: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call lockScreen lock"; }
+    Mod+E hotkey-overlay-title="File Manager: Nautilus" { spawn "nautilus"; }
 
     Mod+Q { close-window; }
 
@@ -136,6 +184,23 @@ binds {
     Mod+Ctrl+K     { move-window-up; }
     Mod+Ctrl+Down  { move-window-down; }
     Mod+Ctrl+J     { move-window-down; }
+
+    Mod+Home      { focus-column-first; }
+    Mod+End       { focus-column-last; }
+    Mod+Ctrl+Home { move-column-to-first; }
+    Mod+Ctrl+End  { move-column-to-last; }
+
+    Mod+Shift+Left       { focus-monitor-left; }
+    Mod+Shift+Right      { focus-monitor-right; }
+    Mod+Shift+Ctrl+Left  { move-column-to-monitor-left; }
+    Mod+Shift+Ctrl+Right { move-column-to-monitor-right; }
+    Mod+Shift+Ctrl+Up    { move-column-to-monitor-up; }
+    Mod+Shift+Ctrl+Down  { move-column-to-monitor-down; }
+
+    Mod+WheelScrollDown cooldown-ms=150 { focus-workspace-down; }
+    Mod+Shift+Down cooldown-ms=150 { focus-workspace-down; }
+    Mod+WheelScrollUp cooldown-ms=150 { focus-workspace-up; }
+    Mod+Shift+Up cooldown-ms=150 { focus-workspace-up; }
 
     Mod+1 { focus-workspace 1; }
     Mod+2 { focus-workspace 2; }
@@ -158,23 +223,37 @@ binds {
     Mod+Ctrl+9 { move-column-to-workspace 9; }
 
     Mod+Tab { focus-workspace-previous; }
-    Mod+Space { toggle-window-floating; }
-    Mod+F { fullscreen-window; }
-    Mod+R { switch-preset-column-width; }
-    Mod+Shift+R { switch-preset-window-height; }
+    Mod+F { maximize-column; }
+    Mod+C { center-column; }
+    Mod+Minus { set-column-width "-10%"; }
+    Mod+Equal { set-column-width "+10%"; }
+    Mod+T { toggle-window-floating; }
+    Mod+Ctrl+F { fullscreen-window; }
+    Mod+W { toggle-column-tabbed-display; }
+
+    Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
+    Ctrl+Alt+Delete { quit; }
+    Mod+Shift+E { quit; }
+    Mod+Shift+P { power-off-monitors; }
+    Mod+O repeat=false { toggle-overview; }
 
     Mod+Shift+S hotkey-overlay-title="Screenshot Area" { spawn "sh" "-c" "grim -g \"$(slurp)\" - | wl-copy"; }
-    Print hotkey-overlay-title="Screenshot Screen" { screenshot-screen; }
+    XF86Tools hotkey-overlay-title="M1: Launcher" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
+    XF86Launch5 hotkey-overlay-title="M2: OCR Japanese" { spawn "/usr/bin/nocblue-ocr-japanese"; }
+    XF86Launch6 hotkey-overlay-title="M3: Record Toggle" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit recordToggle"; }
+    XF86Launch7 hotkey-overlay-title="M4: Mission Center" { spawn "flatpak" "run" "io.missioncenter.MissionCenter"; }
+    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty"; }
+    XF86Launch9 hotkey-overlay-title="M6: Session Menu" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
+    Print hotkey-overlay-title="Screenshot Region" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit annotate"; }
 
-    XF86AudioRaiseVolume allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call volume increase"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call volume decrease"; }
-    XF86AudioMute allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call volume muteOutput"; }
-    XF86AudioMicMute allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call volume muteInput"; }
-    XF86AudioPlay allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call media playPause"; }
-    XF86AudioPrev allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call media previous"; }
-    XF86AudioNext allow-when-locked=true { spawn "sh" "-c" "qs -c noctalia-shell ipc call media next"; }
-
-    Mod+Shift+E { quit; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume increase"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume decrease"; }
+    XF86AudioMute allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteOutput"; }
+    XF86AudioMicMute allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteInput"; }
+    XF86AudioPlay allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media playPause"; }
+    XF86AudioPrev allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media previous"; }
+    XF86AudioNext allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media next"; }
+    XF86AudioStop allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media stop"; }
 }
 
 hotkey-overlay {
