@@ -122,7 +122,7 @@ jobs:
             local kind=""
             local app_id=""
             local ref_arch="${arch}"
-            local branch="stable"
+            local branch=""
 
             if [[ "${ref}" == app/* || "${ref}" == runtime/* ]]; then
               IFS=/ read -r kind app_id ref_arch branch <<< "${ref}"
@@ -137,8 +137,14 @@ jobs:
               app_id="${ref}"
             fi
 
-            test -e "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/${branch}/active" \
-              || test -e "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/${branch}/active"
+            if [[ -n "${branch}" ]]; then
+              test -e "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/${branch}/active" \
+                || test -e "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/${branch}/active"
+              return
+            fi
+
+            compgen -G "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/*/active" >/dev/null \
+              || compgen -G "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/*/active" >/dev/null
           }
 
           while IFS= read -r flatpak_ref; do
