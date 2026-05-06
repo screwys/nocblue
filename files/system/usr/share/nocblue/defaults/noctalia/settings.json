@@ -237,12 +237,6 @@
                     ]
                 },
                 {
-                    "displayMode": "alwaysHide",
-                    "iconColor": "none",
-                    "id": "VPN",
-                    "textColor": "none"
-                },
-                {
                     "compactMode": true,
                     "diskPath": "/",
                     "iconColor": "tertiary",

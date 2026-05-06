@@ -13,28 +13,6 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
     btrfs-progs \
     gparted
 
-python3 - <<'PY'
-import gzip
-from pathlib import Path
-
-bundle = Path("/usr/share/cockpit/anaconda-webui/index.js.gz")
-marker = "about-modal-dropdown-item-network"
-condition = 'systemType==="BOOT_ISO"'
-replacement = 'systemType!=="__nocblue_hide_network__"'
-
-text = gzip.decompress(bundle.read_bytes()).decode("utf-8")
-network_item = text.find(marker)
-if network_item < 0:
-    raise SystemExit(f"could not find {marker} in {bundle}")
-
-condition_pos = text.rfind(condition, 0, network_item)
-if condition_pos < 0 or network_item - condition_pos > 400:
-    raise SystemExit("could not find the Anaconda WebUI network menu condition near the network item")
-
-text = text[:condition_pos] + replacement + text[condition_pos + len(condition):]
-bundle.write_bytes(gzip.compress(text.encode("utf-8"), mtime=0))
-PY
-
 mkdir -p \
     /etc/anaconda/conf.d \
     /etc/skel/.cache/noctalia \
@@ -172,6 +150,34 @@ if path.exists():
     data = json.loads(path.read_text(encoding="utf-8"))
     data.setdefault("general", {})["showChangelogOnStartup"] = False
     data.setdefault("general", {})["telemetryEnabled"] = False
+
+    def remove_widget(widgets, widget_id):
+        for section in ("left", "center", "right"):
+            widgets[section] = [
+                item for item in widgets.get(section, [])
+                if item.get("id") != widget_id
+            ]
+
+    def add_after(widgets, target_id, widget):
+        left = widgets.setdefault("left", [])
+        widget_id = widget["id"]
+        if any(item.get("id") == widget_id for item in left):
+            return
+        for index, item in enumerate(left):
+            if item.get("id") == target_id:
+                left.insert(index + 1, widget)
+                return
+        left.append(widget)
+
+    bar = data.setdefault("bar", {})
+    widgets = bar.setdefault("widgets", {})
+    remove_widget(widgets, "VPN")
+    add_after(widgets, "plugin:noctalia-calculator", {"id": "Network"})
+    for override in bar.get("screenOverrides", []):
+        override_widgets = override.get("widgets")
+        if isinstance(override_widgets, dict):
+            remove_widget(override_widgets, "VPN")
+
     path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
     chmod -R a+rX /etc/skel/.config/noctalia
