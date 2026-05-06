@@ -20,7 +20,7 @@
         "pinnedApps": [
             "proton.vpn.app.gtk",
             "librewolf",
-            "firefox",
+            "org.mozilla.firefox",
             "trivalent",
             "dev.zed.Zed",
             "org.gnome.Nautilus",
@@ -374,7 +374,7 @@
             "com.github.tchx84.Flatseal",
             "org.gnome.Nautilus",
             "librewolf",
-            "firefox",
+            "org.mozilla.firefox",
             "trivalent",
             "com.valvesoftware.Steam",
             "net.lutris.Lutris",

@@ -123,6 +123,8 @@ test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
 grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
+test -L /usr/share/applications/org.mozilla.firefox.desktop
+test "$(readlink /usr/share/applications/org.mozilla.firefox.desktop)" = "firefox.desktop"
 test -f /usr/lib/systemd/system/brew-setup.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
@@ -157,7 +159,7 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-icon-theme
-grep -q 'user-defaults.v12.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v13.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -171,6 +173,7 @@ grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
+grep -q 'normalize_noctalia_firefox_app_id' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -277,6 +280,10 @@ for path in Path("/usr/share/nocblue/defaults/nautilus").glob("*.py"):
 
 settings = json.loads(Path("/usr/share/nocblue/defaults/noctalia/settings.json").read_text(encoding="utf-8"))
 assert settings["colorSchemes"]["predefinedScheme"] == "Catppuccin Mocha Red"
+assert "firefox" not in settings["appLauncher"]["pinnedApps"]
+assert "firefox" not in settings["dock"]["pinnedApps"]
+assert "org.mozilla.firefox" in settings["appLauncher"]["pinnedApps"]
+assert "org.mozilla.firefox" in settings["dock"]["pinnedApps"]
 bar = settings["bar"]
 assert bar["monitors"] == []
 assert bar["screenOverrides"] == []

@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v12.done"
+version_stamp="${state_dir}/user-defaults.v13.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -355,6 +355,36 @@ wanted = {
     "light": "Noctalia Light",
     "dark": "Noctalia Dark",
 }
+
+normalize_noctalia_firefox_app_id() {
+    local settings_path="${HOME}/.config/noctalia/settings.json"
+    [[ -f "${settings_path}" ]] || return 0
+
+    python3 - "${settings_path}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+changed = False
+for section in ("appLauncher", "dock"):
+    apps = data.get(section, {}).get("pinnedApps")
+    if not isinstance(apps, list):
+        continue
+    normalized = ["org.mozilla.firefox" if app == "firefox" else app for app in apps]
+    if normalized != apps:
+        data[section]["pinnedApps"] = normalized
+        changed = True
+
+if changed:
+    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+}
 if data.get("theme") != wanted:
     data["theme"] = wanted
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -535,6 +565,7 @@ if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settin
     install -D -m 0644 "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json"
     noctalia_settings_changed=1
 fi
+normalize_noctalia_firefox_app_id
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins
 copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"
 for noctalia_template in "${defaults_dir}"/noctalia/templates/*; do
