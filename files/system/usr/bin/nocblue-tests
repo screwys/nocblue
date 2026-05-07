@@ -252,6 +252,9 @@ grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-loupe
 grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-showtime
 grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-loupe
 grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-showtime
+grep -q 'reuse_existing_loupe_window' /usr/bin/nocblue-bwrap-loupe
+grep -q 'NameHasOwner' /usr/bin/nocblue-bwrap-loupe
+grep -q 'org.gtk.Actions.Activate' /usr/bin/nocblue-bwrap-loupe
 test -x /usr/bin/nocblue-apply-hardened-malloc
 grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
