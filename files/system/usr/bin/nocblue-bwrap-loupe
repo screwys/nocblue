@@ -66,48 +66,6 @@ bind_parent_if_needed() {
     bound_dirs["${parent}"]=1
 }
 
-loupe_name_owned() {
-    gdbus call --session \
-        --dest org.freedesktop.DBus \
-        --object-path /org/freedesktop/DBus \
-        --method org.freedesktop.DBus.NameHasOwner \
-        org.gnome.Loupe 2>/dev/null | grep -q 'true'
-}
-
-reuse_existing_loupe_window() {
-    local flag
-    [[ "${#files[@]}" -gt 0 ]] || return 0
-
-    for flag in "${extra_flags[@]}"; do
-        case "${flag}" in
-            --gapplication-service | --new-window) return 0 ;;
-        esac
-    done
-
-    loupe_name_owned || return 0
-
-    gdbus call --session \
-        --dest org.gnome.Loupe \
-        --object-path /org/gnome/Loupe \
-        --method org.gtk.Actions.Describe \
-        quit >/dev/null 2>&1 || return 0
-
-    gdbus call --session \
-        --dest org.gnome.Loupe \
-        --object-path /org/gnome/Loupe \
-        --method org.gtk.Actions.Activate \
-        quit "[]" "{}" >/dev/null 2>&1 || true
-
-    for _ in $(seq 1 40); do
-        if ! loupe_name_owned; then
-            break
-        fi
-        sleep 0.05
-    done
-}
-
-reuse_existing_loupe_window
-
 bwrap_args+=(
     --ro-bind /usr /usr
     --ro-bind /etc /etc

@@ -198,6 +198,7 @@ modules:
       - install-browser-policies.sh
       - install-protonvpn.sh
       - configure-hardened-malloc.sh
+      - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
   - type: brew
