@@ -207,6 +207,9 @@
                 },
                 {
                     "id": "plugin:noctalia-calculator"
+                },
+                {
+                    "id": "Network"
                 }
             ],
             "right": [

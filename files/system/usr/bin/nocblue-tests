@@ -207,7 +207,7 @@ bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
-grep -q 'user-defaults.v13.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v14.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -352,6 +352,7 @@ assert [item["id"] for item in bar["widgets"]["left"]] == [
     "plugin:todo",
     "plugin:clipper",
     "plugin:noctalia-calculator",
+    "Network",
 ]
 assert [item["id"] for item in bar["widgets"]["right"]] == [
     "MediaMini",
