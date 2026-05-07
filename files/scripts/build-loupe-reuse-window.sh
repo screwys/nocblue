@@ -69,19 +69,6 @@ meson install -C "${srcdir}/build"
 
 install -D -m 0644 /dev/null /usr/share/nocblue/media-patches/loupe-reuse-active-window.patch-applied
 
-dnf -y remove --setopt=clean_requirements_on_remove=False \
-    meson \
-    blueprint-compiler \
-    desktop-file-utils \
-    appstream \
-    gettext-devel \
-    yelp-tools \
-    libadwaita-devel \
-    gtk4-devel \
-    libgweather-devel \
-    lcms2-devel \
-    libseccomp-devel || true
-
 rpm -q loupe >/dev/null
 test -x /usr/bin/loupe
 dnf -y clean all
