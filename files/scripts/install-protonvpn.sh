@@ -9,5 +9,11 @@ curl -fsSLo "/tmp/${proton_release}" \
 dnf -y install "/tmp/${proton_release}"
 
 # The daemon package tries to start systemd services in scriptlets during image
-# builds. Install it without scriptlets and enable the units through presets.
+# builds. Install it without scriptlets; the recipe enables the daemon unit.
 dnf -y install --setopt=install_weak_deps=False --setopt=tsflags=noscripts proton-vpn-gnome-desktop
+
+# The Fedora beta package ships a DBus activation file that points at
+# proton.VPN.service, but the installed unit is named below.
+sed -i \
+    's/^SystemdService=proton\.VPN\.service$/SystemdService=me.proton.vpn.split_tunneling.service/' \
+    /etc/dbus-1/system-services/me.proton.vpn.split_tunneling.service
