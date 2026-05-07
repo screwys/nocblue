@@ -2,11 +2,8 @@ name: iso
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - bluebuild
-    types:
-      - completed
+  schedule:
+    - cron: "47 8 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -20,7 +17,6 @@ env:
 jobs:
   iso:
     name: build live installer iso
-    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-24.04
     permissions:
       contents: read
