@@ -2,8 +2,6 @@ name: iso
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "47 8 * * *"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
