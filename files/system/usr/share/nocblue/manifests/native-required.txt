@@ -20,6 +20,7 @@ tree
 curl
 wget2-wget
 unzip
+7zip
 yq
 yt-dlp
 direnv
@@ -87,6 +88,7 @@ openssl
 kmod
 cryptsetup
 tpm2-tools
+zram-generator
 hardened_malloc
 no_rlimit_as
 xz

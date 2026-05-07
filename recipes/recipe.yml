@@ -48,6 +48,7 @@ modules:
         - curl
         - wget2-wget
         - unzip
+        - 7zip
         - yq
         - yt-dlp
         - direnv
@@ -119,6 +120,7 @@ modules:
         - kmod
         - cryptsetup
         - tpm2-tools
+        - zram-generator
         - hardened_malloc
         - no_rlimit_as
         - xz
