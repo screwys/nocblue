@@ -193,7 +193,6 @@ modules:
   - type: script
     scripts:
       - stage-noctalia-plugins.sh
-      - install-lazygit.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
       - install-protonvpn.sh
