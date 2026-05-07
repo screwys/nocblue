@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z nocblue-setup-android-sdk nocblue-ocr-japanese; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet zram-generator >/dev/null
+rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-wayland-generic qt6-qt5compat qt6-qtsvg zram-generator >/dev/null
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
 rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
@@ -157,7 +157,10 @@ grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
 grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
-grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
+grep -q 'fc\[0-9\]' /etc/xdg/fastfetch/config.jsonc
+grep -q 'sys_vendor' /etc/xdg/fastfetch/config.jsonc
+grep -q 'product_name' /etc/xdg/fastfetch/config.jsonc
+grep -q '/sysroot /var /' /etc/xdg/fastfetch/config.jsonc
 test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
@@ -173,6 +176,8 @@ grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/sy
 test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
 test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
 test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
+test -L /etc/systemd/system/display-manager.service
+test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/sddm.service"
 test -L /etc/systemd/system/rpm-ostree-countme.timer
 test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
 for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; do
@@ -213,6 +218,7 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-icon-theme
+test -x /usr/bin/nocblue-sync-sddm-wallpaper
 test -x /usr/bin/nocblue-setup-android-sdk
 test -x /usr/bin/nocblue-ocr-japanese
 test ! -e /usr/lib/systemd/system/nocblue-brew-formulae.service
@@ -221,9 +227,12 @@ test ! -e /usr/share/nocblue/manifests/brew-formulae.txt
 bash -n /usr/bin/nocblue-apply-user-defaults
 bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-icon-theme
+bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
-grep -q 'user-defaults.v14.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+test -f /usr/share/sddm/themes/noctalia/theme.conf
+grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
+grep -q 'user-defaults.v15.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -238,6 +247,7 @@ grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -254,6 +264,8 @@ grep -q 'repair_steam_prefix_links' /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '\[templates.zed-native\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '\[templates.sddm\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '/var/lib/nocblue/sddm/theme.conf' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 test -f /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
 grep -q -- '--adw-window-bg-rgb' /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
 ! grep -q 'Material-Theme' /usr/share/nocblue/defaults/noctalia/user-templates.toml
@@ -309,6 +321,24 @@ grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-mallo
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
+test -f /etc/sddm.conf.d/10-nocblue-theme.conf
+grep -q '^Current=noctalia$' /etc/sddm.conf.d/10-nocblue-theme.conf
+test -d /usr/share/sddm/themes/noctalia
+test -f /usr/share/sddm/themes/noctalia/Main.qml
+test -f /usr/share/sddm/themes/noctalia/metadata.desktop
+test -f /usr/share/sddm/themes/noctalia/theme.default.conf
+test -f /usr/share/sddm/themes/noctalia/theme.template.conf
+test -L /usr/share/sddm/themes/noctalia/theme.conf
+test "$(readlink /usr/share/sddm/themes/noctalia/theme.conf)" = "/var/lib/nocblue/sddm/theme.conf"
+grep -q '^background=file:///var/lib/nocblue/sddm/background.png$' /usr/share/sddm/themes/noctalia/theme.default.conf
+grep -q '^background=file:///var/lib/nocblue/sddm/background.png$' /usr/share/sddm/themes/noctalia/theme.template.conf
+grep -RIn 'import QtGraphicalEffects' /usr/share/sddm/themes/noctalia && exit 1
+grep -RIn 'import Qt5Compat.GraphicalEffects' /usr/share/sddm/themes/noctalia
+test -f /var/lib/nocblue/sddm/theme.conf
+test -f /var/lib/nocblue/sddm/background.png
+test -f /usr/lib/tmpfiles.d/nocblue-sddm.conf
+grep -q '^C /var/lib/nocblue/sddm/theme.conf 0666 root root - /usr/share/sddm/themes/noctalia/theme.default.conf$' /usr/lib/tmpfiles.d/nocblue-sddm.conf
+grep -q '^C /var/lib/nocblue/sddm/background.png 0666 root root - /usr/share/backgrounds/nocblue/green-eyes.png$' /usr/lib/tmpfiles.d/nocblue-sddm.conf
 test -f /usr/share/backgrounds/nocblue/green-eyes.png
 test -f /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
 grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/settings.json
@@ -349,6 +379,10 @@ for path in Path("/usr/share/nocblue/defaults/nautilus").glob("*.py"):
 
 settings = json.loads(Path("/usr/share/nocblue/defaults/noctalia/settings.json").read_text(encoding="utf-8"))
 assert settings["colorSchemes"]["predefinedScheme"] == "Catppuccin Mocha Red"
+assert settings["hooks"]["enabled"] is True
+assert settings["hooks"]["wallpaperChange"] == "nocblue-sync-sddm-wallpaper"
+assert {"enabled": True, "id": "sddm"} in settings["templates"]["activeTemplates"]
+assert settings["templates"]["enableUserTheming"] is True
 assert "firefox" not in settings["appLauncher"]["pinnedApps"]
 assert "firefox" not in settings["dock"]["pinnedApps"]
 assert "torbrowser" not in settings["appLauncher"]["pinnedApps"]

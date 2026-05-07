@@ -465,14 +465,14 @@
     "hooks": {
         "colorGeneration": "",
         "darkModeChange": "",
-        "enabled": false,
+        "enabled": true,
         "performanceModeDisabled": "",
         "performanceModeEnabled": "",
         "screenLock": "",
         "screenUnlock": "",
         "session": "",
         "startup": "",
-        "wallpaperChange": ""
+        "wallpaperChange": "nocblue-sync-sddm-wallpaper"
     },
     "idle": {
         "customCommands": "[]",
@@ -715,6 +715,10 @@
             {
                 "enabled": true,
                 "id": "zed"
+            },
+            {
+                "enabled": true,
+                "id": "sddm"
             }
         ],
         "enableUserTheming": true

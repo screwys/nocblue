@@ -484,6 +484,53 @@ if after != before:
 PY
 }
 
+ensure_noctalia_sddm_integration() {
+    local settings_path="${HOME}/.config/noctalia/settings.json"
+    [[ -f "${settings_path}" ]] || return 0
+
+    python3 - "${settings_path}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+if not isinstance(data, dict):
+    raise SystemExit(0)
+
+before = json.dumps(data, sort_keys=True, ensure_ascii=False)
+
+hooks = data.setdefault("hooks", {})
+if not isinstance(hooks, dict):
+    hooks = {}
+    data["hooks"] = hooks
+if not hooks.get("wallpaperChange"):
+    hooks["wallpaperChange"] = "nocblue-sync-sddm-wallpaper"
+if hooks.get("wallpaperChange") == "nocblue-sync-sddm-wallpaper":
+    hooks["enabled"] = True
+
+templates = data.setdefault("templates", {})
+if not isinstance(templates, dict):
+    templates = {}
+    data["templates"] = templates
+active = templates.setdefault("activeTemplates", [])
+if not isinstance(active, list):
+    active = []
+    templates["activeTemplates"] = active
+if not any(isinstance(item, dict) and item.get("id") == "sddm" for item in active):
+    active.append({"enabled": True, "id": "sddm"})
+templates["enableUserTheming"] = True
+
+after = json.dumps(data, sort_keys=True, ensure_ascii=False)
+if after != before:
+    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+}
+
 ensure_gtk_settings() {
     python3 - \
         "${HOME}/.config/gtk-3.0/settings.ini" \
@@ -660,6 +707,7 @@ if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settin
 fi
 normalize_noctalia_browser_app_ids
 ensure_noctalia_network_widget
+ensure_noctalia_sddm_integration
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins
 copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"
 for noctalia_template in "${defaults_dir}"/noctalia/templates/*; do
@@ -727,6 +775,15 @@ EOF
 [templates.zed-native]
 input_path = "/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json"
 output_path = "~/.config/zed/themes/noctalia.json"
+EOF
+        noctalia_templates_changed=1
+    fi
+    if ! grep -q '^\[templates\.sddm\]$' "${user_templates}"; then
+        cat >> "${user_templates}" <<'EOF'
+
+[templates.sddm]
+input_path = "/usr/share/sddm/themes/noctalia/theme.template.conf"
+output_path = "/var/lib/nocblue/sddm/theme.conf"
 EOF
         noctalia_templates_changed=1
     fi

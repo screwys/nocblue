@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+json_file="${NOCTALIA_WALLPAPERS_JSON:-${HOME}/.cache/noctalia/wallpapers.json}"
+dest="${NOCBLUE_SDDM_BACKGROUND:-/var/lib/nocblue/sddm/background.png}"
+
+if [[ ! -f "${json_file}" || ! -w "${dest}" ]]; then
+    exit 0
+fi
+
+sleep 2
+
+wallpaper="$(
+    jq -r '
+        if ((.wallpapers // {}) | length) > 0 then
+            ((.wallpapers | to_entries[0].value) as $value
+            | if ($value | type) == "object" then
+                ($value.dark // $value.light // empty)
+              else
+                $value
+              end)
+        else
+            (.defaultWallpaper // empty)
+        end
+    ' "${json_file}"
+)"
+
+if [[ -z "${wallpaper}" || ! -f "${wallpaper}" ]]; then
+    exit 0
+fi
+
+cp -- "${wallpaper}" "${dest}"

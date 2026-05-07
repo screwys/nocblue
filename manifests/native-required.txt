@@ -55,6 +55,10 @@ loupe
 showtime
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
+sddm
+sddm-wayland-generic
+qt6-qt5compat
+qt6-qtsvg
 qt6ct
 fcitx5
 fcitx5-mozc

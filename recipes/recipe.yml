@@ -83,6 +83,10 @@ modules:
         - showtime
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
+        - sddm
+        - sddm-wayland-generic
+        - qt6-qt5compat
+        - qt6-qtsvg
         - qt6ct
         - fcitx5
         - fcitx5-mozc
@@ -199,6 +203,8 @@ modules:
       - install-pywalfox.sh
       - install-browser-policies.sh
       - install-protonvpn.sh
+      - install-noctalia-sddm-theme.sh
+      - configure-sddm.sh
       - configure-hardened-malloc.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
@@ -218,6 +224,9 @@ modules:
         - input-remapper.service
         - firewalld.service
         - me.proton.vpn.split_tunneling.service
+        - sddm.service
+      disabled:
+        - gdm.service
       masked:
         - geoclue.service
         - rpm-ostree-countme.timer
