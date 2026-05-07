@@ -36,6 +36,20 @@ done
 declare -a bwrap_args=()
 declare -A bound_dirs=()
 
+ensure_private_mountpoints() {
+    local dir
+    for dir in \
+        "${HOME}/.cache" \
+        "${HOME}/.ssh" \
+        "${HOME}/.gnupg" \
+        "${HOME}/.pki" \
+        "${HOME}/.config" \
+        "${HOME}/.local" \
+        "${HOME}/.var"; do
+        [[ -d "${dir}" ]] || install -d -m 0700 "${dir}"
+    done
+}
+
 ro_bind_try() {
     [[ -e "$1" ]] && bwrap_args+=(--ro-bind "$1" "$1") || true
 }
@@ -56,13 +70,15 @@ bwrap_args+=(
     --ro-bind /usr /usr
     --ro-bind /etc /etc
     --symlink /usr/lib /lib
-    --symlink /usr/lib /lib64
+    --symlink /usr/lib64 /lib64
     --symlink /usr/bin /bin
     --symlink /usr/bin /sbin
     --dev /dev
     --proc /proc
     --tmpfs /tmp
 )
+
+ensure_private_mountpoints
 
 [[ -d /dev/dri ]] && bwrap_args+=(--dev-bind /dev/dri /dev/dri)
 bwrap_args+=(--ro-bind /sys /sys)

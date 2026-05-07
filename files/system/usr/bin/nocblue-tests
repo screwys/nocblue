@@ -248,6 +248,10 @@ test -x /usr/bin/nocblue-bwrap-loupe
 test -x /usr/bin/nocblue-bwrap-showtime
 grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-loupe
 grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-showtime
+grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-loupe
+grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-showtime
+grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-loupe
+grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-showtime
 test -x /usr/bin/nocblue-apply-hardened-malloc
 grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
