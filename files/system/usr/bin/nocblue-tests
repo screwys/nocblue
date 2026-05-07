@@ -22,7 +22,7 @@ else
     exit 1
 fi
 
-rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet >/dev/null
+rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet >/dev/null
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
 rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null

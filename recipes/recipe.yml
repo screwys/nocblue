@@ -144,6 +144,7 @@ modules:
         - kde-connect-nautilus
         - radicale3
         - radicale3-selinux
+        - nginx
         - input-remapper
         - libinput-utils
         - steam-devices
