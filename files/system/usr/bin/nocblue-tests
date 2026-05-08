@@ -59,7 +59,9 @@ test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
 test -x /usr/bin/pywalfox
 test ! -e /usr/local/bin/pywalfox
+test -x /usr/libexec/pywalfox-native-messaging-host
 test -f /usr/lib/mozilla/native-messaging-hosts/pywalfox.json
+test -f /usr/lib64/mozilla/native-messaging-hosts/pywalfox.json
 test -f /usr/lib64/firefox/distribution/policies.json
 test -f /usr/share/librewolf/distribution/policies.json
 test -f /etc/trivalent/policies/managed/nocblue-search.json
@@ -82,6 +84,7 @@ brave_extensions = json.loads(Path("/etc/brave/policies/managed/nocblue-extensio
 chromium_extensions = json.loads(Path("/etc/chromium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 helium_extensions = json.loads(Path("/etc/helium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
+pywalfox_lib64 = json.loads(Path("/usr/lib64/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 
 shared = {
     "jid1-BoFifL9Vbdl2zQ@jetpack": "decentraleyes",
@@ -163,8 +166,9 @@ assert trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]["installation_mode"]
 assert "update_url" not in trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]
 
 assert pywalfox["name"] == "pywalfox"
+assert pywalfox_lib64 == pywalfox
 assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]
-assert pywalfox["path"].endswith("/pywalfox/bin/main.sh")
+assert pywalfox["path"] == "/usr/libexec/pywalfox-native-messaging-host"
 PY
 grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
 grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
