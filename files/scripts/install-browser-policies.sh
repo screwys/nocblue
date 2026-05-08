@@ -9,13 +9,18 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 
-target = Path("/usr/share/librewolf/distribution/policies.json")
+targets = (
+    Path("/usr/share/librewolf/distribution/policies.json"),
+    Path("/usr/lib64/librewolf/distribution/policies.json"),
+    Path("/usr/lib/librewolf/distribution/policies.json"),
+)
 extra_path = Path("/usr/share/nocblue/browser-policies/librewolf-extension-settings.json")
 
-if target.exists():
-    data = json.loads(target.read_text(encoding="utf-8"))
-else:
-    data = {"policies": {}}
+data = {"policies": {}}
+for target in targets:
+    if target.exists():
+        data = json.loads(target.read_text(encoding="utf-8"))
+        break
 
 extra = json.loads(extra_path.read_text(encoding="utf-8"))
 policies = data.setdefault("policies", {})
@@ -26,8 +31,9 @@ for key, value in extra["policies"].items():
     else:
         policies[key] = value
 
-target.parent.mkdir(parents=True, exist_ok=True)
-target.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
+for target in targets:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 PY
 
 install -D -m 0644 \
