@@ -28,16 +28,19 @@ and final modules.
   native Trivalent install.
 - nocblue app patches for Loupe, Showtime, Nautilus helpers, Noctalia plugins,
   pywalfox, Proton VPN, and SDDM theme.
-- Development, gaming, OCR, input, local-service, and browser packages that are
-  not already supplied by secureblue.
+- Standard nocblue development, gaming, OCR, input, local-service, and browser
+  package choices, even when secureblue already happens to include one of those
+  tools. Hardened package parity should be deliberate, not accidental.
+- Firefox stays in the hardened image as part of nocblue's normal browser set;
+  Trivalent remains available from secureblue as the hardened browser.
 - Hardened-specific repo handling: the manual recipe does not use BlueBuild's
   `nonfree: rpmfusion` helper because secureblue removes the
   `fedora-cisco-openh264` repo and uses its own multimedia/repo baseline.
 
 ## Intentionally omitted in the manual recipe
 
-- `hardened_malloc`, `no_rlimit_as`, `trivalent`, `trivalent-selinux`, and
-  known secureblue-supplied packages.
+- `hardened_malloc`, `no_rlimit_as`, `trivalent`, and `trivalent-selinux`;
+  secureblue owns those hardening and browser-policy packages.
 - `configure-hardened-malloc.sh` and `nocblue-hardened-malloc-flatpaks.service`;
   secureblue owns the global allocator policy.
 - `configure-ipsec-selinux.sh`; secureblue now has its own network/module
@@ -63,8 +66,6 @@ and final modules.
   script. The current test contract assumes the standard image.
 - Decide whether the hardened image should include the installer/ISO packages
   or only support `bootc switch`.
-- Decide whether Firefox belongs in the hardened variant. Secureblue removes it
-  and installs Trivalent as the primary browser.
 - Validate LibreWolf packaging after the current upstream signature issue is
   resolved. The manual recipe pins `librewolf-150.0.1-1.x86_64` to match the
   current repo fix.

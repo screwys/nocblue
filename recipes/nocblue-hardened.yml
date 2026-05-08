@@ -43,7 +43,9 @@ modules:
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
 
-        # Shell/dev tools not supplied by the secureblue base.
+        # Standard nocblue shell/dev tools. Some are already supplied by
+        # secureblue, but keeping them here makes hardened package parity
+        # deliberate instead of accidental.
         - fish
         - fastfetch
         - just
@@ -56,10 +58,12 @@ modules:
         - fd-find
         - bat
         - eza
+        - fzf
         - tree
         - curl
         - wget2-wget
         - unzip
+        - 7zip
         - yq
         - yt-dlp
         - direnv
@@ -84,7 +88,9 @@ modules:
         - make
         - cmake
         - pkgconf-pkg-config
+        - openssl
         - openssl-devel
+        - patch
 
         # Desktop apps and integration.
         - gnome-keyring
@@ -138,6 +144,7 @@ modules:
         - dracut
 
         # Wayland, OCR, gaming, local services, and browsers.
+        - wl-clipboard
         - grim
         - slurp
         - wf-recorder
@@ -161,8 +168,10 @@ modules:
         - libinput-utils
         - gamescope
         - mangohud
+        - steam-devices
         - vulkan-tools
         - vkBasalt
+        - firefox
         - brave-origin-beta
         - helium-bin
         - librewolf-150.0.1-1.x86_64
@@ -183,6 +192,7 @@ modules:
       install-weak-deps: false
       skip-unavailable: true
       packages:
+        - adw-gtk3-theme
         - umu-launcher
         - scx-scheds
         - scx-tools
