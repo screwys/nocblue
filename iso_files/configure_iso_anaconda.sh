@@ -32,6 +32,50 @@ if [[ -f /etc/sysconfig/livesys ]]; then
     sed -i 's/^livesys_session=.*/livesys_session=gnome/' /etc/sysconfig/livesys
 fi
 
+set_os_release_key() {
+    local file="$1"
+    local key="$2"
+    local value="$3"
+
+    if grep -q "^${key}=" "${file}"; then
+        sed -i "s|^${key}=.*|${key}=${value}|" "${file}"
+    else
+        printf '%s=%s\n' "${key}" "${value}" >>"${file}"
+    fi
+}
+
+for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
+    [[ -f "${os_release}" && ! -L "${os_release}" ]] || continue
+    set_os_release_key "${os_release}" NAME '"nocblue-hardened"'
+    set_os_release_key "${os_release}" PRETTY_NAME '"nocblue-hardened"'
+    set_os_release_key "${os_release}" CPE_NAME '"cpe:/o:nocblue:nocblue:44"'
+    set_os_release_key "${os_release}" DEFAULT_HOSTNAME '"nocblue-hardened"'
+    set_os_release_key "${os_release}" HOME_URL '"https://github.com/screwys/nocblue"'
+    set_os_release_key "${os_release}" DOCUMENTATION_URL '"https://github.com/screwys/nocblue"'
+    set_os_release_key "${os_release}" SUPPORT_URL '"https://github.com/screwys/nocblue/issues"'
+    set_os_release_key "${os_release}" BUG_REPORT_URL '"https://github.com/screwys/nocblue/issues"'
+    set_os_release_key "${os_release}" VARIANT '"nocblue-hardened"'
+    set_os_release_key "${os_release}" IMAGE_ID '"nocblue-hardened"'
+done
+
+python3 - <<'PY'
+import configparser
+from pathlib import Path
+
+path = Path("/.buildstamp")
+config = configparser.ConfigParser()
+config.optionxform = str
+config.read(path)
+if not config.has_section("Main"):
+    config.add_section("Main")
+config.set("Main", "Product", "nocblue-hardened")
+config.set("Main", "Version", "44")
+if not config.has_option("Main", "IsFinal"):
+    config.set("Main", "IsFinal", "False")
+with path.open("w", encoding="utf-8") as handle:
+    config.write(handle)
+PY
+
 cat >/usr/share/anaconda/interactive-defaults.ks <<EOF
 ostreecontainer --url=${install_image} --transport=containers-storage --no-signature-verification
 
@@ -235,7 +279,7 @@ EOF
 cat >/etc/skel/.config/autostart/nocblue-liveinst.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=Install Nocblue
+Name=Install nocblue-hardened
 Exec=/usr/bin/nocblue-liveinst-once
 X-GNOME-Autostart-enabled=true
 NoDisplay=true
