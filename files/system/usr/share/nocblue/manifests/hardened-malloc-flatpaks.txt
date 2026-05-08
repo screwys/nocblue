@@ -1,3 +1,12 @@
+com.belmoussaoui.Authenticator
+com.github.tchx84.Flatseal
+io.github.Foldex.AdwSteamGtk
+io.github.alyraffauf.Switchyard
 io.github.diegopvlk.Cine
+io.github.kolunmi.Bazaar
+it.mijorus.gearlever
+org.gnome.Fractal
 org.gnome.Papers
+org.gnome.TextEditor
 org.gnome.gitlab.somas.Apostrophe
+studio.planetpeanut.Bobby

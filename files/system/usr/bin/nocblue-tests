@@ -330,9 +330,28 @@ test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Papers$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^com.belmoussaoui.Authenticator$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^com.github.tchx84.Flatseal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^io.github.alyraffauf.Switchyard$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.Fractal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^dev.vencord.Vesktop$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
+grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/brave-origin-beta %U$' /usr/share/applications/brave-origin-beta.desktop
+grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/brave-origin-beta %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/helium-browser %U$' /usr/share/applications/helium.desktop
+! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/firefox.desktop
+! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
+! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
