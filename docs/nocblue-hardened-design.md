@@ -52,9 +52,9 @@ and final modules.
   secureblue has its own update units and verification flow.
 - `finalize.sh` and `validate-image.sh`; both currently encode standard
   nocblue assumptions and need a hardened-specific pass before use.
-- The standard OpenRazer akmods module; the hardened image layers OpenRazer
-  through `rpm-ostree install` during the image build instead of exposing a
-  post-install command.
+- OpenRazer post-install commands; the hardened recipe uses the build-time
+  akmods module instead. Direct `rpm-ostree install openrazer-meta` during image
+  composition runs the DKMS RPM scriptlet against the build host kernel.
 
 ## Known follow-up work
 

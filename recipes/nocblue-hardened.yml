@@ -197,6 +197,11 @@ modules:
         - scx-scheds
         - scx-tools
 
+  - type: akmods
+    base: main
+    install:
+      - openrazer
+
   - type: files
     files:
       - source: system
@@ -210,7 +215,6 @@ modules:
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
-      - layer-openrazer.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
