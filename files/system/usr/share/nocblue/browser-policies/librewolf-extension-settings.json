@@ -33,10 +33,6 @@
       "firefox@tampermonkey.net": {
         "installation_mode": "allowed",
         "private_browsing": true
-      },
-      "uBlock0@raymondhill.net": {
-        "installation_mode": "allowed",
-        "private_browsing": true
       }
     }
   }

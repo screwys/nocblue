@@ -105,8 +105,6 @@ for extension_id, slug in shared.items():
 ublock = firefox_settings["uBlock0@raymondhill.net"]
 assert ublock["installation_mode"] == "allowed"
 assert "install_url" not in ublock
-if "uBlock0@raymondhill.net" in librewolf_settings:
-    assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "allowed"
 assert firefox["policies"]["DisableFirefoxStudies"] is True
 assert firefox["policies"]["DisablePocket"] is True
 assert firefox["policies"]["DisableTelemetry"] is True
@@ -378,7 +376,7 @@ grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
 ! grep -q '^ConditionPathExists=.*session-defaults.done' /usr/lib/systemd/system/nocblue-session-defaults.service
 grep -q 'seed_sddm_state' /usr/bin/nocblue-set-default-session
 grep -Fq '${session_id}.desktop' /usr/bin/nocblue-set-default-session
-grep -q '/var/lib/sddm/state.conf' /usr/bin/nocblue-set-default-session
+grep -q 'sddm_state_file=' /usr/bin/nocblue-set-default-session
 test -f /etc/sddm.conf.d/10-nocblue-theme.conf
 grep -q '^Current=noctalia$' /etc/sddm.conf.d/10-nocblue-theme.conf
 test -d /usr/share/sddm/themes/noctalia
