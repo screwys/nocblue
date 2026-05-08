@@ -61,4 +61,9 @@ wrap_desktop_exec \
     /usr/bin/brave-browser-beta \
     /opt/brave.com/brave-beta/brave-browser-beta \
     /opt/brave.com/brave/brave-browser
-wrap_desktop_exec "${applications_dir}/helium.desktop" /usr/bin/helium-browser
+wrap_desktop_exec \
+    "${applications_dir}/helium.desktop" \
+    /usr/bin/helium-browser \
+    /usr/bin/helium \
+    /opt/helium/helium \
+    /opt/helium-browser/helium-browser
