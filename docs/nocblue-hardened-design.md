@@ -50,8 +50,8 @@ and final modules.
   nocblue assumptions and need a hardened-specific pass before use.
 - `openrazer` and `openrazer-polychromatic`; the hardened build exposed that
   the standard OpenRazer akmod path is not a drop-in secureblue carry-over, and
-  kernel modules should be opted back in only after a separate source/signing
-  review.
+  kernel modules should be opted back in per-machine with `njust openrazer`
+  instead of baked into the hardened image by default.
 
 ## Known follow-up work
 

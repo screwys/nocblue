@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_url="${OPENRAZER_REPO_URL:-https://openrazer.github.io/hardware:razer.repo}"
+repo_file="/etc/yum.repos.d/hardware:razer.repo"
+packages=(kernel-devel kmodtool akmods mokutil openssl openrazer-meta)
+
+usage() {
+    cat <<'EOF'
+usage: nocblue-layer-openrazer [install|status|remove]
+
+Layer OpenRazer on this installed machine with rpm-ostree.
+
+install  add the official OpenRazer Fedora repo, layer OpenRazer packages,
+         add the invoking user to plugdev, and request a reboot
+status   show repo, package, module, and plugdev state
+remove   remove OpenRazer packages from the next deployment
+EOF
+}
+
+as_root() {
+    if [[ "${EUID}" -eq 0 ]]; then
+        return
+    fi
+
+    exec sudo --preserve-env=OPENRAZER_REPO_URL "$0" "$@"
+}
+
+target_user() {
+    if [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" != "root" ]]; then
+        printf '%s\n' "${SUDO_USER}"
+        return
+    fi
+
+    if [[ "${EUID}" -ne 0 && -n "${USER:-}" ]]; then
+        printf '%s\n' "${USER}"
+    fi
+}
+
+require_rpm_ostree() {
+    if ! command -v rpm-ostree >/dev/null 2>&1; then
+        printf 'rpm-ostree is required to layer OpenRazer on nocblue\n' >&2
+        exit 1
+    fi
+}
+
+install_repo() {
+    install -d -m 0755 /etc/yum.repos.d
+    curl -fsSL -o "${repo_file}" "${repo_url}"
+}
+
+ensure_plugdev_user() {
+    local user
+    user="$(target_user || true)"
+
+    if [[ -z "${user}" ]]; then
+        printf 'could not determine invoking user; add your user to plugdev after reboot\n' >&2
+        return
+    fi
+
+    if ! getent group plugdev >/dev/null 2>&1; then
+        groupadd --system plugdev
+    fi
+
+    usermod -aG plugdev "${user}"
+    printf 'added %s to plugdev; log out or reboot before using OpenRazer\n' "${user}"
+}
+
+install_openrazer() {
+    as_root install "$@"
+    require_rpm_ostree
+    install_repo
+    ensure_plugdev_user
+    rpm-ostree install --idempotent "${packages[@]}"
+    printf '\nOpenRazer was layered into the next deployment. Reboot, then run:\n'
+    printf '  njust openrazer-check\n'
+    printf '\nIf Secure Boot blocks the module, enroll the akmods/MOK key before expecting it to load.\n'
+}
+
+status_openrazer() {
+    printf 'repo: '
+    if [[ -f "${repo_file}" ]]; then
+        printf '%s\n' "${repo_file}"
+    else
+        printf 'not installed\n'
+    fi
+
+    printf '\npackages:\n'
+    if command -v rpm >/dev/null 2>&1; then
+        rpm -q openrazer-meta openrazer-daemon openrazer-driver-dkms kernel-devel kmodtool akmods 2>&1 || true
+    else
+        printf 'rpm is unavailable\n'
+    fi
+
+    printf '\nmodules:\n'
+    find /usr/lib/modules -type f -name 'razer*.ko*' -print 2>/dev/null || true
+
+    printf '\nplugdev:\n'
+    getent group plugdev || true
+
+    printf '\nsecure boot:\n'
+    if command -v mokutil >/dev/null 2>&1; then
+        mokutil --sb-state 2>/dev/null || true
+    else
+        printf 'mokutil is unavailable\n'
+    fi
+}
+
+remove_openrazer() {
+    as_root remove "$@"
+    require_rpm_ostree
+    rpm-ostree uninstall --idempotent openrazer-meta openrazer-daemon openrazer-driver-dkms || true
+    rm -f "${repo_file}"
+    printf 'OpenRazer packages were removed from the next deployment. Reboot to finish.\n'
+}
+
+command="${1:-install}"
+shift || true
+
+case "${command}" in
+    install)
+        install_openrazer "$@"
+        ;;
+    status)
+        status_openrazer
+        ;;
+    remove)
+        remove_openrazer "$@"
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

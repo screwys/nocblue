@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-layer-openrazer; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -263,6 +263,10 @@ grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
 grep -q 'userns-hardening' /usr/share/nocblue/njust/Justfile
+grep -q 'openrazer:' /usr/share/nocblue/njust/Justfile
+grep -q 'openrazer-check:' /usr/share/nocblue/njust/Justfile
+grep -q 'https://openrazer.github.io/hardware:razer.repo' /usr/bin/nocblue-layer-openrazer
+grep -q 'rpm-ostree install --idempotent' /usr/bin/nocblue-layer-openrazer
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 grep -q 'user-defaults.v15.done' /usr/lib/systemd/user/nocblue-user-defaults.service
@@ -420,6 +424,7 @@ ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
 njust --list | grep -q 'android-sdk'
+njust --list | grep -q 'openrazer'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json

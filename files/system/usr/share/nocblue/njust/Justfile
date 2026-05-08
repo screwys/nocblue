@@ -50,9 +50,14 @@ fde-tpm2 device pin="yes" pcrs="7":
 fde-recovery-key device:
     sudo nocblue-fde-helper recovery-key "{{device}}"
 
+openrazer:
+    sudo nocblue-layer-openrazer install
+
+openrazer-remove:
+    sudo nocblue-layer-openrazer remove
+
 openrazer-check:
-    rpm -q openrazer-meta
-    find /usr/lib/modules -type f -name "razer*.ko*" -print
+    nocblue-layer-openrazer status
 
 tests:
     nocblue-tests
