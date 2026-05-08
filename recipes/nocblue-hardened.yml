@@ -183,14 +183,8 @@ modules:
       skip-unavailable: true
       packages:
         - umu-launcher
-        - openrazer-polychromatic
         - scx-scheds
         - scx-tools
-
-  - type: akmods
-    base: main
-    install:
-      - openrazer
 
   - type: files
     files:

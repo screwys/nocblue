@@ -48,6 +48,10 @@ and final modules.
   secureblue has its own update units and verification flow.
 - `finalize.sh` and `validate-image.sh`; both currently encode standard
   nocblue assumptions and need a hardened-specific pass before use.
+- `openrazer` and `openrazer-polychromatic`; the hardened build exposed that
+  the standard OpenRazer akmod path is not a drop-in secureblue carry-over, and
+  kernel modules should be opted back in only after a separate source/signing
+  review.
 
 ## Known follow-up work
 
