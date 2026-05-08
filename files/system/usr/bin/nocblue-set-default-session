@@ -2,13 +2,14 @@
 set -euo pipefail
 
 session_id="niri"
+session_desktop_path="/usr/share/wayland-sessions/${session_id}.desktop"
 root="${NOCBLUE_ROOT:-}"
 
 root_path() {
     printf '%s%s\n' "${root}" "$1"
 }
 
-desktop_file="$(root_path "/usr/share/wayland-sessions/${session_id}.desktop")"
+desktop_file="$(root_path "${session_desktop_path}")"
 if [[ ! -f "${desktop_file}" ]]; then
     printf 'missing %s; cannot set default graphical session\n' "${desktop_file}" >&2
     exit 1
@@ -17,6 +18,8 @@ fi
 templates_dir="$(root_path /etc/accountsservice/user-templates)"
 users_dir="$(root_path /var/lib/AccountsService/users)"
 state_dir="$(root_path /var/lib/nocblue)"
+sddm_state_dir="$(root_path /var/lib/sddm)"
+sddm_state_file="${sddm_state_dir}/state.conf"
 state_file="${state_dir}/session-defaults.done"
 passwd_file="$(root_path /etc/passwd)"
 
@@ -50,6 +53,28 @@ should_update_session() {
     current="$(current_session "${file}")"
 
     case "${current}" in
+        "" | gnome | gnome-classic | gnome-xorg | default)
+            return 0
+            ;;
+        "${session_id}")
+            return 1
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+session_basename() {
+    local current="$1"
+
+    current="${current##*/}"
+    current="${current%.desktop}"
+    printf '%s\n' "${current}"
+}
+
+is_defaultable_session() {
+    case "$(session_basename "$1")" in
         "" | gnome | gnome-classic | gnome-xorg | default)
             return 0
             ;;
@@ -125,9 +150,186 @@ set_user_session() {
     rm -f "${tmp}"
 }
 
+current_dmrc_session() {
+    local file="$1"
+    [[ -f "${file}" ]] || return 0
+
+    awk -F= '
+        /^\[Desktop\][[:space:]]*$/ { in_desktop=1; next }
+        /^\[/ { in_desktop=0 }
+        in_desktop && $1 == "Session" { print $2; exit }
+    ' "${file}"
+}
+
+set_dmrc_session() {
+    local file="$1"
+    local tmp
+
+    tmp="$(mktemp)"
+    if [[ -f "${file}" ]]; then
+        awk -v session="${session_id}.desktop" '
+            function emit_session() {
+                if (!wrote_session) {
+                    print "Session=" session
+                    wrote_session=1
+                }
+            }
+
+            /^\[Desktop\][[:space:]]*$/ {
+                if (in_desktop) {
+                    emit_session()
+                }
+                in_desktop=1
+                saw_desktop=1
+                print
+                next
+            }
+
+            /^\[/ {
+                if (in_desktop) {
+                    emit_session()
+                }
+                in_desktop=0
+                print
+                next
+            }
+
+            in_desktop && /^Session=/ {
+                next
+            }
+
+            {
+                print
+            }
+
+            END {
+                if (!saw_desktop) {
+                    print ""
+                    print "[Desktop]"
+                    print "Session=" session
+                } else if (in_desktop) {
+                    emit_session()
+                }
+            }
+        ' "${file}" > "${tmp}"
+    else
+        {
+            printf '[Desktop]\n'
+            printf 'Session=%s.desktop\n' "${session_id}"
+        } > "${tmp}"
+    fi
+
+    install -D -m 0644 "${tmp}" "${file}"
+    rm -f "${tmp}"
+}
+
+current_sddm_session() {
+    local file="$1"
+    [[ -f "${file}" ]] || return 0
+
+    awk -F= '
+        /^\[Last\][[:space:]]*$/ { in_last=1; next }
+        /^\[/ { in_last=0 }
+        in_last && $1 == "Session" { print $2; exit }
+    ' "${file}"
+}
+
+set_sddm_session() {
+    local tmp
+
+    tmp="$(mktemp)"
+    if [[ -f "${sddm_state_file}" ]]; then
+        awk -v session="${session_desktop_path}" '
+            function emit_session() {
+                if (!wrote_session) {
+                    print "Session=" session
+                    wrote_session=1
+                }
+            }
+
+            /^\[Last\][[:space:]]*$/ {
+                if (in_last) {
+                    emit_session()
+                }
+                in_last=1
+                saw_last=1
+                print
+                next
+            }
+
+            /^\[/ {
+                if (in_last) {
+                    emit_session()
+                }
+                in_last=0
+                print
+                next
+            }
+
+            in_last && /^Session=/ {
+                next
+            }
+
+            {
+                print
+            }
+
+            END {
+                if (!saw_last) {
+                    print ""
+                    print "[Last]"
+                    print "Session=" session
+                } else if (in_last) {
+                    emit_session()
+                }
+            }
+        ' "${sddm_state_file}" > "${tmp}"
+    else
+        {
+            printf '[Last]\n'
+            printf 'Session=%s\n' "${session_desktop_path}"
+        } > "${tmp}"
+    fi
+
+    install -D -m 0644 "${tmp}" "${sddm_state_file}"
+    rm -f "${tmp}"
+}
+
+seed_sddm_state() {
+    local current
+
+    current="$(current_sddm_session "${sddm_state_file}")"
+    if is_defaultable_session "${current}"; then
+        install -d -m 0755 "${sddm_state_dir}"
+        set_sddm_session
+    fi
+}
+
+seed_user_dmrc() {
+    local uid="$1"
+    local gid="$2"
+    local home="$3"
+    local dmrc_file
+    local current
+
+    [[ -n "${home}" ]] || return 0
+    [[ "${home}" = /* ]] || return 0
+
+    home="$(root_path "${home}")"
+    [[ -d "${home}" ]] || return 0
+
+    dmrc_file="${home}/.dmrc"
+    current="$(current_dmrc_session "${dmrc_file}")"
+    if is_defaultable_session "${current}"; then
+        set_dmrc_session "${dmrc_file}"
+        chown "${uid}:${gid}" "${dmrc_file}" 2>/dev/null || true
+    fi
+}
+
 if [[ -f "${passwd_file}" ]]; then
-    while IFS=: read -r user _ uid _ _ _ _; do
+    while IFS=: read -r user _ uid gid _ home _; do
         [[ "${uid}" =~ ^[0-9]+$ ]] || continue
+        [[ "${gid}" =~ ^[0-9]+$ ]] || continue
         (( uid >= 1000 && uid < 60000 )) || continue
         [[ "${user}" != nobody ]] || continue
 
@@ -135,7 +337,9 @@ if [[ -f "${passwd_file}" ]]; then
         if should_update_session "${user_file}"; then
             set_user_session "${user_file}"
         fi
+        seed_user_dmrc "${uid}" "${gid}" "${home}"
     done < "${passwd_file}"
 fi
 
+seed_sddm_state
 touch "${state_file}"
