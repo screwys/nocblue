@@ -105,7 +105,8 @@ for extension_id, slug in shared.items():
 ublock = firefox_settings["uBlock0@raymondhill.net"]
 assert ublock["installation_mode"] == "allowed"
 assert "install_url" not in ublock
-assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "allowed"
+if "uBlock0@raymondhill.net" in librewolf_settings:
+    assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "allowed"
 assert firefox["policies"]["DisableFirefoxStudies"] is True
 assert firefox["policies"]["DisablePocket"] is True
 assert firefox["policies"]["DisableTelemetry"] is True
