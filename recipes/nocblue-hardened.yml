@@ -26,7 +26,6 @@ modules:
         - helium.repo
         - mullvad.repo
         - https://repo.librewolf.net/librewolf.repo
-      nonfree: rpmfusion
     install:
       install-weak-deps: false
       packages:

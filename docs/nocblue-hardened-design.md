@@ -30,6 +30,9 @@ and final modules.
   pywalfox, Proton VPN, and SDDM theme.
 - Development, gaming, OCR, input, local-service, and browser packages that are
   not already supplied by secureblue.
+- Hardened-specific repo handling: the manual recipe does not use BlueBuild's
+  `nonfree: rpmfusion` helper because secureblue removes the
+  `fedora-cisco-openh264` repo and uses its own multimedia/repo baseline.
 
 ## Intentionally omitted in the manual recipe
 
@@ -61,6 +64,8 @@ and final modules.
 - Validate LibreWolf packaging after the current upstream signature issue is
   resolved. The manual recipe pins `librewolf-150.0.1-1.x86_64` to match the
   current repo fix.
+- Revisit any missing packages one by one if removing the RPMFusion helper
+  exposes a concrete package-source gap in the hardened workflow.
 - Use the `hardened` workflow with `publish=false` for build validation, then
   rerun it with `publish=true` only when we are ready to boot-test the published
   `ghcr.io/screwys/nocblue-hardened:latest` image.
