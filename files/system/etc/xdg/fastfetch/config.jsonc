@@ -34,7 +34,7 @@
       "type": "command",
       "key": "├ ",
       "keyColor": "green",
-      "text": "printf 'Linux '; uname -r | sed 's/\\.x86_64$//'"
+      "text": "uname -r | sed -E 's/\\.x86_64$//; s/-[0-9]+\\.fc[0-9]+$//' | sed 's/^/Linux /'"
     },
     {
       "type": "packages",
@@ -92,9 +92,10 @@
       "keyColor": "red"
     },
     {
-      "type": "board",
+      "type": "command",
       "key": "├ ",
-      "keyColor": "red"
+      "keyColor": "red",
+      "text": "vendor=$(cat /sys/devices/virtual/dmi/id/sys_vendor 2>/dev/null || cat /sys/devices/virtual/dmi/id/board_vendor 2>/dev/null || true); product=$(cat /sys/devices/virtual/dmi/id/product_name 2>/dev/null || true); board=$(cat /sys/devices/virtual/dmi/id/board_name 2>/dev/null || true); vendor=$(printf '%s' \"$vendor\" | sed -E 's/[[:space:]]+(Inc\\.?|Technology Co\\.,?[[:space:]]*Ltd\\.?|Co\\.,?[[:space:]]*Ltd\\.?)$//'); if [ -n \"$product\" ]; then printf '%s %s\\n' \"$vendor\" \"$product\" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//'; else printf '%s\\n' \"$board\"; fi"
     },
     {
       "type": "cpu",
@@ -125,7 +126,7 @@
       "type": "command",
       "key": "└󱦟 ",
       "keyColor": "red",
-      "text": "birth_install=$(stat -c %W /); current=$(date +%s); if [ \"$birth_install\" -gt 0 ]; then echo $(((current - birth_install) / 86400)) days; else echo unknown; fi"
+      "text": "current=$(date +%s); for path in /sysroot /var /; do birth_install=$(stat -c %W \"$path\" 2>/dev/null || echo 0); if [ \"$birth_install\" -gt 0 ] 2>/dev/null; then printf '%s days\\n' \"$(((current - birth_install) / 86400))\"; exit 0; fi; done; echo unknown"
     }
   ]
 }
