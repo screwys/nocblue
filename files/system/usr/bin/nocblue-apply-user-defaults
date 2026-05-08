@@ -697,10 +697,57 @@ apply_user_flatpak_theme_overrides() {
         net.lutris.Lutris >/dev/null 2>&1 || true
 }
 
+ensure_flatpak_desktop_entry() {
+    local app_id="$1"
+    shift || true
+
+    local src="/var/lib/flatpak/exports/share/applications/${app_id}.desktop"
+    local dest="${HOME}/.local/share/applications/${app_id}.desktop"
+
+    [[ -f "${src}" ]] || return 0
+    install -D -m 0644 "${src}" "${dest}"
+
+    if [[ "$#" -gt 0 ]]; then
+        python3 - "$dest" "$app_id" "$@" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+app_id = sys.argv[2]
+args = sys.argv[3:]
+
+lines = path.read_text(encoding="utf-8").splitlines()
+patched = []
+for line in lines:
+    if line.startswith("Exec=") and app_id in line:
+        for arg in args:
+            if arg not in line:
+                if " @@u " in line:
+                    line = line.replace(" @@u ", f" {arg} @@u ", 1)
+                else:
+                    line = f"{line} {arg}"
+    patched.append(line)
+
+path.write_text("\n".join(patched) + "\n", encoding="utf-8")
+PY
+    fi
+}
+
+install_flatpak_desktop_entries() {
+    ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar
+    ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
+    ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
+
+    if command -v update-desktop-database >/dev/null 2>&1; then
+        update-desktop-database "${HOME}/.local/share/applications" >/dev/null 2>&1 || true
+    fi
+}
+
 noctalia_settings_changed=0
 noctalia_templates_changed=0
 stage_user_icon_theme
 apply_user_flatpak_theme_overrides
+install_flatpak_desktop_entries
 if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settings "${HOME}/.config/noctalia/settings.json"; then
     install -D -m 0644 "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json"
     noctalia_settings_changed=1

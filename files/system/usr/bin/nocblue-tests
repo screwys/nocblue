@@ -286,6 +286,10 @@ grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
 grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
 grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
 grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
+grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
