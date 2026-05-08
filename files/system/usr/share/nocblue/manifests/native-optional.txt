@@ -1,5 +1,4 @@
 umu-launcher
 adw-gtk3-theme
-openrazer-polychromatic
 scx-scheds
 scx-tools

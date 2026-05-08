@@ -204,6 +204,19 @@ modules:
     install:
       - openrazer
 
+  # Userspace only. Keep this after akmods so openrazer-kmod-common satisfies
+  # the daemon dependency without pulling the OBS DKMS package.
+  - type: dnf
+    repos:
+      files:
+        - openrazer.repo
+    install:
+      install-weak-deps: false
+      packages:
+        - openrazer-daemon
+        - python3-openrazer
+        - polychromatic
+
   - type: files
     files:
       - source: system
@@ -265,6 +278,7 @@ modules:
       enabled:
         - nocblue-flatpak-overrides.service
         - nocblue-hardened-malloc-flatpaks.service
+        - nocblue-openrazer-plugdev.service
         - nocblue-session-defaults.service
         - flatpak-system-update.timer
         - input-remapper.service

@@ -54,11 +54,11 @@ and final modules.
   secureblue has its own update units and verification flow.
 - `finalize.sh` and `validate-image.sh`; both currently encode standard
   nocblue assumptions and need a hardened-specific pass before use.
-- OpenRazer post-install commands; the hardened recipe uses the build-time
-  akmods module instead. Direct `rpm-ostree install openrazer-meta` during image
-  composition runs the DKMS RPM scriptlet against the build host kernel. The
-  ublue akmods repo file is present but disabled by default so the akmods module
-  can enable it only while resolving the OpenRazer kmod-common package.
+- OpenRazer post-install commands. Both recipes use the build-time akmods
+  module for the kernel modules, then install `openrazer-daemon`,
+  `python3-openrazer`, and `polychromatic` afterward. That lets DNF satisfy the
+  daemon's kernel-module dependency from ublue's `openrazer-kmod-common`
+  provider instead of pulling the OBS DKMS package.
 
 ## Known follow-up work
 

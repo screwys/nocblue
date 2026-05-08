@@ -134,6 +134,9 @@ gamescope
 mangohud
 vulkan-tools
 vkBasalt
+openrazer-daemon
+python3-openrazer
+polychromatic
 
 # Browsers and editor
 firefox

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+getent group plugdev >/dev/null 2>&1 || exit 0
+
+while IFS=: read -r name _ uid _ _ _ shell; do
+    [[ "${uid}" =~ ^[0-9]+$ ]] || continue
+    ((uid >= 1000 && uid < 60000)) || continue
+
+    case "${shell}" in
+        /bin/false|/sbin/nologin|/usr/sbin/nologin)
+            continue
+            ;;
+    esac
+
+    if id -nG "${name}" 2>/dev/null | tr ' ' '\n' | grep -qx 'plugdev'; then
+        continue
+    fi
+
+    usermod -aG plugdev "${name}"
+done </etc/passwd
