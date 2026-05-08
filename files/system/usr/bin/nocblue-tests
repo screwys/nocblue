@@ -186,6 +186,10 @@ test -f /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^kernel.dmesg_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^kernel.unprivileged_bpf_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^net.ipv6.conf.default.use_tempaddr = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+test -f /usr/lib/modprobe.d/dirtyfrag.conf
+grep -qx 'install esp4 /bin/false' /usr/lib/modprobe.d/dirtyfrag.conf
+grep -qx 'install esp6 /bin/false' /usr/lib/modprobe.d/dirtyfrag.conf
+grep -qx 'install rxrpc /bin/false' /usr/lib/modprobe.d/dirtyfrag.conf
 test -f /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.max_map_count = 2147483642$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.swappiness = 100$' /usr/lib/sysctl.d/60-nocblue-performance.conf
