@@ -1,7 +1,8 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 #
-# Draft only. The GitHub workflow intentionally does not publish this recipe yet.
+# Manual test recipe. Only .github/workflows/hardened.yml builds it, and that
+# manual workflow does not publish unless its publish input is explicitly true.
 # It starts from secureblue and layers nocblue desktop ergonomics without
 # re-running nocblue's borrowed hardening modules.
 name: nocblue-hardened

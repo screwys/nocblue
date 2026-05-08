@@ -1,0 +1,38 @@
+name: hardened
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish ghcr.io/screwys/nocblue-hardened:latest after the build
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build hardened image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: build hardened image
+        uses: blue-build/github-action@v1.11.1
+        with:
+          recipe: nocblue-hardened.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+          maximize_build_space: true
+          use_cache: false
+          rechunk: false
+          push: ${{ inputs.publish }}

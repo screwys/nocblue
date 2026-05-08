@@ -1,4 +1,4 @@
-# nocblue-hardened draft
+# nocblue-hardened manual test recipe
 
 `nocblue-hardened` should be a separate image, not a rebuild of the standard
 `nocblue` recipe with only `base-image` changed.
@@ -31,7 +31,7 @@ and final modules.
 - Development, gaming, OCR, input, local-service, and browser packages that are
   not already supplied by secureblue.
 
-## Intentionally omitted in the draft recipe
+## Intentionally omitted in the manual recipe
 
 - `hardened_malloc`, `no_rlimit_as`, `trivalent`, `trivalent-selinux`, and
   known secureblue-supplied packages.
@@ -50,8 +50,8 @@ and final modules.
 
 - Split `files/system` into shared desktop/default files and standard-only
   hardening files, or add a hardened-specific cleanup script. Copying the whole
-  tree is useful for a draft but still brings inert hardening helpers into the
-  image.
+  tree is useful for manual build validation but still brings inert hardening
+  helpers into the image.
 - Add a `nocblue-tests --profile hardened` path or separate hardened test
   script. The current test contract assumes the standard image.
 - Decide whether the hardened image should include the installer/ISO packages
@@ -59,7 +59,8 @@ and final modules.
 - Decide whether Firefox belongs in the hardened variant. Secureblue removes it
   and installs Trivalent as the primary browser.
 - Validate LibreWolf packaging after the current upstream signature issue is
-  resolved. The draft pins `librewolf-150.0.1-1.x86_64` to match the current
-  repo fix.
-- Build manually before wiring the recipe into GitHub Actions or README install
-  instructions.
+  resolved. The manual recipe pins `librewolf-150.0.1-1.x86_64` to match the
+  current repo fix.
+- Use the `hardened` workflow with `publish=false` for build validation, then
+  rerun it with `publish=true` only when we are ready to boot-test the published
+  `ghcr.io/screwys/nocblue-hardened:latest` image.
