@@ -32,17 +32,12 @@ jobs:
       - name: repository shape
         run: |
           test -f recipes/recipe.yml
-          test -f recipes/hardened.yml
           test ! -e Containerfile
           test ! -d build_files
           grep -q 'base-image: ghcr.io/ublue-os/silverblue-main' recipes/recipe.yml
           grep -q 'name: nocblue$' recipes/recipe.yml
-          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/hardened.yml
-          grep -q 'name: nocblue-hardened$' recipes/hardened.yml
           grep -q 'image-version: 44' recipes/recipe.yml
-          grep -q 'image-version: 44' recipes/hardened.yml
           grep -q 'noctalia-shell' recipes/recipe.yml
-          grep -q 'noctalia-shell' recipes/hardened.yml
           ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
           grep -q '! rpm -q kernel-cachyos' files/system/usr/bin/nocblue-tests
 
@@ -52,27 +47,21 @@ jobs:
             recipes files manifests README.md
 
   bluebuild:
-    name: build image (${{ matrix.recipe }})
+    name: build image
     needs: static
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        recipe:
-          - recipe.yml
-          - hardened.yml
     steps:
       - name: build custom image
         uses: blue-build/github-action@v1.11.1
         with:
-          recipe: ${{ matrix.recipe }}
+          recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          use_cache: ${{ matrix.recipe == 'recipe.yml' }}
+          use_cache: true
           rechunk: false
