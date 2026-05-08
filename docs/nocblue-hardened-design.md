@@ -32,7 +32,9 @@ and final modules.
   package choices, even when secureblue already happens to include one of those
   tools. Hardened package parity should be deliberate, not accidental.
 - Firefox stays in the hardened image as part of nocblue's normal browser set;
-  Trivalent remains available from secureblue as the hardened browser.
+  Trivalent remains available from secureblue as the hardened browser. Firefox
+  and LibreWolf launch with standard malloc because the secureblue full-system
+  hardened malloc preload makes them abort during startup.
 - Hardened-specific repo handling: the manual recipe does not use BlueBuild's
   `nonfree: rpmfusion` helper because secureblue removes the
   `fedora-cisco-openh264` repo and uses its own multimedia/repo baseline.
