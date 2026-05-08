@@ -68,6 +68,18 @@ adwaita_skin_installed() {
     grep -q 'steamloopback.host/adwaita/custom/custom.css' "${custom_css}" || return 1
 }
 
+flatpak_has() {
+    flatpak info --user "$1" >/dev/null 2>&1 || flatpak info --system "$1" >/dev/null 2>&1
+}
+
+flatpak_scope_arg() {
+    if flatpak info --user "$1" >/dev/null 2>&1; then
+        printf '%s\n' --user
+    else
+        printf '%s\n' --system
+    fi
+}
+
 repair_steam_prefix_links || true
 
 for _ in {1..6}; do
@@ -76,11 +88,12 @@ for _ in {1..6}; do
         exit 0
     fi
 
-    if flatpak info --system com.valvesoftware.Steam >/dev/null 2>&1 &&
-        flatpak info --system io.github.Foldex.AdwSteamGtk >/dev/null 2>&1 &&
+    if flatpak_has com.valvesoftware.Steam &&
+        flatpak_has io.github.Foldex.AdwSteamGtk &&
         [[ -s "${theme_css}" ]] &&
         steam_ui_exists; then
-        flatpak run --system io.github.Foldex.AdwSteamGtk --install --options 'custom_css:true;rounded_corners:true;win_controls:adwaita;win_controls_layout:auto'
+        adwsteamgtk_scope="$(flatpak_scope_arg io.github.Foldex.AdwSteamGtk)"
+        flatpak run "${adwsteamgtk_scope}" io.github.Foldex.AdwSteamGtk --install --options 'custom_css:true;rounded_corners:true;win_controls:adwaita;win_controls_layout:auto'
         if adwaita_skin_installed; then
             touch "${stamp}"
             exit 0

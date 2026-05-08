@@ -1,0 +1,9 @@
+[Unit]
+Description=Install nocblue user Flatpaks
+ConditionUser=!@system
+
+[Timer]
+OnStartupSec=45s
+
+[Install]
+WantedBy=timers.target

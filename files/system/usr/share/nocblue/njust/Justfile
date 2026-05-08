@@ -8,24 +8,34 @@ status:
 update:
     sudo bootc upgrade
     flatpak update --system -y
+    flatpak update --user -y || true
     if command -v brew >/dev/null 2>&1; then brew update && brew upgrade; fi
 
 auto-update-status:
     systemctl status bootc-fetch-apply-updates.timer --no-pager || true
     systemctl status flatpak-system-update.timer --no-pager || true
+    systemctl --user status flatpak-user-update.timer --no-pager || true
+    systemctl --user status secureblue-flatpak-setup.timer nocblue-flatpak-setup.timer --no-pager || true
     systemctl list-timers bootc-fetch-apply-updates.timer flatpak-system-update.timer --no-pager || true
+    systemctl --user list-timers flatpak-user-update.timer secureblue-flatpak-setup.timer nocblue-flatpak-setup.timer --no-pager || true
 
 rollback:
     sudo rpm-ostree rollback
 
 flatpaks:
-    flatpak list --system --app
+    flatpak list --app
 
 flatpak-icon-fixes:
     nocblue-fix-flatpak-icons
 
 flatpak-overrides:
     sudo nocblue-apply-flatpak-overrides
+
+flatpak-overrides-user:
+    nocblue-apply-flatpak-overrides --user
+
+flatpaks-repair:
+    nocblue-setup-flatpaks --repair
 
 brew:
     brew update

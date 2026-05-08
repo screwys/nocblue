@@ -1,0 +1,17 @@
+[Unit]
+Description=Install nocblue user Flatpaks
+Wants=network-online.target secureblue-flatpak-setup.service
+After=network-online.target secureblue-flatpak-setup.service
+ConditionUser=!@system
+ConditionPathIsDirectory=%h
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-setup-flatpaks
+Restart=on-failure
+RestartSec=30s
+RestartMaxDelaySec=1800s
+RestartSteps=10
+
+[Install]
+WantedBy=default.target

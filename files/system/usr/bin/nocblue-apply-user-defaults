@@ -701,10 +701,20 @@ ensure_flatpak_desktop_entry() {
     local app_id="$1"
     shift || true
 
-    local src="/var/lib/flatpak/exports/share/applications/${app_id}.desktop"
+    local src=""
+    local candidate
+    for candidate in \
+        "${HOME}/.local/share/flatpak/exports/share/applications/${app_id}.desktop" \
+        "/var/lib/flatpak/exports/share/applications/${app_id}.desktop"; do
+        if [[ -f "${candidate}" ]]; then
+            src="${candidate}"
+            break
+        fi
+    done
+
     local dest="${HOME}/.local/share/applications/${app_id}.desktop"
 
-    [[ -f "${src}" ]] || return 0
+    [[ -n "${src}" ]] || return 0
     install -D -m 0644 "${src}" "${dest}"
 
     if [[ "$#" -gt 0 ]]; then

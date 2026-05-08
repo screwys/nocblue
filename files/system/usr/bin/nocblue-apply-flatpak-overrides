@@ -6,10 +6,26 @@ if ! command -v flatpak >/dev/null 2>&1; then
     exit 1
 fi
 
-flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto
+scope="--system"
+case "${1:-}" in
+    --system|"")
+        scope="--system"
+        ;;
+    --user)
+        scope="--user"
+        ;;
+    *)
+        printf 'usage: nocblue-apply-flatpak-overrides [--system|--user]\n' >&2
+        exit 2
+        ;;
+esac
+
+if [[ "${scope}" == "--system" ]]; then
+    flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto
+fi
 
 while read -r app_id override_args; do
     [[ -z "${app_id:-}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
     [[ -n "${override_args:-}" ]] || continue
-    flatpak override --system ${override_args} "${app_id}"
+    flatpak override "${scope}" ${override_args} "${app_id}"
 done < /usr/share/nocblue/manifests/flatpak-overrides.txt

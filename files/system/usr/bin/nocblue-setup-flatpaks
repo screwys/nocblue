@@ -1,0 +1,121 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$(id -u)" -eq 0 ]]; then
+    printf 'nocblue-setup-flatpaks must run as the target user\n' >&2
+    exit 1
+fi
+
+repair=false
+case "${1:-}" in
+    "")
+        ;;
+    --repair)
+        repair=true
+        ;;
+    *)
+        printf 'usage: nocblue-setup-flatpaks [--repair]\n' >&2
+        exit 2
+        ;;
+esac
+
+if ! command -v flatpak >/dev/null 2>&1; then
+    printf 'flatpak is not installed\n' >&2
+    exit 1
+fi
+
+state_dir="${HOME}/.config/nocblue"
+stamp="${state_dir}/nocblue-flatpak-setup.stamp"
+manifest="/usr/share/nocblue/manifests/flatpaks.txt"
+install -d -m 0755 "${state_dir}"
+
+if [[ "${repair}" != true && -e "${stamp}" ]]; then
+    exit 0
+fi
+
+flatpak remote-add --if-not-exists --user --subset=verified --title='Flathub Verified' \
+    flathub-verified https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak remote-add --if-not-exists --user \
+    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+if command -v ujust >/dev/null 2>&1; then
+    ujust harden-flatpak
+else
+    printf 'ujust is not available; skipping secureblue flatpak hardening\n' >&2
+fi
+
+ensure_flatpak_desktop_entry() {
+    local app_id="$1"
+    shift || true
+
+    local src=""
+    local candidate
+    for candidate in \
+        "${HOME}/.local/share/flatpak/exports/share/applications/${app_id}.desktop" \
+        "/var/lib/flatpak/exports/share/applications/${app_id}.desktop"; do
+        if [[ -f "${candidate}" ]]; then
+            src="${candidate}"
+            break
+        fi
+    done
+
+    [[ -n "${src}" ]] || return 0
+
+    local dest="${HOME}/.local/share/applications/${app_id}.desktop"
+    install -D -m 0644 "${src}" "${dest}"
+
+    if [[ "$#" -gt 0 ]]; then
+        python3 - "$dest" "$app_id" "$@" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+app_id = sys.argv[2]
+args = sys.argv[3:]
+
+lines = path.read_text(encoding="utf-8").splitlines()
+patched = []
+for line in lines:
+    if line.startswith("Exec=") and app_id in line:
+        for arg in args:
+            if arg not in line:
+                if " @@u " in line:
+                    line = line.replace(" @@u ", f" {arg} @@u ", 1)
+                else:
+                    line = f"{line} {arg}"
+    patched.append(line)
+
+path.write_text("\n".join(patched) + "\n", encoding="utf-8")
+PY
+    fi
+}
+
+install_flatpak_desktop_entries() {
+    ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar
+    ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
+    ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
+
+    if command -v update-desktop-database >/dev/null 2>&1; then
+        update-desktop-database "${HOME}/.local/share/applications" >/dev/null 2>&1 || true
+    fi
+}
+
+while IFS= read -r ref; do
+    [[ -z "${ref}" || "${ref}" =~ ^[[:space:]]*# ]] && continue
+
+    if flatpak info --user "${ref}" >/dev/null 2>&1; then
+        continue
+    fi
+
+    if ! flatpak install --user -y --noninteractive flathub-verified "${ref}"; then
+        flatpak install --user -y --noninteractive flathub "${ref}"
+    fi
+done < "${manifest}"
+
+nocblue-apply-flatpak-overrides --user
+install_flatpak_desktop_entries
+if command -v nocblue-fix-flatpak-icons >/dev/null 2>&1; then
+    nocblue-fix-flatpak-icons || true
+fi
+
+touch "${stamp}"

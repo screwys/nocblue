@@ -18,8 +18,9 @@ and final modules.
 - Secureblue SELinux policy modules, including user namespace policy.
 - Secureblue sysctl hardening, modprobe policy, service presets, and disabled
   desktop services.
-- Secureblue Flatpak setup and update behavior until we decide which nocblue
-  overrides are compatible.
+- Secureblue Flatpak setup and update behavior. The hardened image layers
+  nocblue's user Flatpak setup after secureblue's baseline instead of baking
+  system Flatpaks into the image.
 
 ## Layer from nocblue
 
@@ -47,11 +48,13 @@ and final modules.
   secureblue owns the global allocator policy.
 - `configure-ipsec-selinux.sh`; secureblue now has its own network/module
   hardening, so nocblue's extra SELinux denial needs a separate decision.
-- `nocblue-hardened-malloc-flatpaks.service`; secureblue owns the global
-  Flatpak hardened-malloc baseline. The lighter nocblue Flatpak override
-  service stays enabled so bundled apps like Steam get compatibility overrides.
-- `bootc-fetch-apply-updates.timer` and `flatpak-system-update.timer`;
-  secureblue has its own update units and verification flow.
+- `nocblue-hardened-malloc-flatpaks.service`, `nocblue-flatpak-overrides.service`,
+  and `flatpak-system-update.timer`; secureblue owns the global user Flatpak
+  hardened-malloc baseline and user update flow. Hardened installs nocblue
+  Flatpaks through `nocblue-flatpak-setup.timer`, which reapplies app-specific
+  user overrides after secureblue's setup.
+- `bootc-fetch-apply-updates.timer`; secureblue has its own update units and
+  verification flow.
 - `finalize.sh` and `validate-image.sh`; both currently encode standard
   nocblue assumptions and need a hardened-specific pass before use.
 - OpenRazer post-install commands. Both recipes use the build-time akmods
