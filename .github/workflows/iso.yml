@@ -37,20 +37,18 @@ jobs:
         run: |
           set -euo pipefail
           test -f iso_files/configure_iso_anaconda.sh
-          test -f files/system/usr/share/nocblue/manifests/flatpaks.txt
           grep -q -- "uses: ublue-os/titanoboa@main" .github/workflows/iso.yml
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
           grep -q -- "iso-dest: nocblue-hardened-44.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
-          grep -q -- "rsync" iso_files/configure_iso_anaconda.sh
           grep -q -- 'install_image="ghcr.io/screwys/nocblue-hardened:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
-          grep -q -- '%include /usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks' iso_files/configure_iso_anaconda.sh
-          grep -q -- 'rsync -aAXUHKP --open-noatime /var/lib/flatpak' iso_files/configure_iso_anaconda.sh
-          grep -q -- 'flatpak info --system "${flatpak_ref}"' iso_files/configure_iso_anaconda.sh
-          grep -q -- '/usr/bin/nocblue-apply-flatpak-overrides' iso_files/configure_iso_anaconda.sh
-          grep -q -- 'var-lib-flatpak.mount' iso_files/configure_iso_anaconda.sh
+          ! grep -q -- '^          flatpaks-list:' .github/workflows/iso.yml
+          ! grep -q -- 'nocblue-install-flatpaks.ks' iso_files/configure_iso_anaconda.sh
+          ! grep -q -- 'rsync -aAXUHKP --open-noatime /var/lib/flatpak' iso_files/configure_iso_anaconda.sh
+          ! grep -q -- 'flatpak info --system "${flatpak_ref}"' iso_files/configure_iso_anaconda.sh
+          ! grep -q -- 'var-lib-flatpak.mount' iso_files/configure_iso_anaconda.sh
           grep -q -- '/usr/lib64/firefox/distribution/policies.json' iso_files/configure_iso_anaconda.sh
           grep -q -- '"SearchEngines"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'DuckDuckGo' iso_files/configure_iso_anaconda.sh
@@ -90,83 +88,11 @@ jobs:
         with:
           image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           container-image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
-          flatpaks-list: ${{ github.workspace }}/files/system/usr/share/nocblue/manifests/flatpaks.txt
           hook-post-rootfs: ${{ github.workspace }}/iso_files/configure_iso_anaconda.sh
           compression: squashfs
           kargs: ""
           builder-distro: fedora
           iso-dest: nocblue-hardened-44.iso
-
-      - name: verify iso flatpaks
-        run: |
-          set -euo pipefail
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends squashfs-tools xorriso
-
-          mkdir -p iso-inspect rootfs-inspect
-          xorriso -osirrox on \
-            -indev "${{ steps.build.outputs.iso-dest }}" \
-            -extract /LiveOS/squashfs.img iso-inspect/squashfs.img
-          unsquashfs -q -no-xattrs -d rootfs-inspect iso-inspect/squashfs.img var/lib/flatpak
-
-          arch="$(uname -m)"
-          missing=()
-
-          flatpak_ref_exists() {
-            local ref="$1"
-            local kind=""
-            local app_id=""
-            local ref_arch="${arch}"
-            local branch=""
-
-            if [[ "${ref}" == app/* || "${ref}" == runtime/* ]]; then
-              IFS=/ read -r kind app_id ref_arch branch <<< "${ref}"
-              test -e "rootfs-inspect/var/lib/flatpak/${kind}/${app_id}/${ref_arch}/${branch}/active"
-              return
-            fi
-
-            if [[ "${ref}" == *//* ]]; then
-              app_id="${ref%%//*}"
-              branch="${ref##*//}"
-            else
-              app_id="${ref}"
-            fi
-
-            if [[ -n "${branch}" ]]; then
-              test -e "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/${branch}/active" \
-                || test -e "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/${branch}/active"
-              return
-            fi
-
-            compgen -G "rootfs-inspect/var/lib/flatpak/app/${app_id}/${arch}/*/active" >/dev/null \
-              || compgen -G "rootfs-inspect/var/lib/flatpak/runtime/${app_id}/${arch}/*/active" >/dev/null
-          }
-
-          while IFS= read -r flatpak_ref; do
-            [[ -z "${flatpak_ref}" || "${flatpak_ref}" =~ ^# ]] && continue
-            if ! flatpak_ref_exists "${flatpak_ref}"; then
-              missing+=("${flatpak_ref}")
-            fi
-          done < files/system/usr/share/nocblue/manifests/flatpaks.txt
-
-          if [[ "${#missing[@]}" -gt 0 ]]; then
-            printf 'missing Flatpaks from ISO rootfs:\n' >&2
-            printf '  %s\n' "${missing[@]}" >&2
-            exit 1
-          fi
-
-          steam_override="rootfs-inspect/var/lib/flatpak/overrides/com.valvesoftware.Steam"
-          test -f "${steam_override}"
-          grep -q '^unset-environment=LD_PRELOAD;' "${steam_override}"
-          grep -q '^filesystems=!host-os;' "${steam_override}"
-          grep -q '^shared=network;ipc;' "${steam_override}"
-          grep -q '^sockets=x11;pulseaudio;' "${steam_override}"
-          grep -q '^features=multiarch;per-app-dev-shm;' "${steam_override}"
-
-          flatseal_override="rootfs-inspect/var/lib/flatpak/overrides/com.github.tchx84.Flatseal"
-          test -f "${flatseal_override}"
-          grep -q '^org.gnome.Software=talk$' "${flatseal_override}"
-          grep -q '^org.freedesktop.impl.portal.PermissionStore=talk$' "${flatseal_override}"
 
       - name: checksum iso
         run: |
