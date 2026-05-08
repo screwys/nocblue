@@ -17,6 +17,7 @@ modules:
       files:
         - niri.repo
         - terra.repo
+        - ublue-akmods.repo
         - secureblue-packages-fedora.repo
         - brave-browser-beta.repo
         - helium.repo

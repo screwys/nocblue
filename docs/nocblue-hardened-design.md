@@ -54,7 +54,9 @@ and final modules.
   nocblue assumptions and need a hardened-specific pass before use.
 - OpenRazer post-install commands; the hardened recipe uses the build-time
   akmods module instead. Direct `rpm-ostree install openrazer-meta` during image
-  composition runs the DKMS RPM scriptlet against the build host kernel.
+  composition runs the DKMS RPM scriptlet against the build host kernel. The
+  ublue akmods repo file is present but disabled by default so the akmods module
+  can enable it only while resolving the OpenRazer kmod-common package.
 
 ## Known follow-up work
 
