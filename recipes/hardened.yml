@@ -1,0 +1,251 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+name: nocblue-hardened
+description: Personal Fedora 44 bootc image with niri, Noctalia, BlueBuild, Brew, gaming defaults, and a secureblue base.
+
+base-image: ghcr.io/secureblue/silverblue-main-hardened
+image-version: 44
+platforms:
+  - linux/amd64
+
+labels:
+  org.opencontainers.image.source: https://github.com/screwys/nocblue
+
+modules:
+  - type: dnf
+    repos:
+      files:
+        - niri.repo
+        - terra.repo
+        - secureblue-packages-fedora.repo
+        - brave-browser-beta.repo
+        - helium.repo
+        - mullvad.repo
+        - https://repo.librewolf.net/librewolf.repo
+        - https://repo.secureblue.dev/secureblue.repo
+      nonfree: rpmfusion
+    install:
+      install-weak-deps: false
+      packages:
+        - niri
+        - xwayland-satellite
+        - noctalia-shell
+        - ghostty
+        - fish
+        - fastfetch
+        - just
+        - gh
+        - jq
+        - nodejs24-bin
+        - nodejs24-npm-bin
+        - pnpm
+        - ripgrep
+        - fd-find
+        - bat
+        - eza
+        - fzf
+        - tree
+        - curl
+        - wget2-wget
+        - unzip
+        - 7zip
+        - yq
+        - yt-dlp
+        - direnv
+        - neovim
+        - socat
+        - zoxide
+        - btop
+        - duf
+        - du-dust
+        - hyperfine
+        - tokei
+        - ShellCheck
+        - shfmt
+        - uv
+        - android-tools
+        - java-latest-openjdk-devel
+        - golang
+        - rust
+        - cargo
+        - gcc
+        - gcc-c++
+        - make
+        - cmake
+        - pkgconf-pkg-config
+        - openssl-devel
+        - gnome-keyring
+        - dbus-tools
+        - polkit
+        - nautilus
+        - nautilus-python
+        - loupe
+        - showtime
+        - xdg-desktop-portal-gnome
+        - xdg-desktop-portal-gtk
+        - sddm
+        - sddm-wayland-generic
+        - sddm-x11
+        - xorg-x11-server-Xorg
+        - qt6-qt5compat
+        - qt6-qtsvg
+        - qt6ct
+        - fcitx5
+        - fcitx5-mozc
+        - fcitx5-configtool
+        - fcitx5-gtk
+        - fcitx5-qt
+        - candy-icon-theme
+        - google-noto-sans-cjk-fonts
+        - firewalld
+        - flatpak
+        - nm-connection-editor
+        - NetworkManager-tui
+        - NetworkManager-wifi
+        - network-manager-applet
+        - bubblewrap
+        - xdg-dbus-proxy
+        - shim-x64
+        - grub2-efi-x64-cdboot
+        - grub2-tools
+        - anaconda
+        - anaconda-core
+        - anaconda-dracut
+        - anaconda-install-env-deps
+        - dracut-config-generic
+        - dracut-network
+        - net-tools
+        - squashfs-tools
+        - lorax-templates-generic
+        - biosdevname
+        - prefixdevname
+        - python3-mako
+        - pipx
+        - mokutil
+        - openssl
+        - kmod
+        - cryptsetup
+        - tpm2-tools
+        - zram-generator
+        - hardened_malloc
+        - no_rlimit_as
+        - xz
+        - zstd
+        - dracut
+        - patch
+        - wl-clipboard
+        - grim
+        - slurp
+        - wf-recorder
+        - cliphist
+        - wl-mirror
+        - wtype
+        - brightnessctl
+        - ddcutil
+        - libnotify
+        - ImageMagick
+        - tesseract
+        - tesseract-langpack-eng
+        - tesseract-langpack-jpn
+        - tesseract-langpack-jpn_vert
+        - kde-connect
+        - kde-connect-nautilus
+        - radicale3
+        - radicale3-selinux
+        - nginx
+        - input-remapper
+        - libinput-utils
+        - steam-devices
+        - gamescope
+        - mangohud
+        - vulkan-tools
+        - vkBasalt
+        - firefox
+        - brave-origin-beta
+        - helium-bin
+        - librewolf
+        - mullvad-browser
+        - trivalent
+        - trivalent-selinux
+        - zed
+        - libappindicator-gtk3
+    remove:
+      auto-remove: false
+      packages:
+        - ptyxis
+        - gnome-terminal
+        - gnome-terminal-nautilus
+        - gnome-console
+        - kgx
+
+  - type: dnf
+    install:
+      install-weak-deps: false
+      skip-unavailable: true
+      packages:
+        - umu-launcher
+        - adw-gtk3-theme
+        - openrazer-polychromatic
+        - scx-scheds
+        - scx-tools
+
+  - type: akmods
+    base: main
+    install:
+      - openrazer
+
+  - type: files
+    files:
+      - source: system
+        destination: /
+
+  - type: script
+    scripts:
+      - stage-noctalia-plugins.sh
+      - install-pywalfox.sh
+      - install-browser-policies.sh
+      - install-protonvpn.sh
+      - install-noctalia-sddm-theme.sh
+      - configure-sddm.sh
+      - configure-hardened-malloc.sh
+      - configure-ipsec-selinux.sh
+      - build-loupe-reuse-window.sh
+      - patch-native-media-apps.sh
+
+  - type: brew
+    nofile-limits: true
+    brew-analytics: false
+
+  - type: systemd
+    system:
+      enabled:
+        - nocblue-flatpak-overrides.service
+        - nocblue-hardened-malloc-flatpaks.service
+        - nocblue-session-defaults.service
+        - bootc-fetch-apply-updates.timer
+        - flatpak-system-update.timer
+        - input-remapper.service
+        - firewalld.service
+        - me.proton.vpn.split_tunneling.service
+        - sddm.service
+      disabled:
+        - gdm.service
+      masked:
+        - geoclue.service
+        - rpm-ostree-countme.timer
+        - sshd.service
+        - sshd.socket
+        - sshd-keygen.target
+    user:
+      enabled:
+        - nocblue-user-defaults.service
+        - nocblue-adwsteamgtk.timer
+        - nocblue-icon-theme-sync.timer
+        - nocblue-flatpak-icon-fixes.service
+
+  - type: script
+    scripts:
+      - finalize.sh
+      - validate-image.sh
+
+  - type: signing
