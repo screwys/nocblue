@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_NAME: nocblue
+  IMAGE_NAME: nocblue-hardened
   IMAGE_REGISTRY: ghcr.io/screwys
   DEFAULT_TAG: latest
 
@@ -41,10 +41,10 @@ jobs:
           grep -q -- "uses: ublue-os/titanoboa@main" .github/workflows/iso.yml
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
-          grep -q -- "iso-dest: nocblue-44.iso" .github/workflows/iso.yml
+          grep -q -- "iso-dest: nocblue-hardened-44.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
           grep -q -- "rsync" iso_files/configure_iso_anaconda.sh
-          grep -q -- 'install_image="ghcr.io/screwys/nocblue:latest"' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'install_image="ghcr.io/screwys/nocblue-hardened:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
           grep -q -- '%include /usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks' iso_files/configure_iso_anaconda.sh
           grep -q -- 'rsync -aAXUHKP --open-noatime /var/lib/flatpak' iso_files/configure_iso_anaconda.sh
@@ -95,7 +95,7 @@ jobs:
           compression: squashfs
           kargs: ""
           builder-distro: fedora
-          iso-dest: nocblue-44.iso
+          iso-dest: nocblue-hardened-44.iso
 
       - name: verify iso flatpaks
         run: |
@@ -171,14 +171,14 @@ jobs:
       - name: checksum iso
         run: |
           mkdir -p output
-          install -m 0644 "${{ steps.build.outputs.iso-dest }}" output/nocblue-44.iso
+          install -m 0644 "${{ steps.build.outputs.iso-dest }}" output/nocblue-hardened-44.iso
           cd output
-          sha256sum nocblue-44.iso | tee nocblue-44.iso.sha256
+          sha256sum nocblue-hardened-44.iso | tee nocblue-hardened-44.iso.sha256
 
       - name: upload iso
         uses: actions/upload-artifact@v7
         with:
-          name: nocblue-44-iso
+          name: nocblue-hardened-44-iso
           path: output
           if-no-files-found: error
           retention-days: 7

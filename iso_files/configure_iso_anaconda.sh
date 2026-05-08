@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-install_image="ghcr.io/screwys/nocblue:latest"
+install_image="ghcr.io/screwys/nocblue-hardened:latest"
 dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 "${dnf_cmd}" install -y --allowerasing \
