@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+policy_dir="/usr/share/nocblue/selinux/user_namespace"
+modules=(grant_userns harden_userns userns_deny_unconfined_relabels)
+deny_modules=(harden_userns userns_deny_unconfined_relabels)
+
+usage() {
+    cat <<'EOF'
+usage: nocblue-userns-hardening status|on|off|install
+
+status  show whether SELinux user namespace hardening is active
+on      install and enable the SELinux user namespace deny policy
+off     disable the SELinux user namespace deny policy
+install install the policy modules without changing the enabled state
+
+This can break tools that create user namespaces from unconfined user shells.
+Test native browsers, Flatpaks, Podman/toolbox/distrobox, and development
+workflows before making it a default on a daily-use machine.
+EOF
+}
+
+need_root() {
+    if [[ "${EUID}" -ne 0 ]]; then
+        printf 'run as root\n' >&2
+        exit 1
+    fi
+}
+
+module_enabled() {
+    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx "$1"
+}
+
+install_modules() {
+    need_root
+    for module in "${modules[@]}"; do
+        test -f "${policy_dir}/${module}.cil"
+    done
+    semodule -X 300 -i \
+        "${policy_dir}/grant_userns.cil" \
+        "${policy_dir}/harden_userns.cil" \
+        "${policy_dir}/userns_deny_unconfined_relabels.cil"
+}
+
+case "${1:-status}" in
+    status)
+        if module_enabled harden_userns && module_enabled userns_deny_unconfined_relabels; then
+            printf 'enabled\n'
+        else
+            printf 'disabled\n'
+        fi
+        ;;
+    on|enable)
+        install_modules
+        for module in "${deny_modules[@]}"; do
+            semodule -e "${module}"
+        done
+        printf 'SELinux user namespace hardening enabled\n'
+        ;;
+    off|disable)
+        need_root
+        for module in "${deny_modules[@]}"; do
+            if semodule -l 2>/dev/null | awk '{print $1}' | grep -qx "${module}"; then
+                semodule -d "${module}"
+            fi
+        done
+        printf 'SELinux user namespace hardening disabled\n'
+        ;;
+    install)
+        was_enabled=false
+        if module_enabled harden_userns && module_enabled userns_deny_unconfined_relabels; then
+            was_enabled=true
+        fi
+        install_modules
+        if [[ "${was_enabled}" != true ]]; then
+            for module in "${deny_modules[@]}"; do
+                semodule -d "${module}"
+            done
+        fi
+        printf 'SELinux user namespace hardening modules installed\n'
+        ;;
+    -h|--help|help)
+        usage
+        ;;
+    *)
+        usage >&2
+        exit 2
+        ;;
+esac

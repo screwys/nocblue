@@ -186,8 +186,15 @@ test -f /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^kernel.dmesg_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^kernel.unprivileged_bpf_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^net.ipv6.conf.default.use_tempaddr = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.oops_limit = 100$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.warn_limit = 100$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.kexec_load_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^kernel.randomize_va_space = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^vm.mmap_rnd_bits = 32$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^vm.mmap_rnd_compat_bits = 16$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
+grep -q '^vm.mmap_min_addr = 65536$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
 test -f /usr/lib/modprobe.d/dirtyfrag.conf
-for dirtyfrag_module in rxrpc esp4 esp4_offload esp6 esp6_offload nft_xfrm xfrm4_tunnel xfrm6_tunnel xfrm_algo xfrm_interface xfrm_ipcomp xfrm_iptfs xfrm_user; do
+for dirtyfrag_module in rxrpc esp4 esp4_offload esp6 esp6_offload nft_xfrm xfrm4_tunnel xfrm6_tunnel xfrm_algo xfrm_interface xfrm_ipcomp xfrm_iptfs xfrm_user ah4 ah6 ipcomp ipcomp6 af_key; do
     grep -qx "install ${dirtyfrag_module} /bin/false" /usr/lib/modprobe.d/dirtyfrag.conf
 done
 test -f /usr/lib/sysctl.d/60-nocblue-performance.conf
@@ -231,6 +238,13 @@ bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
+bash -n /usr/bin/nocblue-userns-hardening
+test -x /usr/bin/nocblue-userns-hardening
+test -f /usr/share/nocblue/selinux/user_namespace/grant_userns.cil
+test -f /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
+test -f /usr/share/nocblue/selinux/user_namespace/userns_deny_unconfined_relabels.cil
+grep -q 'user_namespace (create)' /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
+grep -q 'userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 grep -q 'user-defaults.v15.done' /usr/lib/systemd/user/nocblue-user-defaults.service

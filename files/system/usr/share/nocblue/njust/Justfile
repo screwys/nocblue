@@ -56,3 +56,6 @@ openrazer-check:
 
 tests:
     nocblue-tests
+
+userns-hardening mode="status":
+    sudo nocblue-userns-hardening "{{mode}}"
