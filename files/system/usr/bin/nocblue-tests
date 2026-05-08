@@ -376,7 +376,7 @@ grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
 ! grep -q '^ConditionPathExists=.*session-defaults.done' /usr/lib/systemd/system/nocblue-session-defaults.service
 grep -q 'seed_sddm_state' /usr/bin/nocblue-set-default-session
-grep -q 'Session=niri.desktop' /usr/bin/nocblue-set-default-session
+grep -Fq '${session_id}.desktop' /usr/bin/nocblue-set-default-session
 grep -q '/var/lib/sddm/state.conf' /usr/bin/nocblue-set-default-session
 test -f /etc/sddm.conf.d/10-nocblue-theme.conf
 grep -q '^Current=noctalia$' /etc/sddm.conf.d/10-nocblue-theme.conf
