@@ -6,6 +6,8 @@ if ! command -v flatpak >/dev/null 2>&1; then
     exit 1
 fi
 
+flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto
+
 while read -r app_id override_args; do
     [[ -z "${app_id:-}" || "${app_id}" =~ ^[[:space:]]*# ]] && continue
     [[ -n "${override_args:-}" ]] || continue

@@ -176,6 +176,12 @@ grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
+if grep -q '^VARIANT_ID=nocblue-hardened$' /usr/lib/os-release; then
+    grep -q '^PRETTY_NAME="nocblue 44-hardened"$' /usr/lib/os-release
+    grep -q '^DEFAULT_HOSTNAME="nocblue-hardened"$' /usr/lib/os-release
+    grep -q "Nocblue 44-hardened" /etc/xdg/fastfetch/config.jsonc
+    ! rpm -q bazaar >/dev/null 2>&1
+fi
 test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
@@ -325,6 +331,7 @@ test -x /usr/bin/nocblue-apply-hardened-malloc
 grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-hardened-malloc
+grep -q 'flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
 grep -q '^net.lutris.Lutris .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt

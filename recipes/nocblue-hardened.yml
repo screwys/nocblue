@@ -182,6 +182,7 @@ modules:
     remove:
       auto-remove: false
       packages:
+        - bazaar
         - ptyxis
         - gnome-terminal
         - gnome-terminal-nautilus
@@ -210,6 +211,7 @@ modules:
 
   - type: script
     scripts:
+      - configure-hardened-branding.sh
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
@@ -224,11 +226,47 @@ modules:
     nofile-limits: true
     brew-analytics: false
 
+  - type: default-flatpaks
+    configurations:
+      - notify: false
+        scope: system
+        install:
+          - io.github.kolunmi.Bazaar
+          - com.belmoussaoui.Authenticator
+          - studio.planetpeanut.Bobby
+          - io.github.diegopvlk.Cine
+          - org.gnome.Papers
+          - org.gtk.Gtk3theme.adw-gtk3
+          - org.gtk.Gtk3theme.adw-gtk3-dark
+          - org.gnome.gitlab.somas.Apostrophe
+          - it.mijorus.gearlever
+          - com.github.tchx84.Flatseal
+          - org.gnome.Fractal
+          - io.github.ilya_zlobintsev.LACT
+          - io.github.radiolamp.mangojuice
+          - io.missioncenter.MissionCenter
+          - com.github.marhkb.Pods
+          - io.github.alyraffauf.Switchyard
+          - io.github.Foldex.AdwSteamGtk
+          - org.gnome.TextEditor
+          - dev.vencord.Vesktop
+          - org.signal.Signal
+          - com.github.zocker_160.SyncThingy
+          - com.valvesoftware.Steam
+          - net.davidotek.pupgui2
+          - net.lutris.Lutris
+          - org.freedesktop.Platform.VulkanLayer.MangoHud//25.08
+          - org.freedesktop.Platform.VulkanLayer.MangoHud//24.08
+          - org.freedesktop.Platform.VulkanLayer.gamescope//25.08
+          - org.freedesktop.Platform.VulkanLayer.gamescope//24.08
+
   - type: systemd
     system:
       enabled:
         - nocblue-flatpak-overrides.service
+        - nocblue-hardened-malloc-flatpaks.service
         - nocblue-session-defaults.service
+        - flatpak-system-update.timer
         - input-remapper.service
         - firewalld.service
         - me.proton.vpn.split_tunneling.service
@@ -237,6 +275,7 @@ modules:
         - gdm.service
       masked:
         - geoclue.service
+        - securebluecleanup.service
         - sshd.service
         - sshd.socket
         - sshd-keygen.target
@@ -246,5 +285,8 @@ modules:
         - nocblue-adwsteamgtk.timer
         - nocblue-icon-theme-sync.timer
         - nocblue-flatpak-icon-fixes.service
+      masked:
+        - secureblue-flatpak-setup.service
+        - secureblue-flatpak-setup.timer
 
   - type: signing
