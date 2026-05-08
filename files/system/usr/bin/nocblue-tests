@@ -243,7 +243,11 @@ test -x /usr/bin/nocblue-userns-hardening
 test -f /usr/share/nocblue/selinux/user_namespace/grant_userns.cil
 test -f /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
 test -f /usr/share/nocblue/selinux/user_namespace/userns_deny_unconfined_relabels.cil
+test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'user_namespace (create)' /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
+grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
+grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
+semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
 grep -q 'userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
