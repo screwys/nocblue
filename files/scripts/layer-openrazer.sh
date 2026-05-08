@@ -24,5 +24,4 @@ rpm-ostree install --idempotent \
     akmods \
     mokutil \
     openssl \
-    openrazer-meta \
-    openrazer-polychromatic
+    openrazer-meta
