@@ -101,13 +101,13 @@ librewolf_settings = librewolf["policies"]["ExtensionSettings"]
 for extension_id, slug in shared.items():
     for settings in (firefox_settings, librewolf_settings):
         policy = settings[extension_id]
-        assert policy["installation_mode"] == "allowed"
+        assert policy["installation_mode"] == "normal_installed"
         assert policy["private_browsing"] is True
-        assert "install_url" not in policy
+        assert policy["install_url"] == f"https://addons.mozilla.org/firefox/downloads/latest/{slug}/latest.xpi"
 
 ublock = firefox_settings["uBlock0@raymondhill.net"]
-assert ublock["installation_mode"] == "allowed"
-assert "install_url" not in ublock
+assert ublock["installation_mode"] == "normal_installed"
+assert ublock["install_url"] == "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
 assert firefox["policies"]["DisableFirefoxStudies"] is True
 assert firefox["policies"]["DisablePocket"] is True
 assert firefox["policies"]["DisableTelemetry"] is True
