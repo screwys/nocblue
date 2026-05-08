@@ -94,6 +94,7 @@ modules:
         - fcitx5-configtool
         - fcitx5-gtk
         - fcitx5-qt
+        - adwaita-cursor-theme
         - candy-icon-theme
         - google-noto-sans-cjk-fonts
         - firewalld
