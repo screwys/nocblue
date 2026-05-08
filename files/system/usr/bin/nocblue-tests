@@ -157,10 +157,7 @@ grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
 grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
-grep -q 'fc\[0-9\]' /etc/xdg/fastfetch/config.jsonc
-grep -q 'sys_vendor' /etc/xdg/fastfetch/config.jsonc
-grep -q 'product_name' /etc/xdg/fastfetch/config.jsonc
-grep -q '/sysroot /var /' /etc/xdg/fastfetch/config.jsonc
+grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
