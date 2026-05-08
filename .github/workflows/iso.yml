@@ -40,8 +40,12 @@ jobs:
           grep -q -- "uses: ublue-os/titanoboa@main" .github/workflows/iso.yml
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
+          grep -q -- "hook-pre-initramfs:" .github/workflows/iso.yml
           grep -q -- "iso-dest: nocblue-hardened-44.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
+          grep -q -- "/usr/lib64/libno_rlimit_as.so" iso_files/configure_iso_initramfs.sh
+          grep -q -- "/etc/ld.so.cache" iso_files/configure_iso_initramfs.sh
+          grep -q -- "ldconfig" iso_files/configure_iso_initramfs.sh
           grep -q -- 'install_image="ghcr.io/screwys/nocblue-hardened:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
           ! grep -q -- '^          flatpaks-list:' .github/workflows/iso.yml
@@ -89,6 +93,7 @@ jobs:
           image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           container-image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           hook-post-rootfs: ${{ github.workspace }}/iso_files/configure_iso_anaconda.sh
+          hook-pre-initramfs: ${{ github.workspace }}/iso_files/configure_iso_initramfs.sh
           compression: squashfs
           kargs: ""
           builder-distro: fedora

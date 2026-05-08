@@ -92,6 +92,7 @@ modules:
         - openssl
         - openssl-devel
         - patch
+        - no_rlimit_as
 
         # Desktop apps and integration.
         - gnome-keyring

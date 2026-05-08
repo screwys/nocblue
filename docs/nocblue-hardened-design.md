@@ -42,8 +42,11 @@ and final modules.
 
 ## Intentionally omitted in the manual recipe
 
-- `hardened_malloc`, `no_rlimit_as`, `trivalent`, and `trivalent-selinux`;
-  secureblue owns those hardening and browser-policy packages.
+- `hardened_malloc`, `trivalent`, and `trivalent-selinux`; secureblue owns
+  those hardening and browser-policy packages.
+- `no_rlimit_as` is layered by nocblue-hardened because secureblue's global
+  preload configuration references `libno_rlimit_as.so`, and the ISO live
+  environment must have that shared object available before login.
 - `configure-hardened-malloc.sh` and `nocblue-hardened-malloc-flatpaks.service`;
   secureblue owns the global allocator policy.
 - `configure-ipsec-selinux.sh`; secureblue now has its own network/module
