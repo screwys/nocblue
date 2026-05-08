@@ -85,6 +85,8 @@ modules:
         - xdg-desktop-portal-gtk
         - sddm
         - sddm-wayland-generic
+        - sddm-x11
+        - xorg-x11-server-Xorg
         - qt6-qt5compat
         - qt6-qtsvg
         - qt6ct
