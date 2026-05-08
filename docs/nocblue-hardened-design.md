@@ -66,9 +66,9 @@ and final modules.
   script. The current test contract assumes the standard image.
 - Decide whether the hardened image should include the installer/ISO packages
   or only support `bootc switch`.
-- Validate LibreWolf packaging after the current upstream signature issue is
-  resolved. The manual recipe pins `librewolf-150.0.1-1.x86_64` to match the
-  current repo fix.
+- Keep the LibreWolf pin current. The repo has had recent package-signature
+  churn, so both standard and hardened recipes should move together after a
+  download/signature check.
 - Revisit any missing packages one by one if removing the RPMFusion helper
   exposes a concrete package-source gap in the hardened workflow.
 - Use the `hardened` workflow with `publish=false` for build validation, then

@@ -163,8 +163,8 @@ modules:
         - firefox
         - brave-origin-beta
         - helium-bin
-        # 150.0.2 is published with a bad RPM signature in the LibreWolf repo.
-        - librewolf-150.0.1-1.x86_64
+        # Keep this pinned because LibreWolf repo signatures have been unstable.
+        - librewolf-150.0.2-1.x86_64
         - mullvad-browser
         - trivalent
         - trivalent-selinux
