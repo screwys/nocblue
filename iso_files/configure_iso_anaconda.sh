@@ -117,6 +117,11 @@ cat >/usr/lib64/firefox/distribution/policies.json <<'EOF'
       "SponsoredTopSites": false,
       "Stories": false
     },
+    "Homepage": {
+      "Locked": false,
+      "StartPage": "none",
+      "URL": "about:blank"
+    },
     "FirefoxSuggest": {
       "ImproveSuggest": false,
       "Locked": false,

@@ -98,14 +98,14 @@ librewolf_settings = librewolf["policies"]["ExtensionSettings"]
 for extension_id, slug in shared.items():
     for settings in (firefox_settings, librewolf_settings):
         policy = settings[extension_id]
-        assert policy["installation_mode"] == "normal_installed"
+        assert policy["installation_mode"] == "allowed"
         assert policy["private_browsing"] is True
-        assert f"/{slug}/" in policy["install_url"]
+        assert "install_url" not in policy
 
 ublock = firefox_settings["uBlock0@raymondhill.net"]
-assert ublock["installation_mode"] == "normal_installed"
-assert "/ublock-origin/" in ublock["install_url"]
-assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "normal_installed"
+assert ublock["installation_mode"] == "allowed"
+assert "install_url" not in ublock
+assert librewolf_settings["uBlock0@raymondhill.net"]["installation_mode"] == "allowed"
 assert firefox["policies"]["DisableFirefoxStudies"] is True
 assert firefox["policies"]["DisablePocket"] is True
 assert firefox["policies"]["DisableTelemetry"] is True
@@ -120,6 +120,12 @@ assert firefox["policies"]["SearchSuggestEnabled"] is False
 assert firefox["policies"]["SkipTermsOfUse"] is True
 assert firefox["policies"]["FirefoxSuggest"]["WebSuggestions"] is False
 assert firefox["policies"]["FirefoxSuggest"]["SponsoredSuggestions"] is False
+assert firefox["policies"]["Homepage"] == {
+    "Locked": False,
+    "StartPage": "none",
+    "URL": "about:blank",
+}
+assert librewolf["policies"]["Homepage"] == firefox["policies"]["Homepage"]
 assert firefox["policies"]["UserMessaging"]["SkipOnboarding"] is True
 assert librewolf["policies"]["DisableTelemetry"] is True
 
@@ -137,16 +143,25 @@ chromium_ids = {
     "dhdgffkkebhmkfjojejmpbldmpobfkfo",
 }
 for policy in (brave_extensions, chromium_extensions, helium_extensions):
+    assert policy["HomepageIsNewTabPage"] is True
+    assert policy["ImportHomepage"] is False
+    assert policy["PromotionalTabsEnabled"] is False
+    assert policy["RestoreOnStartup"] == 5
     settings = policy["ExtensionSettings"]
     assert set(settings) == chromium_ids
     assert "ExtensionInstallForcelist" not in policy
     for extension_id in chromium_ids:
-        assert settings[extension_id]["installation_mode"] == "normal_installed"
-        assert settings[extension_id]["update_url"] == "https://clients2.google.com/service/update2/crx"
+        assert settings[extension_id]["installation_mode"] == "allowed"
+        assert "update_url" not in settings[extension_id]
 
 trivalent_policy = trivalent_extensions["ExtensionSettings"]
+assert trivalent_extensions["HomepageIsNewTabPage"] is True
+assert trivalent_extensions["ImportHomepage"] is False
+assert trivalent_extensions["PromotionalTabsEnabled"] is False
+assert trivalent_extensions["RestoreOnStartup"] == 5
 assert set(trivalent_policy) == {"ghmbeldphafepmbegfdlkpapadhbakde"}
-assert trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]["installation_mode"] == "normal_installed"
+assert trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]["installation_mode"] == "allowed"
+assert "update_url" not in trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]
 
 assert pywalfox["name"] == "pywalfox"
 assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]

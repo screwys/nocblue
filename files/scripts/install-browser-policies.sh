@@ -19,8 +19,12 @@ else:
 
 extra = json.loads(extra_path.read_text(encoding="utf-8"))
 policies = data.setdefault("policies", {})
-settings = policies.setdefault("ExtensionSettings", {})
-settings.update(extra["policies"]["ExtensionSettings"])
+
+for key, value in extra["policies"].items():
+    if isinstance(value, dict) and isinstance(policies.get(key), dict):
+        policies[key].update(value)
+    else:
+        policies[key] = value
 
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")

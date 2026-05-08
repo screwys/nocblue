@@ -6,43 +6,35 @@
     "DontCheckDefaultBrowser": true,
     "ExtensionSettings": {
       "jid1-BoFifL9Vbdl2zQ@jetpack": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/decentraleyes/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "78272b6fa58f4a1abaac99321d503a20@proton.me": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/proton-pass/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "vpn@proton.ch": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/proton-vpn-firefox-extension/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "pywalfox@frewacom.org": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/pywalfox/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "search@kagi.com": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/kagi-search-for-firefox/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/styl-us/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "firefox@tampermonkey.net": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/tampermonkey/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       },
       "uBlock0@raymondhill.net": {
-        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi",
-        "installation_mode": "normal_installed",
+        "installation_mode": "allowed",
         "private_browsing": true
       }
     },
@@ -55,6 +47,11 @@
       "SponsoredStories": false,
       "SponsoredTopSites": false,
       "Stories": false
+    },
+    "Homepage": {
+      "Locked": false,
+      "StartPage": "none",
+      "URL": "about:blank"
     },
     "FirefoxSuggest": {
       "ImproveSuggest": false,
