@@ -350,9 +350,9 @@ grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-mall
 ! grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
-grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/brave-origin-beta %U$' /usr/share/applications/brave-origin-beta.desktop
-grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/brave-origin-beta %U$' /usr/share/applications/com.brave.Origin.beta.desktop
-grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/helium-browser %U$' /usr/share/applications/helium.desktop
+grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*helium-browser.* %U$' /usr/share/applications/helium.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/firefox.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop

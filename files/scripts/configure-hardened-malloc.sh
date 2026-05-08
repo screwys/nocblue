@@ -32,11 +32,11 @@ for line in lines:
 
     for target in targets:
         aliases = [target]
-        if target.startswith("/usr/bin/"):
-            aliases.append(target.removeprefix("/usr/bin/"))
+        if "/" in target:
+            aliases.append(Path(target).name)
         for alias in aliases:
             if command == alias or command.startswith(f"{alias} "):
-                line = f"Exec={wrapper} {target}{command[len(alias):]}"
+                line = f"Exec={wrapper} {command}"
                 break
         else:
             continue
@@ -49,6 +49,16 @@ PY
 }
 
 wrap_desktop_exec "${applications_dir}/trivalent.desktop" /usr/bin/trivalent
-wrap_desktop_exec "${applications_dir}/brave-origin-beta.desktop" /usr/bin/brave-origin-beta
-wrap_desktop_exec "${applications_dir}/com.brave.Origin.beta.desktop" /usr/bin/brave-origin-beta
+wrap_desktop_exec \
+    "${applications_dir}/brave-origin-beta.desktop" \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
+wrap_desktop_exec \
+    "${applications_dir}/com.brave.Origin.beta.desktop" \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
 wrap_desktop_exec "${applications_dir}/helium.desktop" /usr/bin/helium-browser
