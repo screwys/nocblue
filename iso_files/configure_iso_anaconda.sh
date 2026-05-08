@@ -276,6 +276,9 @@ if [[ -f /usr/share/nocblue/manifests/flatpaks.txt ]]; then
         flatpak info --system "${flatpak_ref}" >/dev/null
     done < /usr/share/nocblue/manifests/flatpaks.txt
 fi
+if [[ -x /usr/bin/nocblue-apply-flatpak-overrides ]]; then
+    /usr/bin/nocblue-apply-flatpak-overrides
+fi
 
 cat >/etc/systemd/system/var-lib-flatpak.mount <<'EOF'
 [Mount]

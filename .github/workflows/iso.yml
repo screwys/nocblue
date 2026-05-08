@@ -49,6 +49,7 @@ jobs:
           grep -q -- '%include /usr/share/anaconda/post-scripts/nocblue-install-flatpaks.ks' iso_files/configure_iso_anaconda.sh
           grep -q -- 'rsync -aAXUHKP --open-noatime /var/lib/flatpak' iso_files/configure_iso_anaconda.sh
           grep -q -- 'flatpak info --system "${flatpak_ref}"' iso_files/configure_iso_anaconda.sh
+          grep -q -- '/usr/bin/nocblue-apply-flatpak-overrides' iso_files/configure_iso_anaconda.sh
           grep -q -- 'var-lib-flatpak.mount' iso_files/configure_iso_anaconda.sh
           grep -q -- '/usr/lib64/firefox/distribution/policies.json' iso_files/configure_iso_anaconda.sh
           grep -q -- '"SearchEngines"' iso_files/configure_iso_anaconda.sh
@@ -153,6 +154,19 @@ jobs:
             printf '  %s\n' "${missing[@]}" >&2
             exit 1
           fi
+
+          steam_override="rootfs-inspect/var/lib/flatpak/overrides/com.valvesoftware.Steam"
+          test -f "${steam_override}"
+          grep -q '^unset-environment=LD_PRELOAD;' "${steam_override}"
+          grep -q '^filesystems=!host-os;' "${steam_override}"
+          grep -q '^shared=network;ipc;' "${steam_override}"
+          grep -q '^sockets=x11;pulseaudio;' "${steam_override}"
+          grep -q '^features=multiarch;per-app-dev-shm;' "${steam_override}"
+
+          flatseal_override="rootfs-inspect/var/lib/flatpak/overrides/com.github.tchx84.Flatseal"
+          test -f "${flatseal_override}"
+          grep -q '^org.gnome.Software=talk$' "${flatseal_override}"
+          grep -q '^org.freedesktop.impl.portal.PermissionStore=talk$' "${flatseal_override}"
 
       - name: checksum iso
         run: |

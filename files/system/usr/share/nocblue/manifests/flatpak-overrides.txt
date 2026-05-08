@@ -11,8 +11,10 @@ io.missioncenter.MissionCenter --filesystem=xdg-config/gtk-3.0:ro --filesystem=x
 com.github.marhkb.Pods --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.alyraffauf.Switchyard --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+com.github.tchx84.Flatseal --talk-name=org.gnome.Software --talk-name=org.freedesktop.impl.portal.PermissionStore
 org.gnome.TextEditor --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 it.mijorus.gearlever --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.signal.Signal --env=SIGNAL_PASSWORD_STORE=gnome-libsecret --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 net.lutris.Lutris --filesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+com.valvesoftware.Steam --unset-env=LD_PRELOAD --nofilesystem=host-os --share=network --share=ipc --socket=x11 --socket=pulseaudio --allow=multiarch --allow=per-app-dev-shm
 dev.vencord.Vesktop --nosocket=x11 --nosocket=system-bus

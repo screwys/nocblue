@@ -210,6 +210,7 @@ modules:
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
+      - layer-openrazer.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
@@ -220,6 +221,7 @@ modules:
   - type: systemd
     system:
       enabled:
+        - nocblue-flatpak-overrides.service
         - nocblue-session-defaults.service
         - input-remapper.service
         - firewalld.service

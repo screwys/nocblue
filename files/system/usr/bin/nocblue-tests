@@ -8,7 +8,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-layer-openrazer; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -263,10 +263,8 @@ grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
 grep -q 'userns-hardening' /usr/share/nocblue/njust/Justfile
-grep -q 'openrazer:' /usr/share/nocblue/njust/Justfile
-grep -q 'openrazer-check:' /usr/share/nocblue/njust/Justfile
-grep -q 'https://openrazer.github.io/hardware:razer.repo' /usr/bin/nocblue-layer-openrazer
-grep -q 'rpm-ostree install --idempotent' /usr/bin/nocblue-layer-openrazer
+! grep -q 'openrazer:' /usr/share/nocblue/njust/Justfile
+! test -e /usr/bin/nocblue-layer-openrazer
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 grep -q 'user-defaults.v15.done' /usr/lib/systemd/user/nocblue-user-defaults.service
@@ -327,7 +325,11 @@ grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblu
 grep -q '^net.lutris.Lutris .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-name=org.freedesktop.impl.portal.PermissionStore' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^com.valvesoftware.Steam .*--allow=multiarch .*--allow=per-app-dev-shm' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q '^com.valvesoftware.Steam .*xdg-config/gtk' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q 'GTK_THEME' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/trivalent' /usr/share/applications/trivalent.desktop
@@ -424,7 +426,7 @@ ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
 njust --list | grep -q 'android-sdk'
-njust --list | grep -q 'openrazer'
+! njust --list | grep -q 'openrazer'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
