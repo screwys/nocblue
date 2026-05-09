@@ -63,5 +63,8 @@ fde-recovery-key device:
 tests:
     nocblue-tests
 
-userns-hardening mode="status":
-    sudo nocblue-userns-hardening "{{mode}}"
+container-userns mode="status":
+    ujust set-container-userns "{{mode}}"
+
+unconfined-userns mode="status":
+    ujust set-unconfined-userns "{{mode}}"

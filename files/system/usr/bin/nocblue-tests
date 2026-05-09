@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -27,7 +27,7 @@ else
     exit 1
 fi
 
-rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg zram-generator >/dev/null
+rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg zram-generator >/dev/null
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
@@ -308,17 +308,15 @@ bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
-bash -n /usr/bin/nocblue-userns-hardening
-test -x /usr/bin/nocblue-userns-hardening
-test -f /usr/share/nocblue/selinux/user_namespace/grant_userns.cil
-test -f /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
-test -f /usr/share/nocblue/selinux/user_namespace/userns_deny_unconfined_relabels.cil
 test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
-grep -q 'user_namespace (create)' /usr/share/nocblue/selinux/user_namespace/harden_userns.cil
 grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
-grep -q 'userns-hardening' /usr/share/nocblue/njust/Justfile
+ujust --list | grep -q 'set-container-userns'
+ujust --list | grep -q 'set-unconfined-userns'
+grep -q 'container-userns' /usr/share/nocblue/njust/Justfile
+grep -q 'unconfined-userns' /usr/share/nocblue/njust/Justfile
+! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 ! grep -q 'openrazer:' /usr/share/nocblue/njust/Justfile
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service

@@ -99,6 +99,8 @@ modules:
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
+        - podman-docker
+        - podman-compose
         - nm-connection-editor
         - NetworkManager-tui
         - NetworkManager-wifi

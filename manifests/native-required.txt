@@ -70,6 +70,8 @@ candy-icon-theme
 google-noto-sans-cjk-fonts
 firewalld
 flatpak
+podman-docker
+podman-compose
 bubblewrap
 xdg-dbus-proxy
 shim-x64

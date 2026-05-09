@@ -1,7 +1,0 @@
-;; Based on secureblue user namespace hardening policy:
-;; https://github.com/secureblue/secureblue
-;;
-;; SPDX-License-Identifier: Apache-2.0 OR MIT
-
-(allow colord_t self (user_namespace (create)))
-(allow devicekit_power_t self (user_namespace (create)))
