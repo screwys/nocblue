@@ -72,6 +72,7 @@ test -f /usr/share/mozilla/native-messaging-hosts/pywalfox.json
 test -f /usr/share/librewolf/native-messaging-hosts/pywalfox.json
 test -f /usr/lib64/librewolf/native-messaging-hosts/pywalfox.json
 test -f /usr/lib/librewolf/native-messaging-hosts/pywalfox.json
+test -x /usr/libexec/pywalfox-native-messaging-host-proxy
 test -f /usr/lib64/firefox/distribution/policies.json
 test -f /usr/share/librewolf/distribution/policies.json
 test -f /usr/lib64/librewolf/distribution/policies.json
@@ -199,6 +200,8 @@ assert pywalfox_template["colors"]["color1"] == "{{colors.error.default.hex}}"
 assert pywalfox_template["colors"]["color15"] == "{{colors.on_surface.default.hex}}"
 PY
 grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
+grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
+grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
 grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
 grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
 grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
@@ -323,7 +326,7 @@ grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openr
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
-grep -q 'user-defaults.v15.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v16.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -344,7 +347,9 @@ grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v15.done' /usr/bin/nocblue-apply-user-defaults
+grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
+grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v16.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service

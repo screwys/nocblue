@@ -57,9 +57,103 @@ install -d -m 0755 \
 cat >/usr/libexec/pywalfox-native-messaging-host <<'EOF'
 #!/usr/bin/env bash
 unset LD_PRELOAD
-exec /usr/bin/pywalfox start "$@"
+exec /usr/libexec/pywalfox-native-messaging-host-proxy "$@"
 EOF
 chmod 0755 /usr/libexec/pywalfox-native-messaging-host
+
+cat >/usr/libexec/pywalfox-native-messaging-host-proxy <<'EOF'
+#!/usr/bin/env python3
+import datetime
+import os
+import struct
+import subprocess
+import sys
+import threading
+
+
+def debug_enabled():
+    return os.environ.get("PYWALFOX_NATIVE_DEBUG") == "1"
+
+
+def log(message):
+    if not debug_enabled():
+        return
+    path = os.path.expanduser("~/.cache/pywalfox-native-proxy.log")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "a", encoding="utf-8") as handle:
+        handle.write(f"[{datetime.datetime.now().isoformat()}] {message}\n")
+
+
+def read_exact(stream, size):
+    data = b""
+    while len(data) < size:
+        chunk = stream.read(size - len(data))
+        if not chunk:
+            return None
+        data += chunk
+    return data
+
+
+def drain_stderr(proc):
+    for line in iter(proc.stderr.readline, b""):
+        log("child stderr " + line.decode(errors="replace").rstrip())
+
+
+env = os.environ.copy()
+log(f"proxy start LD_PRELOAD={env.get('LD_PRELOAD')!r}")
+env.pop("LD_PRELOAD", None)
+
+proc = subprocess.Popen(
+    ["/usr/bin/pywalfox", "start"],
+    stdin=subprocess.PIPE,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE,
+    env=env,
+)
+threading.Thread(target=drain_stderr, args=(proc,), daemon=True).start()
+
+try:
+    while True:
+        header = read_exact(sys.stdin.buffer, 4)
+        if header is None:
+            log("browser stdin eof")
+            break
+
+        size = struct.unpack("<I", header)[0]
+        payload = read_exact(sys.stdin.buffer, size)
+        if payload is None:
+            log(f"browser payload eof size={size}")
+            break
+
+        log("browser -> " + payload.decode(errors="replace"))
+        proc.stdin.write(header + payload)
+        proc.stdin.flush()
+
+        child_header = read_exact(proc.stdout, 4)
+        if child_header is None:
+            log(f"child stdout eof return={proc.poll()}")
+            break
+
+        child_size = struct.unpack("<I", child_header)[0]
+        child_payload = read_exact(proc.stdout, child_size)
+        if child_payload is None:
+            log(f"child payload eof size={child_size} return={proc.poll()}")
+            break
+
+        log("child -> " + child_payload.decode(errors="replace"))
+        sys.stdout.buffer.write(child_header + child_payload)
+        sys.stdout.buffer.flush()
+finally:
+    try:
+        proc.stdin.close()
+    except Exception:
+        pass
+    try:
+        proc.terminate()
+    except Exception:
+        pass
+EOF
+chmod 0755 /usr/libexec/pywalfox-native-messaging-host-proxy
 
 python3 - <<'PY'
 import json
