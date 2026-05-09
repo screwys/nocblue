@@ -44,6 +44,80 @@ brew:
 android-sdk api="36" build_tools="36.0.0":
     ANDROID_BUILD_TOOLS="{{build_tools}}" nocblue-setup-android-sdk "{{api}}"
 
+image action="" scope="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    action="{{action}}"
+    scope="{{scope}}"
+    user_policy="${XDG_CONFIG_HOME:-$HOME/.config}/containers/policy.json"
+
+    usage() {
+        printf '%s\n' \
+            'usage:' \
+            '  njust image trust REGISTRY_OR_REPOSITORY' \
+            '  njust image trust-user REGISTRY_OR_REPOSITORY' \
+            '  njust image trust-show' \
+            '  njust image trust-show-user'
+    }
+
+    require_scope() {
+        if [ -z "${scope}" ]; then
+            usage >&2
+            exit 2
+        fi
+    }
+
+    privileged() {
+        if command -v run0 >/dev/null 2>&1; then
+            run0 "$@"
+        else
+            sudo "$@"
+        fi
+    }
+
+    set_user_trust() {
+        local tmp
+        mkdir -p "$(dirname "${user_policy}")"
+        if [ ! -f "${user_policy}" ]; then
+            if [ -f /etc/containers/policy.json ]; then
+                cp /etc/containers/policy.json "${user_policy}"
+            elif [ -f /usr/etc/containers/policy.json ]; then
+                cp /usr/etc/containers/policy.json "${user_policy}"
+            else
+                printf '{"default":[{"type":"reject"}],"transports":{"docker":{"":[{"type":"reject"}]}}}\n' >"${user_policy}"
+            fi
+        fi
+
+        tmp="$(mktemp)"
+        jq --arg scope "${scope}" \
+            '.transports.docker[$scope] = [{"type": "insecureAcceptAnything"}]' \
+            "${user_policy}" >"${tmp}"
+        mv "${tmp}" "${user_policy}"
+    }
+
+    case "${action}" in
+        trust)
+            require_scope
+            privileged podman image trust set -t accept "${scope}"
+            ;;
+        trust-user)
+            require_scope
+            set_user_trust
+            podman image trust show --policypath "${user_policy}" | grep -E "(^TRANSPORT|${scope})" || true
+            ;;
+        trust-show)
+            privileged podman image trust show
+            ;;
+        trust-show-user)
+            podman image trust show --policypath "${user_policy}"
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
+    esac
+
 secureboot-check:
     mokutil --sb-state || true
     mokutil --list-enrolled | grep -E "nocblue|ublue kernel" || true

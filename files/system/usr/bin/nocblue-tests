@@ -455,6 +455,9 @@ grep -q '^OnStartupSec=45s$' /usr/lib/systemd/user/nocblue-flatpak-setup.timer
 grep -q 'flatpak update --user -y' /usr/share/nocblue/njust/Justfile
 grep -q 'nocblue-apply-flatpak-overrides --user' /usr/share/nocblue/njust/Justfile
 grep -q 'nocblue-setup-flatpaks --repair' /usr/share/nocblue/njust/Justfile
+grep -q 'image action' /usr/share/nocblue/njust/Justfile
+grep -q 'podman image trust set -t accept' /usr/share/nocblue/njust/Justfile
+grep -q 'trust-user' /usr/share/nocblue/njust/Justfile
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
@@ -512,6 +515,7 @@ ujust --list | grep -q 'enroll-secure-boot-key'
 ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
 njust --list | grep -q 'android-sdk'
+njust --list | grep -q 'image'
 ! njust --list | grep -q 'openrazer'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
