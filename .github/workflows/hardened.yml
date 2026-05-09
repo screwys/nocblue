@@ -37,4 +37,4 @@ jobs:
           maximize_build_space: true
           use_cache: true
           rechunk: false
-          push: ${{ inputs.publish }}
+          push: ${{ github.event_name == 'schedule' || inputs.publish == 'true' }}
