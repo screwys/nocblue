@@ -13,6 +13,38 @@ rm -f /usr/local/bin/pywalfox
 
 /usr/bin/pywalfox install --global
 
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+template = {
+    "wallpaper": "{{image}}",
+    "alpha": "100",
+    "colors": {
+        "color0": "{{colors.surface.default.hex}}",
+        "color1": "{{colors.error.default.hex}}",
+        "color2": "{{colors.primary.default.hex}}",
+        "color3": "{{colors.secondary.default.hex}}",
+        "color4": "{{colors.tertiary.default.hex}}",
+        "color5": "{{colors.primary_fixed_dim.default.hex}}",
+        "color6": "{{colors.secondary_fixed_dim.default.hex}}",
+        "color7": "{{colors.on_surface.default.hex}}",
+        "color8": "{{colors.outline.default.hex}}",
+        "color9": "{{colors.error.default.hex}}",
+        "color10": "{{colors.primary.default.hex}}",
+        "color11": "{{colors.secondary.default.hex}}",
+        "color12": "{{colors.tertiary.default.hex}}",
+        "color13": "{{colors.primary_fixed_dim.default.hex}}",
+        "color14": "{{colors.secondary_fixed_dim.default.hex}}",
+        "color15": "{{colors.on_surface.default.hex}}",
+    },
+}
+
+path = Path("/etc/xdg/quickshell/noctalia-shell/Assets/Templates/pywalfox.json")
+if path.exists():
+    path.write_text(json.dumps(template, indent=2) + "\n", encoding="utf-8")
+PY
+
 install -d -m 0755 \
     /usr/libexec \
     /usr/lib/mozilla/native-messaging-hosts \

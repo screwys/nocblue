@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v14.done"
+version_stamp="${state_dir}/user-defaults.v15.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -531,6 +531,98 @@ if after != before:
 PY
 }
 
+ensure_noctalia_pywalfox() {
+    python3 - <<'PY'
+import json
+from pathlib import Path
+
+template = {
+    "wallpaper": "{{image}}",
+    "alpha": "100",
+    "colors": {
+        "color0": "{{colors.surface.default.hex}}",
+        "color1": "{{colors.error.default.hex}}",
+        "color2": "{{colors.primary.default.hex}}",
+        "color3": "{{colors.secondary.default.hex}}",
+        "color4": "{{colors.tertiary.default.hex}}",
+        "color5": "{{colors.primary_fixed_dim.default.hex}}",
+        "color6": "{{colors.secondary_fixed_dim.default.hex}}",
+        "color7": "{{colors.on_surface.default.hex}}",
+        "color8": "{{colors.outline.default.hex}}",
+        "color9": "{{colors.error.default.hex}}",
+        "color10": "{{colors.primary.default.hex}}",
+        "color11": "{{colors.secondary.default.hex}}",
+        "color12": "{{colors.tertiary.default.hex}}",
+        "color13": "{{colors.primary_fixed_dim.default.hex}}",
+        "color14": "{{colors.secondary_fixed_dim.default.hex}}",
+        "color15": "{{colors.on_surface.default.hex}}",
+    },
+}
+
+home = Path.home()
+for path in (
+    home / ".config/quickshell/noctalia-shell/Assets/Templates/pywalfox.json",
+    home / ".local/share/quickshell/noctalia-shell/Assets/Templates/pywalfox.json",
+):
+    if not path.exists():
+        continue
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        continue
+    colors = data.get("colors")
+    if not isinstance(colors, dict):
+        continue
+    if any(colors.get(f"color{i}", "") == "" for i in range(16)):
+        path.write_text(json.dumps(template, indent=2) + "\n", encoding="utf-8")
+
+cache = home / ".cache/wal/colors.json"
+colors_path = home / ".config/noctalia/colors.json"
+if cache.exists() and colors_path.exists():
+    try:
+        cache_data = json.loads(cache.read_text(encoding="utf-8"))
+        noctalia = json.loads(colors_path.read_text(encoding="utf-8"))
+    except Exception:
+        cache_data = {}
+        noctalia = {}
+
+    colors = cache_data.get("colors")
+    if isinstance(colors, dict) and any(colors.get(f"color{i}", "") == "" for i in range(16)):
+        mapping = {
+            "color0": "mSurface",
+            "color1": "mError",
+            "color2": "mPrimary",
+            "color3": "mSecondary",
+            "color4": "mTertiary",
+            "color5": "mPrimary",
+            "color6": "mSecondary",
+            "color7": "mOnSurface",
+            "color8": "mOutline",
+            "color9": "mError",
+            "color10": "mPrimary",
+            "color11": "mSecondary",
+            "color12": "mTertiary",
+            "color13": "mPrimary",
+            "color14": "mSecondary",
+            "color15": "mOnSurface",
+        }
+        changed = False
+        for color_key, noctalia_key in mapping.items():
+            value = colors.get(color_key)
+            fallback = noctalia.get(noctalia_key)
+            if (not isinstance(value, str) or not value) and isinstance(fallback, str) and fallback:
+                colors[color_key] = fallback
+                changed = True
+        if changed:
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps(cache_data, indent=2) + "\n", encoding="utf-8")
+PY
+
+    if command -v pywalfox >/dev/null 2>&1; then
+        pywalfox update >/dev/null 2>&1 || true
+    fi
+}
+
 ensure_gtk_settings() {
     python3 - \
         "${HOME}/.config/gtk-3.0/settings.ini" \
@@ -765,6 +857,7 @@ fi
 normalize_noctalia_browser_app_ids
 ensure_noctalia_network_widget
 ensure_noctalia_sddm_integration
+ensure_noctalia_pywalfox
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins
 copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"
 for noctalia_template in "${defaults_dir}"/noctalia/templates/*; do
