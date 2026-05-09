@@ -58,7 +58,8 @@ image action="" scope="":
             '  njust image trust REGISTRY_OR_REPOSITORY' \
             '  njust image trust-user REGISTRY_OR_REPOSITORY' \
             '  njust image trust-show' \
-            '  njust image trust-show-user'
+            '  njust image trust-show-user' \
+            '  njust image check-secureblue'
     }
 
     require_scope() {
@@ -97,6 +98,9 @@ image action="" scope="":
     }
 
     case "${action}" in
+        check-secureblue)
+            nocblue-check-secureblue-base
+            ;;
         trust)
             require_scope
             privileged podman image trust set -t accept "${scope}"

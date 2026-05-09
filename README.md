@@ -13,7 +13,7 @@ sudo systemctl reboot
 
 For secureblue base:
 ```bash
-sudo bootc switch ghcr.io/screwys/nocblue-hardened:latest
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
 ```
 For testing in Gnome Boxes, you need to set OS as Silverblue. After machine is set up, you need to enable 3D Accelaration & restart it.
@@ -44,6 +44,8 @@ njust image trust ghcr.io/screwys
 njust image trust-user ghcr.io/screwys
 njust image trust-show
 njust image trust-show-user
+njust image check-secureblue
 ```
 
 `njust image trust ...` changes the system container policy through `run0` or `sudo`. `njust image trust-user ...` writes the current user's rootless Podman policy.
+`njust image check-secureblue` compares the published `nocblue-hardened` image against the current secureblue base image.

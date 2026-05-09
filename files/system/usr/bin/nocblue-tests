@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -458,6 +458,8 @@ grep -q 'nocblue-setup-flatpaks --repair' /usr/share/nocblue/njust/Justfile
 grep -q 'image action' /usr/share/nocblue/njust/Justfile
 grep -q 'podman image trust set -t accept' /usr/share/nocblue/njust/Justfile
 grep -q 'trust-user' /usr/share/nocblue/njust/Justfile
+grep -q 'check-secureblue' /usr/share/nocblue/njust/Justfile
+grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
