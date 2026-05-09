@@ -1,6 +1,8 @@
 name: hardened
 
 on:
+  schedule:
+    - cron: "17 8 * * *"
   workflow_dispatch:
     inputs:
       publish:
@@ -33,6 +35,6 @@ jobs:
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
-          use_cache: false
+          use_cache: true
           rechunk: false
           push: ${{ inputs.publish }}
