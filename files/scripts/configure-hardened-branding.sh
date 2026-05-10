@@ -34,5 +34,3 @@ if [[ -f /etc/machine-info ]]; then
 else
     printf 'PRETTY_HOSTNAME=desktop\n' >/etc/machine-info
 fi
-
-sed -i "s|printf 'Nocblue 44'|printf 'Nocblue 44-hardened'|" /etc/xdg/fastfetch/config.jsonc

@@ -28,7 +28,7 @@
       "type": "command",
       "key": "  ",
       "keyColor": "green",
-      "text": "printf 'Nocblue 44'"
+      "text": ". /usr/lib/os-release; if [ \"${VARIANT_ID:-}\" = \"nocblue-hardened\" ]; then printf 'Nocblue 44-hardened'; else printf 'Nocblue 44'; fi"
     },
     {
       "type": "command",
