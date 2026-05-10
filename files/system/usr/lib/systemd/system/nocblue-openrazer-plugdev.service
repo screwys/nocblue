@@ -1,12 +1,12 @@
 [Unit]
-Description=Add local users to plugdev for OpenRazer
+Description=Opt-in plugdev setup for OpenRazer
 ConditionPathExists=/usr/bin/openrazer-daemon
 After=local-fs.target systemd-sysusers.service
 Before=display-manager.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/nocblue-openrazer-plugdev
+ExecStart=/usr/bin/nocblue-openrazer-plugdev --all
 
 [Install]
 WantedBy=graphical.target

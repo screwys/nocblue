@@ -141,6 +141,123 @@ fde-recovery-key device:
 tests:
     nocblue-tests
 
+audit-hardening action="run":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    action="{{action}}"
+
+    usage() {
+        printf '%s\n' \
+            'usage:' \
+            '  njust audit-hardening run' \
+            '  njust audit-hardening kargs' \
+            '  njust audit-hardening ptrace-toggle' \
+            '  njust audit-hardening container-userns-off' \
+            '  njust audit-hardening usbguard' \
+            '  njust audit-hardening bash-lockdown-toggle' \
+            '  njust audit-hardening webcam-off'
+    }
+
+    run_ujust() {
+        local recipe="$1"
+        shift
+
+        if ! command -v ujust >/dev/null 2>&1; then
+            printf 'ujust is not available on this image\n' >&2
+            exit 2
+        fi
+
+        if ! ujust --list | grep -Eq "^[[:space:]]*${recipe}([[:space:]]|$)"; then
+            printf 'secureblue %s is not available on this image\n' "${recipe}" >&2
+            exit 2
+        fi
+
+        ujust "${recipe}" "$@"
+    }
+
+    case "${action}" in
+        run)
+            set +e
+            run_ujust audit-secureblue --skip flatpak
+            status="$?"
+            set -e
+            if ((status != 0)); then
+                printf 'audit exited with status %s\n' "${status}" >&2
+            fi
+            ;;
+        kargs)
+            run_ujust set-kargs-hardening
+            ;;
+        ptrace-toggle)
+            run_ujust toggle-ptrace-scope
+            ;;
+        container-userns-off)
+            run_ujust set-container-userns off
+            ;;
+        usbguard)
+            run_ujust setup-usbguard
+            ;;
+        bash-lockdown-toggle)
+            run_ujust toggle-bash-environment-lockdown
+            ;;
+        webcam-off)
+            run_ujust set-webcam-modules off
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
+    esac
+
+openrazer-plugdev mode="status" user="":
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    mode="{{mode}}"
+    target_user="{{user}}"
+    if [[ -z "${target_user}" ]]; then
+        target_user="${SUDO_USER:-${USER}}"
+    fi
+
+    usage() {
+        printf '%s\n' \
+            'usage:' \
+            '  njust openrazer-plugdev status [USER]' \
+            '  njust openrazer-plugdev enable [USER]' \
+            '  njust openrazer-plugdev disable [USER]'
+    }
+
+    privileged() {
+        if command -v run0 >/dev/null 2>&1; then
+            run0 "$@"
+        else
+            sudo "$@"
+        fi
+    }
+
+    case "${mode}" in
+        status)
+            if id -nG "${target_user}" 2>/dev/null | tr ' ' '\n' | grep -qx 'plugdev'; then
+                printf '%s is in plugdev\n' "${target_user}"
+            else
+                printf '%s is not in plugdev\n' "${target_user}"
+            fi
+            ;;
+        enable)
+            privileged /usr/bin/nocblue-openrazer-plugdev "${target_user}"
+            printf 'log out and back in before using OpenRazer as %s\n' "${target_user}"
+            ;;
+        disable)
+            privileged usermod -rG plugdev "${target_user}"
+            printf 'removed %s from plugdev; log out and back in to refresh groups\n' "${target_user}"
+            ;;
+        *)
+            usage >&2
+            exit 2
+            ;;
+    esac
+
 container-userns mode="status":
     #!/usr/bin/env bash
     set -euo pipefail

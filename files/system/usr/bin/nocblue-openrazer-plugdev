@@ -1,7 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-getent group plugdev >/dev/null 2>&1 || exit 0
+usage() {
+    printf '%s\n' \
+        'usage:' \
+        '  nocblue-openrazer-plugdev USER' \
+        '  nocblue-openrazer-plugdev --all'
+}
+
+add_user() {
+    local name="$1"
+
+    getent group plugdev >/dev/null 2>&1 || exit 0
+    getent passwd "${name}" >/dev/null 2>&1 || {
+        printf 'user not found: %s\n' "${name}" >&2
+        exit 2
+    }
+
+    if id -nG "${name}" 2>/dev/null | tr ' ' '\n' | grep -qx 'plugdev'; then
+        printf '%s is already in plugdev\n' "${name}"
+        return
+    fi
+
+    usermod -aG plugdev "${name}"
+    printf 'added %s to plugdev\n' "${name}"
+}
+
+if (($# != 1)); then
+    usage >&2
+    exit 2
+fi
+
+if [[ "$1" != "--all" ]]; then
+    add_user "$1"
+    exit 0
+fi
 
 while IFS=: read -r name _ uid _ _ _ shell; do
     [[ "${uid}" =~ ^[0-9]+$ ]] || continue
@@ -13,9 +46,5 @@ while IFS=: read -r name _ uid _ _ _ shell; do
             ;;
     esac
 
-    if id -nG "${name}" 2>/dev/null | tr ' ' '\n' | grep -qx 'plugdev'; then
-        continue
-    fi
-
-    usermod -aG plugdev "${name}"
+    add_user "${name}"
 done </etc/passwd

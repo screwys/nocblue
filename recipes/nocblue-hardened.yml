@@ -247,7 +247,6 @@ modules:
   - type: systemd
     system:
       enabled:
-        - nocblue-openrazer-plugdev.service
         - nocblue-session-defaults.service
         - input-remapper.service
         - firewalld.service

@@ -269,7 +269,7 @@ for dirtyfrag_module in rxrpc esp4 esp4_offload esp6 esp6_offload nft_xfrm xfrm4
     grep -qx "install ${dirtyfrag_module} /bin/false" /usr/lib/modprobe.d/dirtyfrag.conf
 done
 test -f /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^vm.max_map_count = 2147483642$' /usr/lib/sysctl.d/60-nocblue-performance.conf
+grep -q '^vm.max_map_count = 1048576$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.swappiness = 100$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.vfs_cache_pressure = 50$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.page-cluster = 0$' /usr/lib/sysctl.d/60-nocblue-performance.conf
@@ -291,6 +291,7 @@ grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
 test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
+! test -L /etc/systemd/system/graphical.target.wants/nocblue-openrazer-plugdev.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.timer
@@ -324,15 +325,20 @@ grep -q 'container-userns' /usr/share/nocblue/njust/Justfile
 grep -q 'unconfined-userns' /usr/share/nocblue/njust/Justfile
 grep -q 'set-container-userns is not available' /usr/share/nocblue/njust/Justfile
 grep -q 'set-unconfined-userns is not available' /usr/share/nocblue/njust/Justfile
+grep -q 'audit-hardening' /usr/share/nocblue/njust/Justfile
+grep -q 'set-kargs-hardening' /usr/share/nocblue/njust/Justfile
+grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
+grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/opt/brave' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/opt/helium' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'openrazer:' /usr/share/nocblue/njust/Justfile
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
+grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
+grep -q 'nocblue-openrazer-plugdev USER' /usr/bin/nocblue-openrazer-plugdev
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
@@ -532,7 +538,8 @@ ujust --list | grep -q 'toggle-updates'
 ujust --list | grep -q 'clean-system'
 njust --list | grep -q 'android-sdk'
 njust --list | grep -q 'image'
-! njust --list | grep -q 'openrazer'
+njust --list | grep -q 'audit-hardening'
+njust --list | grep -q 'openrazer-plugdev'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json

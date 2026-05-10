@@ -34,6 +34,9 @@ njust update
 njust auto-update-status
 njust rollback
 njust tests
+njust audit-hardening run
+njust audit-hardening kargs
+njust audit-hardening container-userns-off
 njust flatpaks
 njust flatpak-icon-fixes
 njust flatpak-overrides
@@ -42,6 +45,8 @@ njust flatpaks-repair
 njust brew
 njust android-sdk 36 36.0.0
 njust secureboot-check
+njust openrazer-plugdev status
+njust openrazer-plugdev enable
 njust fde-list
 njust fde-status /dev/nvme0n1p3
 njust fde-tpm2 /dev/nvme0n1p3 yes 7
@@ -57,3 +62,5 @@ njust image check-secureblue
 
 `njust image trust ...` changes the system container policy through `run0` or `sudo`. `njust image trust-user ...` writes the current user's rootless Podman policy.
 `njust image check-secureblue` compares the published `nocblue-hardened` image against the current secureblue base image.
+`njust audit-hardening ...` wraps secureblue audit and selected host hardening actions so they stay deliberate.
+`njust openrazer-plugdev enable` opts the current user into the `plugdev` group for OpenRazer; log out and back in afterwards.
