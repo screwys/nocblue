@@ -221,6 +221,8 @@ test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
 grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
+! test -e /usr/share/icons/candy-icons/apps/scalable/dev.vencord.Vesktop.svg
+! test -e /usr/share/icons/candy-icons/apps/scalable/vesktop.svg
 test -f /usr/share/applications/org.mozilla.firefox.desktop
 test -f /usr/share/applications/mullvad-browser.desktop
 test -f /usr/lib/systemd/system/brew-setup.service
@@ -336,6 +338,8 @@ grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
 grep -q 'rpm -q candy-icon-theme' /usr/bin/nocblue-sync-icon-theme
 grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
 grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
+grep -q 'vesktop-icon-overrides-v1' /usr/bin/nocblue-sync-icon-theme
+grep -q 'dev.vencord.Vesktop.svg' /usr/bin/nocblue-sync-icon-theme
 grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
 grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults

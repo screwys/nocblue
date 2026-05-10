@@ -29,6 +29,39 @@ else
     source_id="$(stat -Lc '%n:%Y:%s' "${source}/index.theme")"
 fi
 
+vesktop_app_icon_source=""
+for candidate in \
+    "${HOME}/.local/share/flatpak/exports/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg" \
+    "/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg" \
+    "${HOME}/.local/share/flatpak/app/dev.vencord.Vesktop/current/active/export/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg" \
+    "/var/lib/flatpak/app/dev.vencord.Vesktop/current/active/export/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg" \
+    "${HOME}/.local/share/flatpak/app/dev.vencord.Vesktop/current/active/files/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg" \
+    "/var/lib/flatpak/app/dev.vencord.Vesktop/current/active/files/share/icons/hicolor/scalable/apps/dev.vencord.Vesktop.svg"; do
+    if [[ -f "${candidate}" || -L "${candidate}" ]]; then
+        vesktop_app_icon_source="${candidate}"
+        break
+    fi
+done
+
+vesktop_icon_source=""
+for candidate in \
+    "${HOME}/.local/share/flatpak/app/dev.vencord.Vesktop/current/active/files/bin/vesktop/usr/share/icons/hicolor/scalable/vesktop.svg" \
+    "/var/lib/flatpak/app/dev.vencord.Vesktop/current/active/files/bin/vesktop/usr/share/icons/hicolor/scalable/vesktop.svg"; do
+    if [[ -f "${candidate}" || -L "${candidate}" ]]; then
+        vesktop_icon_source="${candidate}"
+        break
+    fi
+done
+
+source_id="${source_id}:vesktop-icon-overrides-v1"
+for override_source in "${vesktop_app_icon_source}" "${vesktop_icon_source}"; do
+    if [[ -n "${override_source}" ]]; then
+        source_id="${source_id}:$(stat -Lc '%n:%Y:%s' "${override_source}")"
+    else
+        source_id="${source_id}:none"
+    fi
+done
+
 mkdir -p "${state_dir}" "${HOME}/.local/share/icons"
 
 if [[ -e "${target}" && ! -e "${managed_stamp}" ]]; then
@@ -46,6 +79,18 @@ cleanup() {
 trap cleanup EXIT
 
 cp -aL "${source}/." "${tmp}/"
+if [[ -n "${vesktop_app_icon_source}" ]]; then
+    install -D -m 0644 "${vesktop_app_icon_source}" "${tmp}/apps/scalable/dev.vencord.Vesktop.svg"
+else
+    rm -f "${tmp}/apps/scalable/dev.vencord.Vesktop.svg"
+fi
+if [[ -n "${vesktop_icon_source}" ]]; then
+    install -D -m 0644 "${vesktop_icon_source}" "${tmp}/apps/scalable/vesktop.svg"
+elif [[ -n "${vesktop_app_icon_source}" ]]; then
+    install -D -m 0644 "${vesktop_app_icon_source}" "${tmp}/apps/scalable/vesktop.svg"
+else
+    rm -f "${tmp}/apps/scalable/vesktop.svg"
+fi
 rm -rf "${target}"
 mv "${tmp}" "${target}"
 trap - EXIT

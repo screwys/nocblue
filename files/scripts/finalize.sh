@@ -48,6 +48,9 @@ ensure_plain_dir /var/mnt
 ensure_plain_dir /var/tmp 1777
 
 ln -sfn Candy /usr/share/icons/candy-icons
+rm -f \
+    /usr/share/icons/Candy/apps/scalable/dev.vencord.Vesktop.svg \
+    /usr/share/icons/Candy/apps/scalable/vesktop.svg
 
 find /etc/yum.repos.d -name '*.repo' -type f -print0 \
     | xargs -0 -r sed -i 's/^countme=1$/countme=0/'
