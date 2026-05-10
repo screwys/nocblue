@@ -1,6 +1,9 @@
 name: hardened
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     - cron: "17 8 * * *"
   workflow_dispatch:
@@ -37,4 +40,4 @@ jobs:
           maximize_build_space: true
           use_cache: true
           rechunk: false
-          push: ${{ github.event_name == 'schedule' || inputs.publish == 'true' }}
+          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || inputs.publish == 'true' }}
