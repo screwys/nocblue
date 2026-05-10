@@ -33,5 +33,6 @@ done
 install -m 0644 "${src_root}/index.theme" "${theme_dir}/"
 install -m 0644 "${src_root}/LICENSE" "${theme_dir}/"
 
+ln -sfn chromium.svg "${theme_dir}/apps/scalable/trivalent.svg"
 printf '%s\n' "${candy_ref}" >"${theme_dir}/nocblue-source-ref"
 ln -sfn Candy "$(root_path /usr/share/icons/candy-icons)"

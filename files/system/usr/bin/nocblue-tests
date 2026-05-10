@@ -224,6 +224,8 @@ grep -qx 'PRETTY_HOSTNAME=desktop' /etc/machine-info
 test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
+test -L /usr/share/icons/Candy/apps/scalable/trivalent.svg
+test "$(readlink /usr/share/icons/Candy/apps/scalable/trivalent.svg)" = "chromium.svg"
 grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
 ! test -e /usr/share/icons/candy-icons/apps/scalable/dev.vencord.Vesktop.svg
 ! test -e /usr/share/icons/candy-icons/apps/scalable/vesktop.svg

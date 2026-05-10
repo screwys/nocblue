@@ -48,6 +48,7 @@ ensure_plain_dir /var/mnt
 ensure_plain_dir /var/tmp 1777
 
 ln -sfn Candy /usr/share/icons/candy-icons
+ln -sfn chromium.svg /usr/share/icons/Candy/apps/scalable/trivalent.svg
 rm -f \
     /usr/share/icons/Candy/apps/scalable/dev.vencord.Vesktop.svg \
     /usr/share/icons/Candy/apps/scalable/vesktop.svg
