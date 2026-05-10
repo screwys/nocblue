@@ -336,6 +336,12 @@ grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux
 grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
@@ -481,10 +487,20 @@ grep -q 'podman image trust set -t accept' /usr/share/nocblue/njust/Justfile
 grep -q 'trust-user' /usr/share/nocblue/njust/Justfile
 grep -q 'check-secureblue' /usr/share/nocblue/njust/Justfile
 grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
-! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
-grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
-grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
-grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .* %U$' /usr/share/applications/helium.desktop
+if [[ "${is_hardened}" == true ]]; then
+    [[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
+    grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
+    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*helium.* %U$' /usr/share/applications/helium.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
+    ! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop
+else
+    ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .* %U$' /usr/share/applications/helium.desktop
+fi
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/firefox.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop
