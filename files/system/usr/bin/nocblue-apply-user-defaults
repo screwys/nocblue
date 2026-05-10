@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v16.done"
+version_stamp="${state_dir}/user-defaults.v17.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -484,6 +484,41 @@ if after != before:
 PY
 }
 
+ensure_noctalia_night_light_manual_default() {
+    local settings_path="${HOME}/.config/noctalia/settings.json"
+    [[ -f "${settings_path}" ]] || return 0
+
+    python3 - "${settings_path}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+if not isinstance(data, dict):
+    raise SystemExit(0)
+
+night_light = data.get("nightLight")
+location = data.get("location")
+if not isinstance(night_light, dict) or not isinstance(location, dict):
+    raise SystemExit(0)
+
+if (
+    night_light.get("enabled") is False
+    and night_light.get("forced") is False
+    and night_light.get("autoSchedule") is True
+    and location.get("name", "") == ""
+    and location.get("autoLocate") is False
+):
+    night_light["autoSchedule"] = False
+    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+}
+
 ensure_noctalia_sddm_integration() {
     local settings_path="${HOME}/.config/noctalia/settings.json"
     [[ -f "${settings_path}" ]] || return 0
@@ -881,6 +916,7 @@ if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settin
 fi
 normalize_noctalia_browser_app_ids
 ensure_noctalia_network_widget
+ensure_noctalia_night_light_manual_default
 ensure_noctalia_sddm_integration
 ensure_noctalia_pywalfox
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins

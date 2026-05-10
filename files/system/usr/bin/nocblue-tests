@@ -336,7 +336,7 @@ grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openr
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
-grep -q 'user-defaults.v16.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v17.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -359,9 +359,10 @@ grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v16.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v17.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -556,6 +557,7 @@ assert settings["hooks"]["enabled"] is True
 assert settings["hooks"]["wallpaperChange"] == "nocblue-sync-sddm-wallpaper"
 assert {"enabled": True, "id": "sddm"} in settings["templates"]["activeTemplates"]
 assert settings["templates"]["enableUserTheming"] is True
+assert settings["nightLight"]["autoSchedule"] is False
 assert "firefox" not in settings["appLauncher"]["pinnedApps"]
 assert "firefox" not in settings["dock"]["pinnedApps"]
 assert "torbrowser" not in settings["appLauncher"]["pinnedApps"]
