@@ -210,10 +210,12 @@ grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 if [[ "${is_hardened}" == true ]]; then
     grep -q '^PRETTY_NAME="nocblue 44-hardened"$' /usr/lib/os-release
-    grep -q '^DEFAULT_HOSTNAME="nocblue-hardened"$' /usr/lib/os-release
+    grep -q '^DEFAULT_HOSTNAME="desktop"$' /usr/lib/os-release
     grep -q "Nocblue 44-hardened" /etc/xdg/fastfetch/config.jsonc
     ! rpm -q bazaar >/dev/null 2>&1
 fi
+grep -qx 'desktop' /etc/hostname
+grep -qx 'PRETTY_HOSTNAME=desktop' /etc/machine-info
 test -d /usr/share/icons/Candy
 test -L /usr/share/icons/candy-icons
 test "$(readlink /usr/share/icons/candy-icons)" = "Candy"

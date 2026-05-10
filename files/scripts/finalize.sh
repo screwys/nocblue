@@ -4,7 +4,19 @@ set -euo pipefail
 sed -i -f - /usr/lib/os-release <<'EOF'
 s|^NAME=.*|NAME="nocblue"|
 s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue Fedora 44 bootc"|
+s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="desktop"|
 EOF
+
+printf 'desktop\n' >/etc/hostname
+if [[ -f /etc/machine-info ]]; then
+    if grep -q '^PRETTY_HOSTNAME=' /etc/machine-info; then
+        sed -i 's|^PRETTY_HOSTNAME=.*|PRETTY_HOSTNAME=desktop|' /etc/machine-info
+    else
+        printf 'PRETTY_HOSTNAME=desktop\n' >>/etc/machine-info
+    fi
+else
+    printf 'PRETTY_HOSTNAME=desktop\n' >/etc/machine-info
+fi
 
 install_efi() {
     local name="${1}"

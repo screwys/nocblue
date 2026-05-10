@@ -49,7 +49,7 @@ for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
     set_os_release_key "${os_release}" NAME '"nocblue-hardened"'
     set_os_release_key "${os_release}" PRETTY_NAME '"nocblue-hardened"'
     set_os_release_key "${os_release}" CPE_NAME '"cpe:/o:nocblue:nocblue:44"'
-    set_os_release_key "${os_release}" DEFAULT_HOSTNAME '"nocblue-hardened"'
+    set_os_release_key "${os_release}" DEFAULT_HOSTNAME '"desktop"'
     set_os_release_key "${os_release}" HOME_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" DOCUMENTATION_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" SUPPORT_URL '"https://github.com/screwys/nocblue/issues"'
@@ -57,6 +57,17 @@ for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
     set_os_release_key "${os_release}" VARIANT '"nocblue-hardened"'
     set_os_release_key "${os_release}" IMAGE_ID '"nocblue-hardened"'
 done
+
+printf 'desktop\n' >/etc/hostname
+if [[ -f /etc/machine-info ]]; then
+    if grep -q '^PRETTY_HOSTNAME=' /etc/machine-info; then
+        sed -i 's|^PRETTY_HOSTNAME=.*|PRETTY_HOSTNAME=desktop|' /etc/machine-info
+    else
+        printf 'PRETTY_HOSTNAME=desktop\n' >>/etc/machine-info
+    fi
+else
+    printf 'PRETTY_HOSTNAME=desktop\n' >/etc/machine-info
+fi
 
 python3 - <<'PY'
 import configparser

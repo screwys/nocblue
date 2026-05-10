@@ -7,7 +7,7 @@ s|^NAME=.*|NAME="nocblue"|
 s|^ID=.*|ID=nocblue|
 s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue 44-hardened"|
 s|^CPE_NAME=.*|CPE_NAME="cpe:/o:nocblue:nocblue:44"|
-s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="nocblue-hardened"|
+s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="desktop"|
 s|^HOME_URL=.*|HOME_URL="https://github.com/screwys/nocblue"|
 s|^DOCUMENTATION_URL=.*|DOCUMENTATION_URL="https://github.com/screwys/nocblue"|
 s|^SUPPORT_URL=.*|SUPPORT_URL="https://github.com/screwys/nocblue/issues"|
@@ -23,5 +23,16 @@ for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
 done
 
 rm -f "${os_release_sed}"
+
+printf 'desktop\n' >/etc/hostname
+if [[ -f /etc/machine-info ]]; then
+    if grep -q '^PRETTY_HOSTNAME=' /etc/machine-info; then
+        sed -i 's|^PRETTY_HOSTNAME=.*|PRETTY_HOSTNAME=desktop|' /etc/machine-info
+    else
+        printf 'PRETTY_HOSTNAME=desktop\n' >>/etc/machine-info
+    fi
+else
+    printf 'PRETTY_HOSTNAME=desktop\n' >/etc/machine-info
+fi
 
 sed -i "s|printf 'Nocblue 44'|printf 'Nocblue 44-hardened'|" /etc/xdg/fastfetch/config.jsonc
