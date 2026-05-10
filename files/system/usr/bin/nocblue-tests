@@ -333,8 +333,9 @@ grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/opt/brave' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/opt/helium' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
