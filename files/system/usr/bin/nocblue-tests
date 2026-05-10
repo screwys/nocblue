@@ -331,6 +331,9 @@ grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
 grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -338,6 +341,9 @@ grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinu
 grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'kernel_system_state_reader (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -490,10 +496,16 @@ grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
 if [[ "${is_hardened}" == true ]]; then
     [[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
     grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
-    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
-    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
-    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*helium.* %U$' /usr/share/applications/helium.desktop
+    test -x /usr/bin/nocblue-browser-no-preload
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/com.brave.Origin.beta.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/helium.desktop
+    test -f /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    grep -qx 'Environment=XDP_VALIDATE_ICON_INSECURE=1' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
     ! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop
 else
     ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1

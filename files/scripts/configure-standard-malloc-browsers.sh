@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-wrapper="/usr/bin/nocblue-standard-malloc-run"
+standard_wrapper="/usr/bin/nocblue-standard-malloc-run"
+browser_no_preload_wrapper="/usr/bin/nocblue-browser-no-preload"
 applications_dir="${NOCBLUE_APPLICATIONS_DIR:-/usr/share/applications}"
 
 patch_desktop_exec() {
     local desktop_file="$1"
+    local wrapper="$2"
+    shift
     shift
 
     [[ -f "${desktop_file}" ]] || return 0
@@ -19,6 +22,9 @@ path = Path(sys.argv[1])
 wrapper = sys.argv[2]
 targets = sys.argv[3:]
 hardened_wrapper = "/usr/bin/nocblue-hardened-malloc-run"
+standard_wrapper = "/usr/bin/nocblue-standard-malloc-run"
+browser_no_preload_wrapper = "/usr/bin/nocblue-browser-no-preload"
+known_wrappers = {wrapper, hardened_wrapper, standard_wrapper, browser_no_preload_wrapper}
 aliases = set(targets)
 for target in targets:
     aliases.add(Path(target).name)
@@ -47,7 +53,7 @@ for line in lines:
 
     first = parts[0]
     command_to_wrap = command
-    if first == hardened_wrapper and len(parts) > 1:
+    if first in known_wrappers and len(parts) > 1:
         first = parts[1]
         command_to_wrap = shlex.join(parts[1:])
 
@@ -62,24 +68,28 @@ PY
 
 patch_desktop_exec \
     "${applications_dir}/org.mozilla.firefox.desktop" \
+    "${standard_wrapper}" \
     firefox \
     /usr/bin/firefox \
     /usr/lib64/firefox/firefox
 
 patch_desktop_exec \
     "${applications_dir}/firefox.desktop" \
+    "${standard_wrapper}" \
     firefox \
     /usr/bin/firefox \
     /usr/lib64/firefox/firefox
 
 patch_desktop_exec \
     "${applications_dir}/librewolf.desktop" \
+    "${standard_wrapper}" \
     librewolf \
     /usr/bin/librewolf \
     /usr/share/librewolf/librewolf
 
 patch_desktop_exec \
     "${applications_dir}/brave-origin-beta.desktop" \
+    "${browser_no_preload_wrapper}" \
     brave-origin-beta \
     /usr/bin/brave-origin-beta \
     /usr/bin/brave-browser-beta \
@@ -88,6 +98,7 @@ patch_desktop_exec \
 
 patch_desktop_exec \
     "${applications_dir}/com.brave.Origin.beta.desktop" \
+    "${browser_no_preload_wrapper}" \
     brave-origin-beta \
     /usr/bin/brave-origin-beta \
     /usr/bin/brave-browser-beta \
@@ -96,12 +107,14 @@ patch_desktop_exec \
 
 patch_desktop_exec \
     "${applications_dir}/helium.desktop" \
+    "${browser_no_preload_wrapper}" \
     helium \
     /usr/bin/helium \
     /opt/helium/helium
 
 patch_desktop_exec \
     "${applications_dir}/mullvad-browser.desktop" \
+    "${standard_wrapper}" \
     mullvad-browser \
     /usr/bin/mullvad-browser \
     /usr/lib/mullvad-browser/start-mullvad-browser

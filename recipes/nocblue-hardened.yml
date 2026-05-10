@@ -232,6 +232,7 @@ modules:
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
+      - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
       - configure-browser-userns-selinux.sh
       - install-protonvpn.sh
