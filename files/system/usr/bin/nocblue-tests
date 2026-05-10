@@ -465,10 +465,11 @@ grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
 grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
-grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .* %U$' /usr/share/applications/helium.desktop
+grep -Eq '^Exec=/usr/bin/nocblue-(hardened|standard)-malloc-run .* %U$' /usr/share/applications/helium.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/firefox.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop
+! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/mullvad-browser/start-mullvad-browser' /usr/share/applications/mullvad-browser.desktop
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator

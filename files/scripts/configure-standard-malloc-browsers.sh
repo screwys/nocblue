@@ -66,3 +66,15 @@ patch_desktop_exec \
     librewolf \
     /usr/bin/librewolf \
     /usr/share/librewolf/librewolf
+
+patch_desktop_exec \
+    "${applications_dir}/helium.desktop" \
+    helium \
+    /usr/bin/helium \
+    /opt/helium/helium
+
+patch_desktop_exec \
+    "${applications_dir}/mullvad-browser.desktop" \
+    mullvad-browser \
+    /usr/bin/mullvad-browser \
+    /usr/lib/mullvad-browser/start-mullvad-browser
