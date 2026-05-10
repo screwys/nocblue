@@ -414,6 +414,7 @@ grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--
 grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-name=org.freedesktop.impl.portal.PermissionStore' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^org.freedesktop.impl.portal.FileChooser=gtk;$' /usr/share/xdg-desktop-portal/niri-portals.conf
 grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--allow=multiarch .*--allow=per-app-dev-shm' /usr/share/nocblue/manifests/flatpak-overrides.txt
