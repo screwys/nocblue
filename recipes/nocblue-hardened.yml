@@ -23,6 +23,8 @@ modules:
         - niri.repo
         - terra.repo
         - ublue-akmods.repo
+        - brave-browser-beta.repo
+        - helium.repo
         - mullvad.repo
         - https://repo.librewolf.net/librewolf.repo
     install:
@@ -176,10 +178,10 @@ modules:
         - vulkan-tools
         - vkBasalt
         - firefox
+        - brave-origin-beta
+        - helium-bin
         - librewolf-150.0.2-1.x86_64
         - mullvad-browser
-        - trivalent
-        - trivalent-selinux
         - zed
         - libappindicator-gtk3
     remove:
@@ -231,7 +233,9 @@ modules:
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
+      - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
+      - configure-browser-userns-selinux.sh
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh

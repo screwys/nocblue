@@ -2,6 +2,7 @@
 set -euo pipefail
 
 standard_wrapper="/usr/bin/nocblue-standard-malloc-run"
+browser_no_preload_wrapper="/usr/bin/nocblue-browser-no-preload"
 applications_dir="${NOCBLUE_APPLICATIONS_DIR:-/usr/share/applications}"
 
 patch_desktop_exec() {
@@ -22,7 +23,8 @@ wrapper = sys.argv[2]
 targets = sys.argv[3:]
 hardened_wrapper = "/usr/bin/nocblue-hardened-malloc-run"
 standard_wrapper = "/usr/bin/nocblue-standard-malloc-run"
-known_wrappers = {wrapper, hardened_wrapper, standard_wrapper}
+browser_no_preload_wrapper = "/usr/bin/nocblue-browser-no-preload"
+known_wrappers = {wrapper, hardened_wrapper, standard_wrapper, browser_no_preload_wrapper}
 aliases = set(targets)
 for target in targets:
     aliases.add(Path(target).name)
@@ -84,6 +86,31 @@ patch_desktop_exec \
     librewolf \
     /usr/bin/librewolf \
     /usr/share/librewolf/librewolf
+
+patch_desktop_exec \
+    "${applications_dir}/brave-origin-beta.desktop" \
+    "${browser_no_preload_wrapper}" \
+    brave-origin-beta \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
+
+patch_desktop_exec \
+    "${applications_dir}/com.brave.Origin.beta.desktop" \
+    "${browser_no_preload_wrapper}" \
+    brave-origin-beta \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
+
+patch_desktop_exec \
+    "${applications_dir}/helium.desktop" \
+    "${browser_no_preload_wrapper}" \
+    helium \
+    /usr/bin/helium \
+    /opt/helium/helium
 
 patch_desktop_exec \
     "${applications_dir}/mullvad-browser.desktop" \

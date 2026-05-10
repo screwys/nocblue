@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -27,7 +27,7 @@ else
     exit 1
 fi
 
-rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel mullvad-browser trivalent trivalent-selinux ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg kf6-kitemmodels zram-generator wlsunset >/dev/null
+rpm -q gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg kf6-kitemmodels zram-generator wlsunset >/dev/null
 test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 rpm -q pipx >/dev/null
@@ -54,7 +54,7 @@ python3 - <<'PY'
 import mako.template
 PY
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
-for pkg in brave-origin-beta helium-bin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit torbrowser-launcher temurin-17-jdk; do
+for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
@@ -82,9 +82,9 @@ test -f /etc/trivalent/policies/managed/nocblue-search.json
 test -f /etc/trivalent/policies/managed/nocblue-extensions.json
 test -f /etc/trivalent/master_preferences
 test -f /etc/trivalent/trivalent.conf.d/20-nocblue.conf
+test -f /etc/brave/policies/managed/nocblue-extensions.json
 test -f /etc/chromium/policies/managed/nocblue-extensions.json
-! test -e /etc/brave/policies/managed/nocblue-extensions.json
-! test -e /etc/helium/policies/managed/nocblue-extensions.json
+test -f /etc/helium/policies/managed/nocblue-extensions.json
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -96,7 +96,9 @@ librewolf_lib = json.loads(Path("/usr/lib/librewolf/distribution/policies.json")
 trivalent = json.loads(Path("/etc/trivalent/policies/managed/nocblue-search.json").read_text(encoding="utf-8"))
 trivalent_extensions = json.loads(Path("/etc/trivalent/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 trivalent_preferences = json.loads(Path("/etc/trivalent/master_preferences").read_text(encoding="utf-8"))
+brave_extensions = json.loads(Path("/etc/brave/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 chromium_extensions = json.loads(Path("/etc/chromium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
+helium_extensions = json.loads(Path("/etc/helium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 pywalfox_lib64 = json.loads(Path("/usr/lib64/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 pywalfox_share = json.loads(Path("/usr/share/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
@@ -164,7 +166,7 @@ chromium_ids = {
     "clngdbkpkpeebahjckkjfobafhncgmne",
     "dhdgffkkebhmkfjojejmpbldmpobfkfo",
 }
-for policy in (chromium_extensions,):
+for policy in (brave_extensions, chromium_extensions, helium_extensions):
     assert policy["HomepageIsNewTabPage"] is True
     assert policy["ImportHomepage"] is False
     assert policy["PromotionalTabsEnabled"] is False
@@ -202,9 +204,11 @@ grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
 grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
-! test -e /usr/share/applications/brave-origin-beta.desktop
-! test -e /usr/share/applications/com.brave.Origin.beta.desktop
-! test -e /usr/share/applications/helium.desktop
+grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
+grep -q '^MimeType=.*x-scheme-handler/http' /usr/share/applications/brave-origin-beta.desktop
+grep -q '^NoDisplay=true$' /usr/share/applications/com.brave.Origin.beta.desktop
+! grep -q '^MimeType=' /usr/share/applications/com.brave.Origin.beta.desktop
+grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'VARIANT_ID:-.*nocblue-hardened' /etc/xdg/fastfetch/config.jsonc
@@ -330,7 +334,29 @@ grep -q 'set-kargs-hardening' /usr/share/nocblue/njust/Justfile
 grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
 grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
-! test -e /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_script_domain (nocblue_portal_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'kernel_system_state_reader (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
@@ -479,11 +505,24 @@ grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
 if [[ "${is_hardened}" == true ]]; then
     [[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
     grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
-    ! test -e /usr/bin/nocblue-browser-no-preload
+    test -x /usr/bin/nocblue-browser-no-preload
+    test -x /usr/bin/nocblue-portal-bwrap
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
-    ! grep -q 'nocblue-hardened-malloc-run.*mullvad' /usr/share/applications/mullvad-browser.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/com.brave.Origin.beta.desktop
+    ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/helium.desktop
+    test -f /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    grep -qx 'Environment=FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    ! grep -q 'XDP_VALIDATE_ICON_INSECURE' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    ! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop
 else
     ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-hardened-malloc-run .* %U$' /usr/share/applications/helium.desktop
 fi
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/firefox.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
@@ -573,8 +612,8 @@ assert "torbrowser" not in settings["appLauncher"]["pinnedApps"]
 assert "torbrowser" not in settings["dock"]["pinnedApps"]
 assert "org.mozilla.firefox" in settings["appLauncher"]["pinnedApps"]
 assert "org.mozilla.firefox" in settings["dock"]["pinnedApps"]
-assert "com.brave.Origin.beta" not in settings["appLauncher"]["pinnedApps"]
-assert "helium" not in settings["appLauncher"]["pinnedApps"]
+assert "com.brave.Origin.beta" in settings["appLauncher"]["pinnedApps"]
+assert "helium" in settings["appLauncher"]["pinnedApps"]
 bar = settings["bar"]
 assert bar["monitors"] == []
 assert bar["screenOverrides"] == []

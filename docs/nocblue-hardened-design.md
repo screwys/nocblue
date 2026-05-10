@@ -13,7 +13,8 @@ and final modules.
 
 - Global hardened malloc setup through `/etc/ld.so.preload`, PAM environment,
   profile environment, and systemd manager config.
-- Trivalent support from secureblue's verified Trivalent flow.
+- Trivalent and `trivalent-selinux`, installed through secureblue's verified
+  Trivalent flow.
 - Secureblue SELinux policy modules, including user namespace policy.
 - Secureblue sysctl hardening, modprobe policy, service presets, and disabled
   desktop services.
@@ -31,18 +32,23 @@ and final modules.
 - Standard nocblue development, gaming, OCR, input, local-service, and browser
   package choices, even when secureblue already happens to include one of those
   tools. Hardened package parity should be deliberate, not accidental.
-- Firefox, LibreWolf, Mullvad Browser, and Trivalent stay in the hardened image
-  as nocblue's browser set. Trivalent is the only native Chromium browser.
-  Firefox, LibreWolf, and Mullvad Browser launch with standard malloc because
-  the secureblue full-system hardened malloc preload makes them abort or crash
-  during startup.
+- Firefox, LibreWolf, Brave Origin, Helium, and Mullvad Browser stay in the
+  hardened image as part of nocblue's normal browser set; Trivalent remains
+  available from secureblue as the hardened browser. These extra browsers
+  launch with standard malloc because the secureblue full-system hardened malloc
+  preload makes them abort or crash during startup.
+- Brave Origin and Helium launch in nocblue-specific SELinux domains that keep
+  secureblue's global unconfined-domain user namespace toggle disabled while
+  allowing only those browser domains to create user namespaces for Chromium
+  sandbox startup.
 - Hardened-specific repo handling: the manual recipe does not use BlueBuild's
   `nonfree: rpmfusion` helper because secureblue removes the
   `fedora-cisco-openh264` repo and uses its own multimedia/repo baseline.
 
 ## Intentionally omitted in the manual recipe
 
-- `hardened_malloc`; secureblue owns the global allocator policy.
+- `hardened_malloc`, `trivalent`, and `trivalent-selinux`; secureblue owns
+  those hardening and browser-policy packages.
 - `no_rlimit_as` is layered by nocblue-hardened because secureblue's global
   preload configuration references `libno_rlimit_as.so`, and the ISO live
   environment must have that shared object available before login.

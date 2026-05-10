@@ -143,6 +143,8 @@ polychromatic
 
 # Browsers and editor
 firefox
+brave-origin-beta
+helium-bin
 librewolf
 mullvad-browser
 trivalent

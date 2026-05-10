@@ -389,6 +389,12 @@ for section in ("appLauncher", "dock"):
         if app == "torbrowser":
             continue
         normalized.append(app)
+    if section == "appLauncher" and "trivalent" in normalized:
+        trivalent_index = normalized.index("trivalent")
+        for browser in ("com.brave.Origin.beta", "helium"):
+            if browser not in normalized:
+                trivalent_index += 1
+                normalized.insert(trivalent_index, browser)
     if normalized != apps:
         data[section]["pinnedApps"] = normalized
         changed = True
