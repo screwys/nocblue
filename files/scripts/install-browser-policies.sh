@@ -114,6 +114,24 @@ if changed:
 PY
 }
 
+remove_mime_associations() {
+    local desktop_file="$1"
+    [[ -f "${desktop_file}" ]] || return 0
+
+    python3 - "${desktop_file}" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+out = [line for line in lines if not line.startswith("MimeType=")]
+
+if out != lines:
+    path.write_text("\n".join(out) + "\n", encoding="utf-8")
+PY
+}
+
 add_gtk_flag_to_desktop /usr/share/applications/brave-origin-beta.desktop
 add_gtk_flag_to_desktop /usr/share/applications/com.brave.Origin.beta.desktop
 add_gtk_flag_to_desktop /usr/share/applications/helium.desktop
+remove_mime_associations /usr/share/applications/com.brave.Origin.beta.desktop

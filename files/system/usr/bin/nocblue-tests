@@ -204,6 +204,9 @@ grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-mess
 grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
 grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
 grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
+grep -q '^MimeType=.*x-scheme-handler/http' /usr/share/applications/brave-origin-beta.desktop
+grep -q '^NoDisplay=true$' /usr/share/applications/com.brave.Origin.beta.desktop
+! grep -q '^MimeType=' /usr/share/applications/com.brave.Origin.beta.desktop
 grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
 grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
