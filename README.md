@@ -13,6 +13,14 @@ sudo systemctl reboot
 
 For secureblue base:
 ```bash
+sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/screwys/nocblue-hardened:latest
+sudo systemctl reboot
+sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue-hardened:latest
+sudo systemctl reboot
+```
+If the signed rebase fails, set image trust and retry the signed rebase:
+```bash
+njust image trust ghcr.io/screwys
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
 ```
