@@ -5,6 +5,7 @@ semodule -X 300 -i /usr/share/nocblue/selinux/browser-userns/nocblue_browser_use
 
 for path in \
     /usr/bin/nocblue-browser-no-preload \
+    /usr/bin/nocblue-portal-bwrap \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \
     /opt/helium \

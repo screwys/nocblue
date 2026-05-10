@@ -6,5 +6,5 @@ install -d "${dropin_dir}"
 
 cat >"${dropin_dir}/50-nocblue-hardened-icon-validation.conf" <<'EOF'
 [Service]
-Environment=XDP_VALIDATE_ICON_INSECURE=1
+Environment=FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap
 EOF
