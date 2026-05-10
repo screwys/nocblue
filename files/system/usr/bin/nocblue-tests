@@ -318,8 +318,8 @@ test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
-ujust --list | grep -q 'set-container-userns'
-ujust --list | grep -q 'set-unconfined-userns'
+grep -q 'set-container-userns is not available' /usr/share/nocblue/njust/Justfile
+grep -q 'set-unconfined-userns is not available' /usr/share/nocblue/njust/Justfile
 grep -q 'container-userns' /usr/share/nocblue/njust/Justfile
 grep -q 'unconfined-userns' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile

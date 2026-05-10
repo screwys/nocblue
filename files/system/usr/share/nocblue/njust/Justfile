@@ -142,7 +142,39 @@ tests:
     nocblue-tests
 
 container-userns mode="status":
-    ujust set-container-userns "{{mode}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    mode="{{mode}}"
+    ujust_list=""
+    if command -v ujust >/dev/null 2>&1; then
+        ujust_list="$(ujust --list)"
+    fi
+
+    if grep -Eq '^[[:space:]]*set-container-userns([[:space:]]|$)' <<<"${ujust_list}"; then
+        ujust set-container-userns "${mode}"
+    elif [[ "${mode}" == "status" ]]; then
+        printf 'unavailable\n'
+    else
+        printf 'secureblue set-container-userns is not available on this image\n' >&2
+        exit 2
+    fi
 
 unconfined-userns mode="status":
-    ujust set-unconfined-userns "{{mode}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    mode="{{mode}}"
+    ujust_list=""
+    if command -v ujust >/dev/null 2>&1; then
+        ujust_list="$(ujust --list)"
+    fi
+
+    if grep -Eq '^[[:space:]]*set-unconfined-userns([[:space:]]|$)' <<<"${ujust_list}"; then
+        ujust set-unconfined-userns "${mode}"
+    elif [[ "${mode}" == "status" ]]; then
+        printf 'unavailable\n'
+    else
+        printf 'secureblue set-unconfined-userns is not available on this image\n' >&2
+        exit 2
+    fi
