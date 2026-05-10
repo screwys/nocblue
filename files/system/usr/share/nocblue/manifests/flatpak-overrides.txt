@@ -4,7 +4,7 @@ studio.planetpeanut.Bobby --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-co
 io.github.diegopvlk.Cine --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.gnome.Papers --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.gnome.gitlab.somas.Apostrophe --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-org.gnome.Fractal --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+org.gnome.Fractal --talk-name=org.freedesktop.secrets --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.ilya_zlobintsev.LACT --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.radiolamp.mangojuice --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.missioncenter.MissionCenter --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro

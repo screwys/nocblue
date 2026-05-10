@@ -416,6 +416,7 @@ grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 grep -q '^net.lutris.Lutris .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-name=org.freedesktop.impl.portal.PermissionStore' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
