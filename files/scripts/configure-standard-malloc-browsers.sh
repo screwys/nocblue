@@ -18,6 +18,7 @@ import sys
 path = Path(sys.argv[1])
 wrapper = sys.argv[2]
 targets = sys.argv[3:]
+hardened_wrapper = "/usr/bin/nocblue-hardened-malloc-run"
 aliases = set(targets)
 for target in targets:
     aliases.add(Path(target).name)
@@ -35,13 +36,23 @@ for line in lines:
         continue
 
     try:
-        first = shlex.split(command, posix=True)[0]
+        parts = shlex.split(command, posix=True)
     except (IndexError, ValueError):
         out.append(line)
         continue
 
+    if not parts:
+        out.append(line)
+        continue
+
+    first = parts[0]
+    command_to_wrap = command
+    if first == hardened_wrapper and len(parts) > 1:
+        first = parts[1]
+        command_to_wrap = shlex.join(parts[1:])
+
     if first in aliases or Path(first).name in aliases:
-        out.append(f"Exec={wrapper} {command}")
+        out.append(f"Exec={wrapper} {command_to_wrap}")
     else:
         out.append(line)
 
@@ -66,6 +77,22 @@ patch_desktop_exec \
     librewolf \
     /usr/bin/librewolf \
     /usr/share/librewolf/librewolf
+
+patch_desktop_exec \
+    "${applications_dir}/brave-origin-beta.desktop" \
+    brave-origin-beta \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
+
+patch_desktop_exec \
+    "${applications_dir}/com.brave.Origin.beta.desktop" \
+    brave-origin-beta \
+    /usr/bin/brave-origin-beta \
+    /usr/bin/brave-browser-beta \
+    /opt/brave.com/brave-beta/brave-browser-beta \
+    /opt/brave.com/brave/brave-browser
 
 patch_desktop_exec \
     "${applications_dir}/helium.desktop" \

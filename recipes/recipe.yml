@@ -140,6 +140,7 @@ modules:
         - slurp
         - wf-recorder
         - cliphist
+        - wlsunset
         - wl-mirror
         - wtype
         - brightnessctl

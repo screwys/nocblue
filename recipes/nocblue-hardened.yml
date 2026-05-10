@@ -153,6 +153,7 @@ modules:
         - slurp
         - wf-recorder
         - cliphist
+        - wlsunset
         - wl-mirror
         - wtype
         - brightnessctl
@@ -232,6 +233,7 @@ modules:
       - install-pywalfox.sh
       - install-browser-policies.sh
       - configure-standard-malloc-browsers.sh
+      - configure-browser-userns-selinux.sh
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
