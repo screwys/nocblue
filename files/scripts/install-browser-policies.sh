@@ -51,9 +51,7 @@ install_chromium_policy() {
         "${target_dir}/nocblue-extensions.json"
 }
 
-install_chromium_policy /etc/brave/policies/managed
 install_chromium_policy /etc/chromium/policies/managed
-install_chromium_policy /etc/helium/policies/managed
 
 python3 - <<'PY'
 import json
@@ -85,53 +83,3 @@ install -d -m 0755 /etc/trivalent/trivalent.conf.d
 cat > /etc/trivalent/trivalent.conf.d/20-nocblue.conf <<'EOF'
 CHROMIUM_FLAGS+=" --gtk-version=4"
 EOF
-
-add_gtk_flag_to_desktop() {
-    local desktop_file="$1"
-    [[ -f "${desktop_file}" ]] || return 0
-
-    python3 - "${desktop_file}" <<'PY'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-lines = path.read_text(encoding="utf-8").splitlines()
-changed = False
-out = []
-
-for line in lines:
-    if line.startswith("Exec=") and "--gtk-version=" not in line:
-        command = line[len("Exec="):]
-        binary, sep, rest = command.partition(" ")
-        line = f"Exec={binary} --gtk-version=4"
-        if sep:
-            line = f"{line} {rest}"
-        changed = True
-    out.append(line)
-
-if changed:
-    path.write_text("\n".join(out) + "\n", encoding="utf-8")
-PY
-}
-
-remove_mime_associations() {
-    local desktop_file="$1"
-    [[ -f "${desktop_file}" ]] || return 0
-
-    python3 - "${desktop_file}" <<'PY'
-from pathlib import Path
-import sys
-
-path = Path(sys.argv[1])
-lines = path.read_text(encoding="utf-8").splitlines()
-out = [line for line in lines if not line.startswith("MimeType=")]
-
-if out != lines:
-    path.write_text("\n".join(out) + "\n", encoding="utf-8")
-PY
-}
-
-add_gtk_flag_to_desktop /usr/share/applications/brave-origin-beta.desktop
-add_gtk_flag_to_desktop /usr/share/applications/com.brave.Origin.beta.desktop
-add_gtk_flag_to_desktop /usr/share/applications/helium.desktop
-remove_mime_associations /usr/share/applications/com.brave.Origin.beta.desktop

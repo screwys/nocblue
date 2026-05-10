@@ -18,8 +18,6 @@ modules:
         - niri.repo
         - terra.repo
         - secureblue-packages-fedora.repo
-        - brave-browser-beta.repo
-        - helium.repo
         - mullvad.repo
         - https://repo.librewolf.net/librewolf.repo
         - https://repo.secureblue.dev/secureblue.repo
@@ -165,8 +163,6 @@ modules:
         - vulkan-tools
         - vkBasalt
         - firefox
-        - brave-origin-beta
-        - helium-bin
         # Keep this pinned because LibreWolf repo signatures have been unstable.
         - librewolf-150.0.2-1.x86_64
         - mullvad-browser

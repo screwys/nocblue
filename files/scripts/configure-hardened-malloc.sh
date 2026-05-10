@@ -49,21 +49,3 @@ PY
 }
 
 wrap_desktop_exec "${applications_dir}/trivalent.desktop" /usr/bin/trivalent
-wrap_desktop_exec \
-    "${applications_dir}/brave-origin-beta.desktop" \
-    /usr/bin/brave-origin-beta \
-    /usr/bin/brave-browser-beta \
-    /opt/brave.com/brave-beta/brave-browser-beta \
-    /opt/brave.com/brave/brave-browser
-wrap_desktop_exec \
-    "${applications_dir}/com.brave.Origin.beta.desktop" \
-    /usr/bin/brave-origin-beta \
-    /usr/bin/brave-browser-beta \
-    /opt/brave.com/brave-beta/brave-browser-beta \
-    /opt/brave.com/brave/brave-browser
-wrap_desktop_exec \
-    "${applications_dir}/helium.desktop" \
-    /usr/bin/helium-browser \
-    /usr/bin/helium \
-    /opt/helium/helium \
-    /opt/helium-browser/helium-browser
