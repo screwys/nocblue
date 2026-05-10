@@ -368,7 +368,8 @@ grep -q 'user-defaults.v17.done' /usr/lib/systemd/user/nocblue-user-defaults.ser
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
-grep -q 'rpm -q candy-icon-theme' /usr/bin/nocblue-sync-icon-theme
+grep -q 'stat -Lc' /usr/bin/nocblue-sync-icon-theme
+grep -q 'nocblue-source-ref' /usr/bin/nocblue-sync-icon-theme
 grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
 grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
 grep -q 'vesktop-icon-overrides-v1' /usr/bin/nocblue-sync-icon-theme

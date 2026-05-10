@@ -23,10 +23,9 @@ if [[ -z "${source}" ]]; then
     exit 0
 fi
 
-if command -v rpm >/dev/null 2>&1 && rpm -q candy-icon-theme >/dev/null 2>&1; then
-    source_id="$(rpm -q candy-icon-theme)"
-else
-    source_id="$(stat -Lc '%n:%Y:%s' "${source}/index.theme")"
+source_id="$(stat -Lc '%n:%Y:%s' "${source}/index.theme")"
+if [[ -f "${source}/nocblue-source-ref" ]]; then
+    source_id="${source_id}:$(cat "${source}/nocblue-source-ref")"
 fi
 
 vesktop_app_icon_source=""

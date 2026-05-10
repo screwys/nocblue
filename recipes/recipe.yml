@@ -95,7 +95,6 @@ modules:
         - fcitx5-gtk
         - fcitx5-qt
         - adwaita-cursor-theme
-        - candy-icon-theme
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
@@ -218,6 +217,7 @@ modules:
 
   - type: script
     scripts:
+      - install-candy-icons.sh
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
