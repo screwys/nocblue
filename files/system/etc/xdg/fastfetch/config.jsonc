@@ -40,7 +40,7 @@
       "type": "packages",
       "key": "├󰏖 ",
       "keyColor": "green",
-      "format": "{rpm} (rpm), {flatpak-all} (flatpak)"
+      "format": "{rpm} (rpm), {flatpak-all} (flatpak), {brew-all} (brew)"
     },
     {
       "type": "uptime",
