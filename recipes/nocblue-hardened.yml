@@ -166,6 +166,7 @@ modules:
         - tesseract-langpack-jpn_vert
         - kde-connect
         - kde-connect-nautilus
+        - kf6-kitemmodels
         - radicale3
         - radicale3-selinux
         - nginx
