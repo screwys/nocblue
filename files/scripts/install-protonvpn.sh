@@ -12,6 +12,10 @@ dnf -y install "/tmp/${proton_release}"
 # builds. Install it without scriptlets; the recipe enables the daemon unit.
 dnf -y install --setopt=install_weak_deps=False --setopt=tsflags=noscripts proton-vpn-gnome-desktop
 
+# The package currently ships two equivalent launchers. Keep the application ID
+# used by Noctalia defaults and hide the duplicate from launchers.
+rm -f /usr/share/applications/com.protonvpn.www.desktop
+
 # The Fedora beta package ships a DBus activation file that points at
 # proton.VPN.service, but the installed unit is named below.
 sed -i \
