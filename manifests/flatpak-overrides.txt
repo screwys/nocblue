@@ -14,5 +14,5 @@ io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg
 org.gnome.TextEditor --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 it.mijorus.gearlever --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.signal.Signal --env=SIGNAL_PASSWORD_STORE=gnome-libsecret --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-net.lutris.Lutris --filesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+net.lutris.Lutris --filesystem=~/Games:create --filesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 dev.vencord.Vesktop --nosocket=x11 --nosocket=system-bus
