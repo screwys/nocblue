@@ -224,6 +224,7 @@ modules:
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
+      - configure-anticheat-support.sh
       - configure-hardened-malloc.sh
       - configure-ipsec-selinux.sh
       - build-loupe-reuse-window.sh

@@ -377,6 +377,8 @@ grep -q 'nocblue-openrazer-plugdev USER' /usr/bin/nocblue-openrazer-plugdev
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
+test -f /etc/sysctl.d/61-ptrace-scope.conf
+grep -qx 'kernel.yama.ptrace_scope = 1' /etc/sysctl.d/61-ptrace-scope.conf
 grep -q 'user-defaults.v17.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
