@@ -33,8 +33,6 @@ if [[ "${repair}" != true && -e "${stamp}" ]]; then
     exit 0
 fi
 
-flatpak remote-add --if-not-exists --user --subset=verified --title='Flathub Verified' \
-    flathub-verified https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak remote-add --if-not-exists --user \
     flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
@@ -102,15 +100,19 @@ install_flatpak_desktop_entries() {
 while IFS= read -r ref; do
     [[ -z "${ref}" || "${ref}" =~ ^[[:space:]]*# ]] && continue
 
-    if flatpak info --user "${ref}" >/dev/null 2>&1; then
+    origin="$(flatpak info --user --show-origin "${ref}" 2>/dev/null || true)"
+    if [[ "${origin}" == "flathub" ]]; then
         continue
     fi
 
-    if ! flatpak install --user -y --noninteractive flathub-verified "${ref}"; then
+    if [[ -n "${origin}" ]]; then
+        flatpak install --user -y --noninteractive --reinstall flathub "${ref}"
+    else
         flatpak install --user -y --noninteractive flathub "${ref}"
     fi
 done < "${manifest}"
 
+flatpak remote-delete --user --force flathub-verified >/dev/null 2>&1 || true
 nocblue-apply-flatpak-overrides --user
 install_flatpak_desktop_entries
 if command -v nocblue-fix-flatpak-icons >/dev/null 2>&1; then

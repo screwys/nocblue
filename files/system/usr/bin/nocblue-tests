@@ -511,9 +511,11 @@ grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-mall
 ! grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q 'ujust harden-flatpak' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flathub-verified' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak install --user -y --noninteractive flathub-verified' /usr/bin/nocblue-setup-flatpaks
+! grep -q 'remote-add .*flathub-verified' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak remote-delete --user --force flathub-verified' /usr/bin/nocblue-setup-flatpaks
 grep -q 'flatpak install --user -y --noninteractive flathub' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak info --user --show-origin' /usr/bin/nocblue-setup-flatpaks
+grep -q -- '--reinstall flathub' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-apply-flatpak-overrides --user' /usr/bin/nocblue-setup-flatpaks
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-setup-flatpaks
 ! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-setup-flatpaks
