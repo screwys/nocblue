@@ -15,7 +15,6 @@ For secureblue base:
 ```bash
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
-njust image trust ghcr.io/screwys
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
 ```
