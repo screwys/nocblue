@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v18.done"
+version_stamp="${state_dir}/user-defaults.v19.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -906,11 +906,38 @@ install_flatpak_desktop_entries() {
     fi
 }
 
+ensure_protonvpn_visible_launch() {
+    local config_path="${HOME}/.config/Proton/VPN/app-config.json"
+
+    python3 - "${config_path}" <<'PY'
+from pathlib import Path
+import json
+import sys
+
+path = Path(sys.argv[1])
+path.parent.mkdir(parents=True, exist_ok=True)
+
+if path.exists():
+    try:
+        config = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(config, dict):
+            config = {}
+    except json.JSONDecodeError:
+        config = {}
+else:
+    config = {}
+
+config["start_app_minimized"] = False
+path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+PY
+}
+
 noctalia_settings_changed=0
 noctalia_templates_changed=0
 stage_user_icon_theme
 apply_user_flatpak_theme_overrides
 install_flatpak_desktop_entries
+ensure_protonvpn_visible_launch
 if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settings "${HOME}/.config/noctalia/settings.json"; then
     install -D -m 0644 "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json"
     noctalia_settings_changed=1

@@ -413,9 +413,11 @@ grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-default
 grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
+grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v18.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v19.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
