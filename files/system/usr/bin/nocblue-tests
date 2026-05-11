@@ -516,6 +516,7 @@ grep -q 'flatpak remote-delete --user --force flathub-verified' /usr/bin/nocblue
 grep -q 'flatpak install --user -y --noninteractive flathub' /usr/bin/nocblue-setup-flatpaks
 grep -q 'flatpak info --user --show-origin' /usr/bin/nocblue-setup-flatpaks
 grep -q -- '--reinstall flathub' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak list --user --columns=ref,origin' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-apply-flatpak-overrides --user' /usr/bin/nocblue-setup-flatpaks
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-setup-flatpaks
 ! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-setup-flatpaks

@@ -112,6 +112,11 @@ while IFS= read -r ref; do
     fi
 done < "${manifest}"
 
+while IFS= read -r ref; do
+    [[ -n "${ref}" ]] || continue
+    flatpak install --user -y --noninteractive --reinstall flathub "${ref}"
+done < <(flatpak list --user --columns=ref,origin | awk '$2=="flathub-verified" {print $1}')
+
 flatpak remote-delete --user --force flathub-verified >/dev/null 2>&1 || true
 nocblue-apply-flatpak-overrides --user
 install_flatpak_desktop_entries
