@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v18.done"
+version_stamp="${state_dir}/user-defaults.v17.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -799,19 +799,6 @@ stage_user_icon_theme() {
     nocblue-sync-icon-theme || true
 }
 
-ensure_games_folder() {
-    local games_dir="${HOME}/Games"
-    local games_icon="/usr/share/icons/candy-icons/places/48/folder-games.svg"
-
-    install -d -m 0755 "${games_dir}"
-    [[ -f "${games_icon}" ]] || return 0
-    command -v gio >/dev/null 2>&1 || return 0
-
-    if ! gio info -a metadata::custom-icon "${games_dir}" 2>/dev/null | grep -q 'metadata::custom-icon:'; then
-        gio set "${games_dir}" metadata::custom-icon "file://${games_icon}" >/dev/null 2>&1 || true
-    fi
-}
-
 apply_user_flatpak_theme_overrides() {
     command -v flatpak >/dev/null 2>&1 || return 0
 
@@ -855,23 +842,10 @@ apply_user_flatpak_theme_overrides() {
 
     flatpak override --user \
         --unset-env=GTK_THEME \
-        --filesystem=~/Games:create \
         --filesystem=home \
         --filesystem=xdg-config/gtk-3.0:ro \
         --filesystem=xdg-config/gtk-4.0:ro \
         net.lutris.Lutris >/dev/null 2>&1 || true
-
-    flatpak override --user \
-        --unset-env=LD_PRELOAD \
-        --filesystem=~/Games:create \
-        --nofilesystem=host-os \
-        --share=network \
-        --share=ipc \
-        --socket=x11 \
-        --socket=pulseaudio \
-        --allow=multiarch \
-        --allow=per-app-dev-shm \
-        com.valvesoftware.Steam >/dev/null 2>&1 || true
 }
 
 ensure_flatpak_desktop_entry() {
@@ -932,7 +906,6 @@ install_flatpak_desktop_entries() {
 noctalia_settings_changed=0
 noctalia_templates_changed=0
 stage_user_icon_theme
-ensure_games_folder
 apply_user_flatpak_theme_overrides
 install_flatpak_desktop_entries
 if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settings "${HOME}/.config/noctalia/settings.json"; then

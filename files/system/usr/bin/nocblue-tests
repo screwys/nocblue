@@ -377,11 +377,10 @@ grep -q 'nocblue-openrazer-plugdev USER' /usr/bin/nocblue-openrazer-plugdev
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
 test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
-grep -q 'user-defaults.v18.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v17.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_games_folder' /usr/bin/nocblue-apply-user-defaults
 grep -q 'stat -Lc' /usr/bin/nocblue-sync-icon-theme
 grep -q 'nocblue-source-ref' /usr/bin/nocblue-sync-icon-theme
 grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
@@ -398,8 +397,6 @@ grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayla
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
-grep -q 'com.valvesoftware.Steam' /usr/bin/nocblue-apply-user-defaults
-grep -q -- '--filesystem=~/Games:create' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
@@ -408,7 +405,7 @@ grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v18.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v17.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -452,13 +449,13 @@ grep -q 'flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFO
 grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/nocblue-apply-flatpak-overrides
 grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
-grep -q '^net.lutris.Lutris .*--filesystem=~/Games:create .*--filesystem=home .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^net.lutris.Lutris .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-name=org.freedesktop.impl.portal.PermissionStore' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--filesystem=~/Games:create .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.kde.krita .*--unset-env=LD_PRELOAD' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q '^io.github.kolunmi.Bazaar ' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
