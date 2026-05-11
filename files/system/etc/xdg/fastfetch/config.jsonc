@@ -71,9 +71,10 @@
       "text": "gsettings get org.gnome.desktop.interface font-name | tr -d \"'\""
     },
     {
-      "type": "cursor",
+      "type": "command",
       "key": "├▶ ",
-      "keyColor": "blue"
+      "keyColor": "blue",
+      "text": "nocblue-resolve-cursor-theme"
     },
     {
       "type": "shell",

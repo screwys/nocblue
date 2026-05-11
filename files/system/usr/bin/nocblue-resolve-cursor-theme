@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import configparser
+import os
+import subprocess
+from pathlib import Path
+
+
+def clean(value: str | None) -> str:
+    if value is None:
+        return ""
+    return value.strip().strip("'\"")
+
+
+def gsettings_get(key: str) -> str:
+    try:
+        result = subprocess.run(
+            ["gsettings", "get", "org.gnome.desktop.interface", key],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            timeout=1,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return ""
+    if result.returncode != 0:
+        return ""
+    return clean(result.stdout)
+
+
+def icon_roots() -> list[Path]:
+    home = Path.home()
+    return [
+        home / ".icons",
+        home / ".local/share/icons",
+        Path("/usr/local/share/icons"),
+        Path("/usr/share/icons"),
+    ]
+
+
+def theme_index(theme: str) -> Path | None:
+    for root in icon_roots():
+        path = root / theme / "index.theme"
+        if path.is_file():
+            return path
+    return None
+
+
+def read_theme(path: Path) -> configparser.SectionProxy | None:
+    parser = configparser.ConfigParser(interpolation=None, strict=False)
+    parser.optionxform = str
+    try:
+        parser.read(path, encoding="utf-8")
+    except configparser.Error:
+        return None
+    if not parser.has_section("Icon Theme"):
+        return None
+    return parser["Icon Theme"]
+
+
+def resolve_theme(theme: str, seen: set[str] | None = None) -> str:
+    theme = clean(theme)
+    if not theme:
+        return ""
+
+    seen = seen or set()
+    if theme in seen:
+        return theme
+    seen.add(theme)
+
+    index = theme_index(theme)
+    if index is None:
+        return theme
+
+    section = read_theme(index)
+    if section is None:
+        return theme
+
+    if theme == "default":
+        inherits = [item.strip() for item in section.get("Inherits", "").split(",") if item.strip()]
+        for inherited in inherits:
+            resolved = resolve_theme(inherited, seen)
+            if resolved and resolved != "default":
+                return resolved
+
+    return clean(section.get("Name")) or theme
+
+
+def main() -> int:
+    theme = clean(os.environ.get("XCURSOR_THEME")) or gsettings_get("cursor-theme")
+    if not theme:
+        theme = "default"
+
+    resolved = resolve_theme(theme)
+    if theme == "default" and resolved == "default":
+        gsettings_theme = gsettings_get("cursor-theme")
+        if gsettings_theme and gsettings_theme != "default":
+            resolved = resolve_theme(gsettings_theme)
+
+    size = clean(os.environ.get("XCURSOR_SIZE")) or gsettings_get("cursor-size")
+    if size:
+        print(f"{resolved} ({size}px)")
+    else:
+        print(resolved)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

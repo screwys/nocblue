@@ -217,6 +217,8 @@ grep -q "Nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'VARIANT_ID:-.*nocblue-hardened' /etc/xdg/fastfetch/config.jsonc
 grep -q "Nocblue 44-hardened" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
+test -x /usr/bin/nocblue-resolve-cursor-theme
+grep -q 'nocblue-resolve-cursor-theme' /etc/xdg/fastfetch/config.jsonc
 if [[ "${is_hardened}" == true ]]; then
     grep -q '^PRETTY_NAME="nocblue 44-hardened"$' /usr/lib/os-release
     grep -q '^DEFAULT_HOSTNAME="desktop"$' /usr/lib/os-release
@@ -414,6 +416,8 @@ grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
+grep -q 'templates\\.nvim' /usr/bin/nocblue-apply-user-defaults
+grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
@@ -435,6 +439,8 @@ grep -q 'repair_steam_prefix_links' /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '\[templates.zed-native\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '\[templates.nvim\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '.cache/noctalia-nvim.lua' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '\[templates.sddm\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '/var/lib/nocblue/sddm/theme.conf' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 test -f /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
@@ -625,6 +631,11 @@ grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kd
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"name": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
+test -f /usr/share/nocblue/defaults/nvim/init.lua
+test -f /usr/share/nocblue/defaults/nvim/lua/plugins/noctalia.lua
+grep -q 'noctalia-nvim.lua' /usr/share/nocblue/defaults/nvim/colors/noctalia.lua
+test -f /usr/share/nocblue/defaults/noctalia/templates/nvim.lua
+grep -q '\[templates.nvim\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list

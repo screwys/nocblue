@@ -14,6 +14,10 @@ output_path = "~/.var/app/io.github.Foldex.AdwSteamGtk/config/AdwSteamGtk/custom
 input_path = "/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json"
 output_path = "~/.config/zed/themes/noctalia.json"
 
+[templates.nvim]
+input_path = "~/.config/noctalia/templates/nvim.lua"
+output_path = "~/.cache/noctalia-nvim.lua"
+
 [templates.sddm]
 input_path = "/usr/share/sddm/themes/noctalia/theme.template.conf"
 output_path = "/var/lib/nocblue/sddm/theme.conf"

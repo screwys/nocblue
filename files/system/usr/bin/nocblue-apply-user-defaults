@@ -1017,6 +1017,15 @@ output_path = "~/.config/zed/themes/noctalia.json"
 EOF
         noctalia_templates_changed=1
     fi
+    if ! grep -q '^\[templates\.nvim\]$' "${user_templates}"; then
+        cat >> "${user_templates}" <<'EOF'
+
+[templates.nvim]
+input_path = "~/.config/noctalia/templates/nvim.lua"
+output_path = "~/.cache/noctalia-nvim.lua"
+EOF
+        noctalia_templates_changed=1
+    fi
     if ! grep -q '^\[templates\.sddm\]$' "${user_templates}"; then
         cat >> "${user_templates}" <<'EOF'
 
@@ -1059,6 +1068,12 @@ copy_if_missing "${defaults_dir}/xdg/mimeapps.list" "${HOME}/.config/mimeapps.li
 copy_if_missing_or_legacy "${defaults_dir}/zed/settings.json" "${HOME}/.config/zed/settings.json" legacy_zed_settings
 copy_if_missing "${defaults_dir}/zed/themes/noctalia.json" "${HOME}/.config/zed/themes/noctalia.json"
 ensure_zed_settings
+if [[ -d "${defaults_dir}/nvim" ]]; then
+    while IFS= read -r nvim_default; do
+        nvim_relative="${nvim_default#"${defaults_dir}/nvim/"}"
+        copy_if_missing "${nvim_default}" "${HOME}/.config/nvim/${nvim_relative}"
+    done < <(find "${defaults_dir}/nvim" -type f -print)
+fi
 copy_if_missing_or_legacy "${defaults_dir}/ghostty/config" "${HOME}/.config/ghostty/config" legacy_ghostty_config
 copy_if_missing "${defaults_dir}/ghostty/themes/noctalia" "${HOME}/.config/ghostty/themes/noctalia"
 copy_if_missing "${defaults_dir}/btop/btop.conf" "${HOME}/.config/btop/btop.conf"
