@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v17.done"
+version_stamp="${state_dir}/user-defaults.v18.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -893,6 +893,11 @@ PY
 }
 
 install_flatpak_desktop_entries() {
+    local bazaar_desktop="${HOME}/.local/share/applications/io.github.kolunmi.Bazaar.desktop"
+    if [[ -f "${bazaar_desktop}" ]] && grep -q 'flatpak run .*io.github.kolunmi.Bazaar' "${bazaar_desktop}"; then
+        rm -f "${bazaar_desktop}"
+    fi
+
     ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
     ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
 

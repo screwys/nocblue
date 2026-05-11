@@ -382,7 +382,7 @@ test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 test -f /etc/sysctl.d/61-ptrace-scope.conf
 grep -qx 'kernel.yama.ptrace_scope = 1' /etc/sysctl.d/61-ptrace-scope.conf
-grep -q 'user-defaults.v17.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v18.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -397,6 +397,8 @@ grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-default
 grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults
 ! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
+grep -q 'flatpak run .*io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
+grep -q 'rm -f "${bazaar_desktop}"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
@@ -412,7 +414,7 @@ grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v17.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v18.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
