@@ -221,11 +221,15 @@ if [[ "${is_hardened}" == true ]]; then
 fi
 grep -qx 'desktop' /etc/hostname
 grep -qx 'PRETTY_HOSTNAME=desktop' /etc/machine-info
-test -d /usr/share/icons/Candy
-test -L /usr/share/icons/candy-icons
-test "$(readlink /usr/share/icons/candy-icons)" = "Candy"
-test -L /usr/share/icons/Candy/apps/scalable/trivalent.svg
-test "$(readlink /usr/share/icons/Candy/apps/scalable/trivalent.svg)" = "chromium.svg"
+test -d /usr/share/icons/candy-icons
+test -L /usr/share/icons/Candy
+test "$(readlink /usr/share/icons/Candy)" = "candy-icons"
+test -L /usr/share/icons/candy-icons/apps/scalable/trivalent.svg
+test "$(readlink /usr/share/icons/candy-icons/apps/scalable/trivalent.svg)" = "chromium.svg"
+test -L /usr/share/icons/candy-icons/apps/scalable/brave-origin-beta.svg
+test "$(readlink /usr/share/icons/candy-icons/apps/scalable/brave-origin-beta.svg)" = "brave-browser-beta.svg"
+test -L /usr/share/icons/candy-icons/apps/scalable/com.brave.Origin.beta.svg
+test "$(readlink /usr/share/icons/candy-icons/apps/scalable/com.brave.Origin.beta.svg)" = "brave-browser-beta.svg"
 grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
 ! test -e /usr/share/icons/candy-icons/apps/scalable/dev.vencord.Vesktop.svg
 ! test -e /usr/share/icons/candy-icons/apps/scalable/vesktop.svg
@@ -374,6 +378,7 @@ grep -q 'stat -Lc' /usr/bin/nocblue-sync-icon-theme
 grep -q 'nocblue-source-ref' /usr/bin/nocblue-sync-icon-theme
 grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
 grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
+! grep -q 'rm -rf "${target}"' /usr/bin/nocblue-sync-icon-theme
 grep -q 'vesktop-icon-overrides-v1' /usr/bin/nocblue-sync-icon-theme
 grep -q 'dev.vencord.Vesktop.svg' /usr/bin/nocblue-sync-icon-theme
 grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults

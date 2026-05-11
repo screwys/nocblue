@@ -71,27 +71,19 @@ if [[ -e "${target}" && -f "${stamp}" ]] && grep -qxF "${source_id}" "${stamp}";
     exit 0
 fi
 
-tmp="$(mktemp -d "${HOME}/.local/share/icons/.candy-icons.XXXXXX")"
-cleanup() {
-    rm -rf "${tmp}"
-}
-trap cleanup EXIT
-
-cp -aL "${source}/." "${tmp}/"
+mkdir -p "${target}"
+cp -aL "${source}/." "${target}/"
 if [[ -n "${vesktop_app_icon_source}" ]]; then
-    install -D -m 0644 "${vesktop_app_icon_source}" "${tmp}/apps/scalable/dev.vencord.Vesktop.svg"
+    install -D -m 0644 "${vesktop_app_icon_source}" "${target}/apps/scalable/dev.vencord.Vesktop.svg"
 else
-    rm -f "${tmp}/apps/scalable/dev.vencord.Vesktop.svg"
+    rm -f "${target}/apps/scalable/dev.vencord.Vesktop.svg"
 fi
 if [[ -n "${vesktop_icon_source}" ]]; then
-    install -D -m 0644 "${vesktop_icon_source}" "${tmp}/apps/scalable/vesktop.svg"
+    install -D -m 0644 "${vesktop_icon_source}" "${target}/apps/scalable/vesktop.svg"
 elif [[ -n "${vesktop_app_icon_source}" ]]; then
-    install -D -m 0644 "${vesktop_app_icon_source}" "${tmp}/apps/scalable/vesktop.svg"
+    install -D -m 0644 "${vesktop_app_icon_source}" "${target}/apps/scalable/vesktop.svg"
 else
-    rm -f "${tmp}/apps/scalable/vesktop.svg"
+    rm -f "${target}/apps/scalable/vesktop.svg"
 fi
-rm -rf "${target}"
-mv "${tmp}" "${target}"
-trap - EXIT
 printf '%s\n' "${source_id}" > "${stamp}"
 touch "${managed_stamp}"

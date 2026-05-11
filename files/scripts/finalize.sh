@@ -47,11 +47,14 @@ ensure_plain_dir /mnt
 ensure_plain_dir /var/mnt
 ensure_plain_dir /var/tmp 1777
 
-ln -sfn Candy /usr/share/icons/candy-icons
-ln -sfn chromium.svg /usr/share/icons/Candy/apps/scalable/trivalent.svg
+rm -rf /usr/share/icons/Candy
+ln -sfnT candy-icons /usr/share/icons/Candy
+ln -sfn chromium.svg /usr/share/icons/candy-icons/apps/scalable/trivalent.svg
+ln -sfn brave-browser-beta.svg /usr/share/icons/candy-icons/apps/scalable/brave-origin-beta.svg
+ln -sfn brave-browser-beta.svg /usr/share/icons/candy-icons/apps/scalable/com.brave.Origin.beta.svg
 rm -f \
-    /usr/share/icons/Candy/apps/scalable/dev.vencord.Vesktop.svg \
-    /usr/share/icons/Candy/apps/scalable/vesktop.svg
+    /usr/share/icons/candy-icons/apps/scalable/dev.vencord.Vesktop.svg \
+    /usr/share/icons/candy-icons/apps/scalable/vesktop.svg
 
 find /etc/yum.repos.d -name '*.repo' -type f -print0 \
     | xargs -0 -r sed -i 's/^countme=1$/countme=0/'
