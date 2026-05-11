@@ -217,7 +217,7 @@ grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 if [[ "${is_hardened}" == true ]]; then
     grep -q '^PRETTY_NAME="nocblue 44-hardened"$' /usr/lib/os-release
     grep -q '^DEFAULT_HOSTNAME="desktop"$' /usr/lib/os-release
-    ! rpm -q bazaar >/dev/null 2>&1
+    rpm -q bazaar >/dev/null 2>&1
 fi
 grep -qx 'desktop' /etc/hostname
 grep -qx 'PRETTY_HOSTNAME=desktop' /etc/machine-info
@@ -246,6 +246,7 @@ if [[ "${is_hardened}" == true ]]; then
     test ! -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
+    test -L /etc/systemd/system/multi-user.target.wants/securebluecleanup.service
     test -L /etc/systemd/user/timers.target.wants/secureblue-flatpak-setup.timer
     test -L /etc/systemd/user/timers.target.wants/flatpak-user-update.timer
     test -L /etc/systemd/user/timers.target.wants/nocblue-flatpak-setup.timer
@@ -262,6 +263,12 @@ for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; 
     test -L "/etc/systemd/system/${masked_unit}"
     test "$(readlink "/etc/systemd/system/${masked_unit}")" = "/dev/null"
 done
+if [[ "${is_hardened}" == true ]]; then
+    test -f /usr/lib/systemd/system/securebluecleanup.service
+    if [[ -L /etc/systemd/system/securebluecleanup.service ]]; then
+        test "$(readlink /etc/systemd/system/securebluecleanup.service)" != "/dev/null"
+    fi
+fi
 ! grep -RIn '^countme=1$' /etc/yum.repos.d /usr/etc/yum.repos.d >/dev/null 2>&1
 test -f /usr/lib/sysctl.d/55-nocblue-hardening.conf
 grep -q '^kernel.dmesg_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
@@ -384,7 +391,7 @@ grep -q 'dev.vencord.Vesktop.svg' /usr/bin/nocblue-sync-icon-theme
 grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
 grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
+! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
@@ -450,6 +457,7 @@ grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-n
 grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.kde.krita .*--unset-env=LD_PRELOAD' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q '^io.github.kolunmi.Bazaar ' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--allow=multiarch .*--allow=per-app-dev-shm' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q '^com.valvesoftware.Steam .*xdg-config/gtk' /usr/share/nocblue/manifests/flatpak-overrides.txt
@@ -480,13 +488,13 @@ grep -q '^com.belmoussaoui.Authenticator$' /usr/share/nocblue/manifests/hardened
 grep -q '^com.github.tchx84.Flatseal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^io.github.alyraffauf.Switchyard$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Fractal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^dev.vencord.Vesktop$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
@@ -497,6 +505,7 @@ grep -q 'flatpak install --user -y --noninteractive flathub-verified' /usr/bin/n
 grep -q 'flatpak install --user -y --noninteractive flathub' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-apply-flatpak-overrides --user' /usr/bin/nocblue-setup-flatpaks
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-setup-flatpaks
+! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-fix-flatpak-icons' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-flatpak-setup.stamp' /usr/bin/nocblue-setup-flatpaks
 grep -q 'local/share/flatpak/exports/share/applications' /usr/bin/nocblue-setup-flatpaks
@@ -678,6 +687,7 @@ grep -q '^com.github.marhkb.Pods$' /usr/share/nocblue/manifests/flatpak-icon-fix
 grep -q '^io.gitlab.news_flash.NewsFlash$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
 ! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/flatpaks.txt
+! grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.gtk.Gtk3theme.adw-gtk3$' /usr/share/nocblue/manifests/flatpaks.txt

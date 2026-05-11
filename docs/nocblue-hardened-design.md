@@ -21,6 +21,10 @@ and final modules.
 - Secureblue Flatpak setup and update behavior. The hardened image layers
   nocblue's user Flatpak setup after secureblue's baseline instead of baking
   system Flatpaks into the image.
+- Secureblue's native Bazaar package and first-boot cleanup service. Bazaar
+  stays native so it follows secureblue's store policy, while the cleanup
+  service removes system Flatpaks and default Fedora/Flathub remotes left by
+  the installer or accidental app-store transactions.
 
 ## Layer from nocblue
 

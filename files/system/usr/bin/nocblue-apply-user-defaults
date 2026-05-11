@@ -809,7 +809,6 @@ apply_user_flatpak_theme_overrides() {
 
     local app_id
     local themed_apps=(
-        io.github.kolunmi.Bazaar
         com.belmoussaoui.Authenticator
         studio.planetpeanut.Bobby
         io.github.diegopvlk.Cine
@@ -896,7 +895,6 @@ PY
 }
 
 install_flatpak_desktop_entries() {
-    ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar
     ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
     ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
 

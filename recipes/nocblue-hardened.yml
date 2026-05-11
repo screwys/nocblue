@@ -186,7 +186,6 @@ modules:
     remove:
       auto-remove: false
       packages:
-        - bazaar
         - ptyxis
         - gnome-terminal
         - gnome-terminal-nautilus
@@ -258,7 +257,6 @@ modules:
         - gdm.service
       masked:
         - geoclue.service
-        - securebluecleanup.service
         - sshd.service
         - sshd.socket
         - sshd-keygen.target

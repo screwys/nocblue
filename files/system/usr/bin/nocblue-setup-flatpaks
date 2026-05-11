@@ -91,7 +91,6 @@ PY
 }
 
 install_flatpak_desktop_entries() {
-    ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar
     ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
     ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
 

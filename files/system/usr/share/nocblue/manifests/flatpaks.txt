@@ -1,4 +1,3 @@
-io.github.kolunmi.Bazaar
 com.belmoussaoui.Authenticator
 studio.planetpeanut.Bobby
 io.github.diegopvlk.Cine

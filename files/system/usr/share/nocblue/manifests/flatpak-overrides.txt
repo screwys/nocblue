@@ -1,4 +1,3 @@
-io.github.kolunmi.Bazaar --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.belmoussaoui.Authenticator --unshare=network --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 studio.planetpeanut.Bobby --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.diegopvlk.Cine --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
