@@ -813,7 +813,6 @@ apply_user_flatpak_theme_overrides() {
         studio.planetpeanut.Bobby
         io.github.diegopvlk.Cine
         org.gnome.Papers
-        org.gnome.gitlab.somas.Apostrophe
         org.gnome.Fractal
         io.github.ilya_zlobintsev.LACT
         io.github.radiolamp.mangojuice
@@ -821,7 +820,6 @@ apply_user_flatpak_theme_overrides() {
         com.github.marhkb.Pods
         io.github.alyraffauf.Switchyard
         io.github.Foldex.AdwSteamGtk
-        org.gnome.TextEditor
         it.mijorus.gearlever
     )
 

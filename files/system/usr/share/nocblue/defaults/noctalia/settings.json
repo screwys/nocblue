@@ -386,8 +386,7 @@
             "dev.vencord.Vesktop",
             "com.mitchellh.ghostty",
             "dev.zed.Zed",
-            "com.github.marhkb.Pods",
-            "org.gnome.TextEditor"
+            "com.github.marhkb.Pods"
         ],
         "pinnedStatic": true,
         "position": "bottom",

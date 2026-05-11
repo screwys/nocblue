@@ -64,6 +64,9 @@ done
 
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
+test -f /usr/share/applications/nocblue-nvim.desktop
+grep -q '^Exec=/usr/bin/ghostty -e /usr/bin/nvim %F$' /usr/share/applications/nocblue-nvim.desktop
+grep -q '^MimeType=.*text/plain.*text/markdown.*application/json' /usr/share/applications/nocblue-nvim.desktop
 test -x /usr/bin/pywalfox
 test ! -e /usr/local/bin/pywalfox
 test -x /usr/libexec/pywalfox-native-messaging-host
@@ -399,6 +402,8 @@ grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayla
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
+! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.gitlab.somas.Apostrophe'
+! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.TextEditor'
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
@@ -463,6 +468,8 @@ grep -q '^org.kde.krita .*--unset-env=LD_PRELOAD' /usr/share/nocblue/manifests/f
 grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^com.valvesoftware.Steam .*--allow=multiarch .*--allow=per-app-dev-shm' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q '^com.valvesoftware.Steam .*xdg-config/gtk' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q '^org.gnome.gitlab.somas.Apostrophe ' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q '^org.gnome.TextEditor ' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q 'GTK_THEME' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^Exec=/usr/bin/nocblue-hardened-malloc-run /usr/bin/trivalent' /usr/share/applications/trivalent.desktop
 grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe %U$' /usr/share/applications/org.gnome.Loupe.desktop
@@ -484,7 +491,7 @@ compile(text, str(showtime_main), "exec")
 PY
 test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Papers$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^com.belmoussaoui.Authenticator$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^com.github.tchx84.Flatseal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
@@ -492,7 +499,7 @@ grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/hardened-m
 grep -q '^io.github.alyraffauf.Switchyard$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^org.gnome.Fractal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
+! grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
 ! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
@@ -603,11 +610,18 @@ njust --list | grep -q 'audit-hardening'
 njust --list | grep -q 'openrazer-plugdev'
 test -f /usr/share/nocblue/defaults/fish/config.fish
 grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
+grep -q 'set -q EDITOR; or set -gx EDITOR nvim' /usr/share/nocblue/defaults/fish/config.fish
+grep -q 'export EDITOR="${EDITOR:-nvim}"' /etc/profile.d/nocblue.sh
+grep -q 'EDITOR "nvim"' /etc/xdg/niri/config.kdl
+grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kdl
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"name": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
 grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
+grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
+grep -q '^text/markdown=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
+! grep -Eq '^(application/json|application/xml|text/plain|text/css|text/javascript|text/markdown|application/x-shellscript)[[:space:]]' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^favorite_browser = '\''librewolf.desktop'\''$' /usr/share/nocblue/defaults/switchyard/config.toml
 test -f /usr/share/nocblue/defaults/nautilus/copy_location.py
 test -f /usr/share/nocblue/defaults/nautilus/folder_icon.py
@@ -690,7 +704,8 @@ grep -q '^io.gitlab.news_flash.NewsFlash$' /usr/share/nocblue/manifests/flatpak-
 ! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
 ! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/flatpaks.txt
 ! grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/flatpaks.txt
+! grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/flatpaks.txt
+! grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.gtk.Gtk3theme.adw-gtk3$' /usr/share/nocblue/manifests/flatpaks.txt
 grep -q '^org.gtk.Gtk3theme.adw-gtk3-dark$' /usr/share/nocblue/manifests/flatpaks.txt

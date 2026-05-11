@@ -6,6 +6,4 @@ io.github.diegopvlk.Cine
 it.mijorus.gearlever
 org.gnome.Fractal
 org.gnome.Papers
-org.gnome.TextEditor
-org.gnome.gitlab.somas.Apostrophe
 studio.planetpeanut.Bobby
