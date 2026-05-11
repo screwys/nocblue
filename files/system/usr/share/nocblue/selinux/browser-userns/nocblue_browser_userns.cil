@@ -19,26 +19,14 @@
 (typeattributeset domain (nocblue_browser_no_preload_t))
 (typeattributeset application_domain_type (nocblue_browser_no_preload_t))
 (typeattributeset corenet_unlabeled_type (nocblue_browser_no_preload_t))
-(typeattributeset deny_alg_socket (nocblue_browser_no_preload_t))
-(typeattributeset deny_ipsec_sockets (nocblue_browser_no_preload_t))
-(typeattributeset trivalent_script_domain (nocblue_browser_no_preload_t))
 (typeattributeset domain (nocblue_portal_bwrap_t))
 (typeattributeset application_domain_type (nocblue_portal_bwrap_t))
 (typeattributeset corenet_unlabeled_type (nocblue_portal_bwrap_t))
-(typeattributeset deny_alg_socket (nocblue_portal_bwrap_t))
-(typeattributeset deny_ipsec_sockets (nocblue_portal_bwrap_t))
-(typeattributeset trivalent_script_domain (nocblue_portal_bwrap_t))
 (typeattributeset domain (brave_origin_t helium_t))
 (typeattributeset application_domain_type (brave_origin_t helium_t))
 (typeattributeset corenet_unlabeled_type (brave_origin_t helium_t))
-(typeattributeset deny_alg_socket (brave_origin_t helium_t))
-(typeattributeset deny_ipsec_sockets (brave_origin_t helium_t))
-(typeattributeset kernel_system_state_reader (brave_origin_t helium_t))
-(typeattributeset pulseaudio_tmpfsfile (brave_origin_t helium_t))
-(typeattributeset trivalent_domain (brave_origin_t helium_t))
 (typeattributeset x_domain (brave_origin_t helium_t))
 (typeattributeset xcolormap_type (brave_origin_t helium_t))
-(typeattributeset xdmhomewriter (brave_origin_t helium_t))
 (typeattributeset xdrawable_type (brave_origin_t helium_t))
 (typeattributeset file_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
 (typeattributeset exec_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
@@ -46,6 +34,34 @@
 (typeattributeset application_exec_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
 (typeattributeset non_auth_file_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
 (typeattributeset non_security_file_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
+
+(optional nocblue_browser_deny_alg_socket
+    (typeattributeset deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t))
+)
+
+(optional nocblue_browser_deny_ipsec_sockets
+    (typeattributeset deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t))
+)
+
+(optional nocblue_browser_trivalent_script_domain
+    (typeattributeset trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t))
+)
+
+(optional nocblue_browser_trivalent_domain
+    (typeattributeset trivalent_domain (brave_origin_t helium_t))
+)
+
+(optional nocblue_browser_kernel_system_state_reader
+    (typeattributeset kernel_system_state_reader (brave_origin_t helium_t))
+)
+
+(optional nocblue_browser_pulseaudio_tmpfsfile
+    (typeattributeset pulseaudio_tmpfsfile (brave_origin_t helium_t))
+)
+
+(optional nocblue_browser_xdmhomewriter
+    (typeattributeset xdmhomewriter (brave_origin_t helium_t))
+)
 
 (allow unconfined_t nocblue_browser_no_preload_exec_t (file (getattr open read execute map)))
 (allow unconfined_t nocblue_portal_bwrap_exec_t (file (getattr open read execute map)))
