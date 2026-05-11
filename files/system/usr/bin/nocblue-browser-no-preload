@@ -6,6 +6,25 @@ if [[ "$#" -lt 1 ]]; then
     exit 2
 fi
 
+restore_session_env() {
+    local name value
+
+    if [[ -n "${WAYLAND_DISPLAY:-}" || -n "${DISPLAY:-}" ]]; then
+        return 0
+    fi
+
+    while IFS='=' read -r name value; do
+        case "${name}" in
+            DISPLAY|WAYLAND_DISPLAY|NIRI_SOCKET|XDG_CURRENT_DESKTOP|XDG_SESSION_DESKTOP|XDG_SESSION_TYPE)
+                if [[ -n "${value}" && -z "${!name:-}" ]]; then
+                    export "${name}=${value}"
+                fi
+                ;;
+        esac
+    done < <(systemctl --user show-environment 2>/dev/null || true)
+}
+
+restore_session_env
 unset LD_PRELOAD
 
 if [[ -r /etc/ld.so.preload ]]; then
