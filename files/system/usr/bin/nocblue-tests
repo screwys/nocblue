@@ -728,6 +728,7 @@ for plugin in [
 PY
 
 test -f /etc/firewalld/services/kdeconnect.xml
+test -f /etc/firewalld/zones/FedoraWorkstation.xml
 test -f /usr/lib/systemd/system/input-remapper.service
 test -f /usr/lib/systemd/system/me.proton.vpn.split_tunneling.service
 test -L /etc/systemd/system/multi-user.target.wants/me.proton.vpn.split_tunneling.service
@@ -735,6 +736,9 @@ grep -q '^SystemdService=me.proton.vpn.split_tunneling.service$' /etc/dbus-1/sys
 test -f /usr/share/applications/proton.vpn.app.gtk.desktop
 test ! -e /usr/share/applications/com.protonvpn.www.desktop
 grep -q '1714-1764' /etc/firewalld/services/kdeconnect.xml
+grep -q 'service name="kdeconnect"' /etc/firewalld/zones/FedoraWorkstation.xml
+grep -q 'service name="syncthing"' /etc/firewalld/zones/FedoraWorkstation.xml
+grep -q 'port protocol="udp" port="1025-65535"' /etc/firewalld/zones/FedoraWorkstation.xml
 
 test -f /usr/share/nocblue/manifests/flatpaks.txt
 test -f /usr/share/nocblue/manifests/flatpak-icon-fixes.txt

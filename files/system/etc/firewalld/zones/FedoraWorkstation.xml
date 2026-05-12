@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Fedora Workstation</short>
+  <description>Workstation defaults with local device sync services enabled.</description>
+  <service name="dhcpv6-client"/>
+  <service name="ssh"/>
+  <service name="samba-client"/>
+  <service name="kdeconnect"/>
+  <service name="syncthing"/>
+  <port protocol="udp" port="1025-65535"/>
+  <port protocol="tcp" port="1025-65535"/>
+  <forward/>
+</zone>
