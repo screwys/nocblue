@@ -689,6 +689,8 @@ assert [item["id"] for item in bar["widgets"]["right"]] == [
     "Tray",
     "SystemMonitor",
 ]
+assert next(item for item in bar["widgets"]["right"] if item["id"] == "SystemMonitor")["diskPath"] == "/var"
+assert settings["controlCenter"]["diskPath"] == "/var"
 assert all(item["id"] != "VPN" for section in bar["widgets"].values() for item in section)
 plugins = json.loads(Path("/usr/share/nocblue/defaults/noctalia/plugins.json").read_text(encoding="utf-8"))
 assert plugins["states"]["weather-indicator"]["enabled"] is True
