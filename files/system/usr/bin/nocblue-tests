@@ -64,9 +64,12 @@ done
 
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
+grep -q '^mouse-shift-capture = never$' /usr/share/nocblue/defaults/ghostty/config
 test -f /usr/share/applications/nocblue-nvim.desktop
 grep -q '^Exec=/usr/bin/ghostty -e /usr/bin/nvim %F$' /usr/share/applications/nocblue-nvim.desktop
 grep -q '^MimeType=.*text/plain.*text/markdown.*application/json' /usr/share/applications/nocblue-nvim.desktop
+grep -q 'single_file_support = false' /usr/share/nocblue/defaults/nvim/lua/plugins/languages.lua
+grep -q 'command = vim.fn.executable "/usr/bin/shfmt" == 1 and "/usr/bin/shfmt" or "shfmt"' /usr/share/nocblue/defaults/nvim/lua/plugins/tools.lua
 test -x /usr/bin/pywalfox
 test ! -e /usr/local/bin/pywalfox
 test -x /usr/libexec/pywalfox-native-messaging-host

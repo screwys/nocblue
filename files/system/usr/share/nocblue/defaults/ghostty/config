@@ -22,6 +22,7 @@ cursor-style-blink = true
 mouse-hide-while-typing = true
 cursor-click-to-move = false
 copy-on-select = clipboard
+mouse-shift-capture = never
 
 # Notifications
 desktop-notifications = true

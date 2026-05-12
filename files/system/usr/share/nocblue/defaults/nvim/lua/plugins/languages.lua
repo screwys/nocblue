@@ -27,6 +27,15 @@ return {
             },
           },
         },
+        taplo = {
+          single_file_support = false,
+          root_dir = function(bufnr, on_dir)
+            local root = vim.fs.root(bufnr, { ".taplo.toml", "taplo.toml", ".git" })
+            if root then
+              on_dir(root)
+            end
+          end,
+        },
       },
     },
   },

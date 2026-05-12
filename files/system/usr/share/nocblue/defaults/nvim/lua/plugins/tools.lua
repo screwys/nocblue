@@ -59,4 +59,28 @@ return {
       })
     end,
   },
+  {
+    "stevearc/conform.nvim",
+    optional = true,
+    opts = {
+      formatters = {
+        shfmt = {
+          command = vim.fn.executable "/usr/bin/shfmt" == 1 and "/usr/bin/shfmt" or "shfmt",
+        },
+      },
+    },
+  },
+  {
+    "mfussenegger/nvim-lint",
+    optional = true,
+    opts = {
+      linters = {
+        ["markdownlint-cli2"] = {
+          condition = function(ctx)
+            return vim.fn.executable "markdownlint-cli2" == 1 and vim.fn.filereadable(ctx.filename) == 1
+          end,
+        },
+      },
+    },
+  },
 }
