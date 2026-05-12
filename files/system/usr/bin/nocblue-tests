@@ -644,6 +644,10 @@ grep -q 'set -q EDITOR; or set -gx EDITOR nvim' /usr/share/nocblue/defaults/fish
 grep -q 'export EDITOR="${EDITOR:-nvim}"' /etc/profile.d/nocblue.sh
 grep -q 'EDITOR "nvim"' /etc/xdg/niri/config.kdl
 grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kdl
+test -x /usr/bin/nocblue-refresh-portals
+grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
+grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl
+grep -q 'xdg-desktop-portal-gnome.service' /usr/bin/nocblue-refresh-portals
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"name": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json

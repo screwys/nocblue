@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# niri can autostart portals before the user manager has the display
+# environment. Refresh it, then restart portals so GNOME exposes FileChooser.
+sleep "${NOCBLUE_PORTAL_REFRESH_DELAY:-2}"
+dbus-update-activation-environment --systemd \
+    WAYLAND_DISPLAY \
+    DISPLAY \
+    XDG_CURRENT_DESKTOP \
+    XDG_SESSION_DESKTOP \
+    XDG_SESSION_TYPE \
+    NIRI_SOCKET >/dev/null 2>&1 || true
+
+systemctl --user restart \
+    xdg-desktop-portal.service \
+    xdg-desktop-portal-gnome.service \
+    xdg-desktop-portal-gtk.service >/dev/null 2>&1 || true
