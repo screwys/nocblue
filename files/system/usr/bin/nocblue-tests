@@ -126,13 +126,13 @@ assert librewolf_lib == librewolf
 for extension_id, slug in shared.items():
     for settings in (firefox_settings, librewolf_settings):
         policy = settings[extension_id]
-        assert policy["installation_mode"] == "normal_installed"
+        assert policy["installation_mode"] == "allowed"
         assert policy["private_browsing"] is True
-        assert policy["install_url"] == f"https://addons.mozilla.org/firefox/downloads/latest/{slug}/latest.xpi"
+        assert "install_url" not in policy
 
 ublock = firefox_settings["uBlock0@raymondhill.net"]
-assert ublock["installation_mode"] == "normal_installed"
-assert ublock["install_url"] == "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi"
+assert ublock["installation_mode"] == "allowed"
+assert "install_url" not in ublock
 assert firefox["policies"]["DisableFirefoxStudies"] is True
 assert firefox["policies"]["DisablePocket"] is True
 assert firefox["policies"]["DisableTelemetry"] is True
@@ -387,7 +387,7 @@ test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 test -f /etc/sysctl.d/61-ptrace-scope.conf
 grep -qx 'kernel.yama.ptrace_scope = 1' /etc/sysctl.d/61-ptrace-scope.conf
-grep -q 'user-defaults.v18.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v20.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
@@ -417,13 +417,15 @@ grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-default
 grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
+grep -q 'seed_noctalia_plugins' /usr/bin/nocblue-apply-user-defaults
+grep -q 'noctalia-plugins.seeded' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
 grep -q 'templates\\.nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v19.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v20.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service

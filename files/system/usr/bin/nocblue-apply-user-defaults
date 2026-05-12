@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v19.done"
+version_stamp="${state_dir}/user-defaults.v20.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -27,6 +27,77 @@ copy_if_missing_or_legacy() {
     if [[ ! -e "${dst}" ]] || "${legacy_check}" "${dst}"; then
         install -D -m 0644 "${src}" "${dst}"
     fi
+}
+
+default_noctalia_plugin_names() {
+    local plugin_manifest
+
+    for plugin_manifest in "${defaults_dir}"/noctalia/plugins/*/manifest.json; do
+        [[ -f "${plugin_manifest}" ]] || continue
+        basename "$(dirname "${plugin_manifest}")"
+    done | sort -u
+}
+
+copy_noctalia_plugin_runtime_if_missing() {
+    local plugin_src="$1"
+    local plugin_dst="$2"
+    local plugin_dir
+    local plugin_file
+
+    mkdir -p "${plugin_dst}"
+    while IFS= read -r plugin_dir; do
+        install -d "${plugin_dst}/${plugin_dir#./}"
+    done < <(cd "${plugin_src}" && find . -type d -print)
+    while IFS= read -r plugin_file; do
+        [[ "${plugin_file}" == "./settings.json" ]] && continue
+        if [[ ! -e "${plugin_dst}/${plugin_file#./}" ]]; then
+            install -D -m 0644 "${plugin_src}/${plugin_file#./}" "${plugin_dst}/${plugin_file#./}"
+        fi
+    done < <(cd "${plugin_src}" && find . -type f -print)
+}
+
+seed_noctalia_plugins() {
+    local had_existing_plugins="$1"
+    local plugin_root="${HOME}/.config/noctalia/plugins"
+    local seed_file="${state_dir}/noctalia-plugins.seeded"
+    local current_file
+    local plugin_name
+    local plugin_src
+    local plugin_dst
+
+    current_file="$(mktemp "${state_dir}/noctalia-plugins.current.XXXXXX")"
+    default_noctalia_plugin_names >"${current_file}"
+    if [[ ! -s "${current_file}" ]]; then
+        rm -f "${current_file}"
+        return 0
+    fi
+
+    if [[ ! -f "${seed_file}" ]]; then
+        if [[ "${had_existing_plugins}" -eq 1 ]]; then
+            install -m 0644 "${current_file}" "${seed_file}"
+        else
+            : >"${seed_file}"
+        fi
+    fi
+
+    while IFS= read -r plugin_name; do
+        plugin_src="${defaults_dir}/noctalia/plugins/${plugin_name}"
+        plugin_dst="${plugin_root}/${plugin_name}"
+        if ! grep -Fxq "${plugin_name}" "${seed_file}"; then
+            copy_noctalia_plugin_runtime_if_missing "${plugin_src}" "${plugin_dst}"
+            if [[ -f "${plugin_src}/settings.json" ]]; then
+                copy_if_missing "${plugin_src}/settings.json" "${plugin_dst}/settings.json"
+            fi
+        elif [[ -d "${plugin_dst}" ]]; then
+            copy_noctalia_plugin_runtime_if_missing "${plugin_src}" "${plugin_dst}"
+            if [[ -f "${plugin_src}/settings.json" ]]; then
+                copy_if_missing "${plugin_src}/settings.json" "${plugin_dst}/settings.json"
+            fi
+        fi
+    done <"${current_file}"
+
+    install -m 0644 "${current_file}" "${seed_file}"
+    rm -f "${current_file}"
 }
 
 legacy_noctalia_settings() {
@@ -938,6 +1009,10 @@ stage_user_icon_theme
 apply_user_flatpak_theme_overrides
 install_flatpak_desktop_entries
 ensure_protonvpn_visible_launch
+had_existing_noctalia_plugins=0
+if [[ -e "${HOME}/.config/noctalia/plugins" || -e "${HOME}/.config/noctalia/plugins.json" ]]; then
+    had_existing_noctalia_plugins=1
+fi
 if [[ ! -e "${HOME}/.config/noctalia/settings.json" ]] || legacy_noctalia_settings "${HOME}/.config/noctalia/settings.json"; then
     install -D -m 0644 "${defaults_dir}/noctalia/settings.json" "${HOME}/.config/noctalia/settings.json"
     noctalia_settings_changed=1
@@ -1037,31 +1112,11 @@ EOF
     fi
 fi
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/cache/wallpapers.json" "${HOME}/.cache/noctalia/wallpapers.json" legacy_wallpaper_cache
-for plugin_runtime in "${defaults_dir}"/noctalia/plugins/*/manifest.json; do
-    [[ -f "${plugin_runtime}" ]] || continue
-    plugin_name="$(basename "$(dirname "${plugin_runtime}")")"
-    plugin_src="$(dirname "${plugin_runtime}")"
-    plugin_dst="${HOME}/.config/noctalia/plugins/${plugin_name}"
-    mkdir -p "${plugin_dst}"
-    while IFS= read -r plugin_dir; do
-        install -d "${plugin_dst}/${plugin_dir#./}"
-    done < <(cd "${plugin_src}" && find . -type d -print)
-    while IFS= read -r plugin_file; do
-        [[ "${plugin_file}" == "./settings.json" ]] && continue
-        if [[ ! -e "${plugin_dst}/${plugin_file#./}" ]]; then
-            install -D -m 0644 "${plugin_src}/${plugin_file#./}" "${plugin_dst}/${plugin_file#./}"
-        fi
-    done < <(cd "${plugin_src}" && find . -type f -print)
-done
+seed_noctalia_plugins "${had_existing_noctalia_plugins}"
 for colorscheme in "${defaults_dir}"/noctalia/colorschemes/*/*.json; do
     [[ -f "${colorscheme}" ]] || continue
     scheme_name="$(basename "$(dirname "${colorscheme}")")"
     copy_if_missing "${colorscheme}" "${HOME}/.config/noctalia/colorschemes/${scheme_name}/$(basename "${colorscheme}")"
-done
-for plugin_settings in "${defaults_dir}"/noctalia/plugins/*/settings.json; do
-    [[ -f "${plugin_settings}" ]] || continue
-    plugin_name="$(basename "$(dirname "${plugin_settings}")")"
-    copy_if_missing "${plugin_settings}" "${HOME}/.config/noctalia/plugins/${plugin_name}/settings.json"
 done
 copy_if_missing_or_legacy "${defaults_dir}/niri/config.kdl" "${HOME}/.config/niri/config.kdl" legacy_niri_config
 copy_if_missing "${defaults_dir}/xdg/mimeapps.list" "${HOME}/.config/mimeapps.list"
