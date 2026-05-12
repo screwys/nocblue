@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v20.done"
+version_stamp="${state_dir}/user-defaults.v21.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -911,10 +911,21 @@ apply_user_flatpak_theme_overrides() {
 
     flatpak override --user \
         --unset-env=GTK_THEME \
+        --unset-env=LD_PRELOAD \
+        --env=MANGOHUD=1 \
+        --nofilesystem=host-os \
         --filesystem=home \
+        --filesystem=xdg-config/MangoHud:ro \
         --filesystem=xdg-config/gtk-3.0:ro \
         --filesystem=xdg-config/gtk-4.0:ro \
         net.lutris.Lutris >/dev/null 2>&1 || true
+
+    flatpak override --user \
+        --unset-env=LD_PRELOAD \
+        --env=MANGOHUD=1 \
+        --nofilesystem=host-os \
+        --filesystem=xdg-config/MangoHud:ro \
+        com.valvesoftware.Steam >/dev/null 2>&1 || true
 }
 
 ensure_flatpak_desktop_entry() {
@@ -1132,6 +1143,7 @@ fi
 copy_if_missing_or_legacy "${defaults_dir}/ghostty/config" "${HOME}/.config/ghostty/config" legacy_ghostty_config
 copy_if_missing "${defaults_dir}/ghostty/themes/noctalia" "${HOME}/.config/ghostty/themes/noctalia"
 copy_if_missing "${defaults_dir}/btop/btop.conf" "${HOME}/.config/btop/btop.conf"
+copy_if_missing "${defaults_dir}/MangoHud/MangoHud.conf" "${HOME}/.config/MangoHud/MangoHud.conf"
 copy_if_missing "${defaults_dir}/fish/config.fish" "${HOME}/.config/fish/config.fish"
 copy_if_missing "${defaults_dir}/gtk-3.0/gtk.css" "${HOME}/.config/gtk-3.0/gtk.css"
 copy_if_missing_or_legacy "${defaults_dir}/gtk-3.0/noctalia.css" "${HOME}/.config/gtk-3.0/noctalia.css" legacy_noctalia_css

@@ -12,7 +12,7 @@ io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg
 com.github.tchx84.Flatseal --talk-name=org.gnome.Software --talk-name=org.freedesktop.impl.portal.PermissionStore
 it.mijorus.gearlever --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.signal.Signal --env=SIGNAL_PASSWORD_STORE=gnome-libsecret --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-net.lutris.Lutris --unset-env=LD_PRELOAD --nofilesystem=host-os --filesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-com.valvesoftware.Steam --unset-env=LD_PRELOAD --nofilesystem=host-os --share=network --share=ipc --socket=x11 --socket=pulseaudio --allow=multiarch --allow=per-app-dev-shm
+net.lutris.Lutris --unset-env=LD_PRELOAD --env=MANGOHUD=1 --nofilesystem=host-os --filesystem=home --filesystem=xdg-config/MangoHud:ro --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+com.valvesoftware.Steam --unset-env=LD_PRELOAD --env=MANGOHUD=1 --nofilesystem=host-os --filesystem=xdg-config/MangoHud:ro --share=network --share=ipc --socket=x11 --socket=pulseaudio --allow=multiarch --allow=per-app-dev-shm
 dev.vencord.Vesktop --nosocket=x11 --nosocket=system-bus
 org.kde.krita --unset-env=LD_PRELOAD
