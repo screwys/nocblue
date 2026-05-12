@@ -474,7 +474,7 @@ grep -q 'flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFO
 grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/nocblue-apply-flatpak-overrides
 grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
-grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
