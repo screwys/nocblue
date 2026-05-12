@@ -21,7 +21,7 @@ modules:
         - brave-browser-beta.repo
         - helium.repo
         - mullvad.repo
-        - https://repo.librewolf.net/librewolf.repo
+        - librewolf.repo
         - https://repo.secureblue.dev/secureblue.repo
       nonfree: rpmfusion
     install:

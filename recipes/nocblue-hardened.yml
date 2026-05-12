@@ -26,7 +26,7 @@ modules:
         - brave-browser-beta.repo
         - helium.repo
         - mullvad.repo
-        - https://repo.librewolf.net/librewolf.repo
+        - librewolf.repo
     install:
       install-weak-deps: false
       packages:
