@@ -220,6 +220,7 @@ modules:
       - install-candy-icons.sh
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
+      - patch-noctalia-starship-template.sh
       - install-browser-policies.sh
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh

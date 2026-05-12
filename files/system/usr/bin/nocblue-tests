@@ -206,6 +206,7 @@ assert all(pywalfox_template["colors"][f"color{i}"] for i in range(16))
 assert pywalfox_template["colors"]["color1"] == "{{colors.error.default.hex}}"
 assert pywalfox_template["colors"]["color15"] == "{{colors.on_surface.default.hex}}"
 PY
+grep -q 'PALETTE_FILE="${PALETTE_FILE:-${HOME}/.cache/noctalia/starship-palette.toml}"' /etc/xdg/quickshell/noctalia-shell/Scripts/bash/template-apply.sh
 grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
@@ -429,7 +430,8 @@ grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v21.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v22.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v22.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
@@ -451,6 +453,10 @@ grep -q '\[templates.nvim\]' /usr/share/nocblue/defaults/noctalia/user-templates
 grep -q '.cache/noctalia-nvim.lua' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '\[templates.sddm\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '/var/lib/nocblue/sddm/theme.conf' /usr/share/nocblue/defaults/noctalia/user-templates.toml
+grep -q '"id": "starship"' /usr/share/nocblue/defaults/noctalia/settings.json
+grep -q 'ensure_noctalia_starship_integration' /usr/bin/nocblue-apply-user-defaults
+grep -q 'PALETTE_FILE="${HOME}/.cache/noctalia/starship-palette.toml"' /usr/bin/nocblue-apply-user-defaults
+grep -q '"${apply_script}" starship' /usr/bin/nocblue-apply-user-defaults
 test -f /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
 grep -q -- '--adw-window-bg-rgb' /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
 ! grep -q 'Material-Theme' /usr/share/nocblue/defaults/noctalia/user-templates.toml

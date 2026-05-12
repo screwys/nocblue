@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v21.done"
+version_stamp="${state_dir}/user-defaults.v22.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -637,6 +637,66 @@ if after != before:
 PY
 }
 
+ensure_noctalia_starship_integration() {
+    local settings_path="${HOME}/.config/noctalia/settings.json"
+    local apply_script=""
+    local candidate
+
+    if [[ -f "${settings_path}" ]]; then
+        python3 - "${settings_path}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    raise SystemExit(0)
+
+if not isinstance(data, dict):
+    raise SystemExit(0)
+
+before = json.dumps(data, sort_keys=True, ensure_ascii=False)
+
+templates = data.setdefault("templates", {})
+if not isinstance(templates, dict):
+    templates = {}
+    data["templates"] = templates
+active = templates.setdefault("activeTemplates", [])
+if not isinstance(active, list):
+    active = []
+    templates["activeTemplates"] = active
+if not any(isinstance(item, dict) and item.get("id") == "starship" for item in active):
+    active.append({"enabled": True, "id": "starship"})
+else:
+    for item in active:
+        if isinstance(item, dict) and item.get("id") == "starship":
+            item["enabled"] = True
+templates["enableUserTheming"] = True
+
+after = json.dumps(data, sort_keys=True, ensure_ascii=False)
+if after != before:
+    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+    fi
+
+    for candidate in \
+        "${HOME}/.config/quickshell/noctalia-shell/Scripts/bash/template-apply.sh" \
+        "/etc/xdg/quickshell/noctalia-shell/Scripts/bash/template-apply.sh" \
+        "/usr/share/quickshell/noctalia-shell/Scripts/bash/template-apply.sh"
+    do
+        if [[ -x "${candidate}" ]]; then
+            apply_script="${candidate}"
+            break
+        fi
+    done
+
+    if [[ -n "${apply_script}" && -f "${HOME}/.cache/noctalia/starship-palette.toml" ]]; then
+        PALETTE_FILE="${HOME}/.cache/noctalia/starship-palette.toml" "${apply_script}" starship || true
+    fi
+}
+
 ensure_noctalia_pywalfox() {
     python3 - <<'PY'
 import json
@@ -1032,6 +1092,7 @@ normalize_noctalia_browser_app_ids
 ensure_noctalia_network_widget
 ensure_noctalia_night_light_manual_default
 ensure_noctalia_sddm_integration
+ensure_noctalia_starship_integration
 ensure_noctalia_pywalfox
 copy_if_missing_or_legacy "${defaults_dir}/noctalia/plugins.json" "${HOME}/.config/noctalia/plugins.json" legacy_noctalia_plugins
 copy_if_missing "${defaults_dir}/noctalia/user-templates.toml" "${HOME}/.config/noctalia/user-templates.toml"

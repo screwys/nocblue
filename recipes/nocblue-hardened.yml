@@ -231,6 +231,7 @@ modules:
       - configure-hardened-branding.sh
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
+      - patch-noctalia-starship-template.sh
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
