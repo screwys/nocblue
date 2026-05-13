@@ -66,9 +66,11 @@ fcitx5-mozc
 fcitx5-configtool
 fcitx5-gtk
 fcitx5-qt
+adwaita-cursor-theme
 google-noto-sans-cjk-fonts
 firewalld
 flatpak
+flatpak-builder
 podman-docker
 podman-compose
 bubblewrap

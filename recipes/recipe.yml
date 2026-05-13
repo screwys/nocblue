@@ -98,6 +98,7 @@ modules:
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
+        - flatpak-builder
         - podman-docker
         - podman-compose
         - nm-connection-editor
