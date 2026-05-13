@@ -11,10 +11,15 @@ sudo bootc switch ghcr.io/screwys/nocblue:latest
 sudo systemctl reboot
 ```
 
-For secureblue base:
+For secureblue base, first run:
 ```bash
 sudo rpm-ostree rebase ostree-unverified-registry:ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
+```
+
+and then:
+
+```bash
 sudo rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue-hardened:latest
 sudo systemctl reboot
 ```
