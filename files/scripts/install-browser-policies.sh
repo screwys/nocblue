@@ -36,13 +36,17 @@ for target in targets:
     target.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
 PY
 
+rm -f \
+    /etc/trivalent/policies/managed/nocblue-search.json \
+    /etc/trivalent/policies/managed/nocblue-extensions.json
+
 install -D -m 0644 \
     /usr/share/nocblue/browser-policies/trivalent-duckduckgo.json \
-    /etc/trivalent/policies/managed/nocblue-search.json
+    /etc/trivalent/policies/recommended/nocblue-search.json
 
 install -D -m 0644 \
     /usr/share/nocblue/browser-policies/trivalent-extensions.json \
-    /etc/trivalent/policies/managed/nocblue-extensions.json
+    /etc/trivalent/policies/recommended/nocblue-extensions.json
 
 install_chromium_policy() {
     local target_dir="$1"
