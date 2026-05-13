@@ -346,6 +346,7 @@ bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
+bash -n /usr/bin/flatpak-builder 2>/dev/null || rpm -qf /usr/bin/flatpak-builder >/dev/null
 test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
@@ -566,6 +567,8 @@ if [[ "${is_hardened}" == true ]]; then
     grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
     test -x /usr/bin/nocblue-browser-no-preload
     test -x /usr/bin/nocblue-portal-bwrap
+    test -x /usr/libexec/nocblue/flatpak-builder
+    grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/bin/flatpak-builder
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop
