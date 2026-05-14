@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -252,6 +252,9 @@ test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
 test -f /usr/lib/systemd/system/flatpak-system-update.service
 test -f /usr/lib/systemd/system/flatpak-system-update.timer
 grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
+test -f /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
+grep -qx 'ExecStartPre=' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
+grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
 if [[ "${is_hardened}" == true ]]; then
     test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test ! -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
@@ -346,6 +349,7 @@ bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
 bash -n /usr/bin/nocblue-ocr-japanese
+bash -n /usr/bin/nocblue-verify-update-signature
 bash -n /usr/bin/flatpak-builder 2>/dev/null || rpm -qf /usr/bin/flatpak-builder >/dev/null
 test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
 grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil

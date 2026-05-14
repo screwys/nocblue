@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+image_ref="$(rpm-ostree status --booted --json | jq -er '.deployments[0]."container-image-reference"')"
+image_ref="${image_ref#ostree-image-signed:docker://}"
+image_ref="${image_ref#ostree-unverified-registry:}"
+if [[ "${image_ref}" == *":docker://"* ]]; then
+    image_ref="${image_ref#*:docker://}"
+fi
+
+case "${image_ref}" in
+    ghcr.io/screwys/nocblue-hardened | ghcr.io/screwys/nocblue-hardened:* | ghcr.io/screwys/nocblue-hardened@sha256:*)
+        key_name="nocblue-hardened"
+        ;;
+    ghcr.io/screwys/nocblue | ghcr.io/screwys/nocblue:* | ghcr.io/screwys/nocblue@sha256:*)
+        key_name="nocblue"
+        ;;
+    ghcr.io/secureblue/*)
+        exec /usr/libexec/secureblue/verify-provenance.sh
+        ;;
+    *)
+        printf "WARNING: Unknown image reference '%s'; unable to check update signature.\n" "${image_ref}" >&2
+        exit 1
+        ;;
+esac
+
+key=""
+for candidate in \
+    "/etc/pki/containers/${key_name}.pub" \
+    "/usr/etc/pki/containers/${key_name}.pub" \
+    "/etc/containers/keys/nocblue-cosign.pub"; do
+    if [[ -r "${candidate}" ]]; then
+        key="${candidate}"
+        break
+    fi
+done
+
+if [[ -z "${key}" ]]; then
+    printf "WARNING: Missing nocblue cosign public key for '%s'.\n" "${image_ref}" >&2
+    exit 1
+fi
+
+printf 'Verifying nocblue image signature for %s...\n' "${image_ref}"
+if ! cosign_output="$(cosign verify --key "${key}" "${image_ref}" 2>&1)"; then
+    printf '%s\n' "${cosign_output}" >&2
+    exit 1
+fi
+printf 'Verified nocblue image signature for %s.\n' "${image_ref}"
