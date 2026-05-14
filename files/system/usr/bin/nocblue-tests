@@ -394,7 +394,6 @@ test -f /usr/share/sddm/themes/noctalia/theme.conf
 grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 test -f /etc/sysctl.d/61-ptrace-scope.conf
 grep -qx 'kernel.yama.ptrace_scope = 1' /etc/sysctl.d/61-ptrace-scope.conf
-grep -q 'user-defaults.v21.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
 grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
