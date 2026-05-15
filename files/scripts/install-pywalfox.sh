@@ -10,7 +10,64 @@ export PIPX_GLOBAL_MAN_DIR=/usr/share/man
 # Fedora's uv can crash when secureblue's build-time preload is inherited.
 # pipx may call uv while creating the venv, so keep installer tooling unpreloaded.
 without_preload() {
+    local preload_paths=()
+    local errexit_was_set path restore_done status tmpdir
+
+    tmpdir="$(mktemp -d)"
+    errexit_was_set=false
+    restore_done=false
+    if [[ $- == *e* ]]; then
+        errexit_was_set=true
+    fi
+
+    if [[ -n "${NOCBLUE_LD_PRELOAD_FILES:-}" ]]; then
+        read -r -a preload_paths <<<"${NOCBLUE_LD_PRELOAD_FILES}"
+    else
+        preload_paths=(/etc/ld.so.preload)
+    fi
+
+    restore_preload() {
+        local saved
+
+        if [[ "${restore_done}" == true ]]; then
+            return 0
+        fi
+
+        for path in "${preload_paths[@]}"; do
+            saved="${tmpdir}${path}"
+            if [[ -e "${saved}" ]]; then
+                rm -f "${path}"
+                install -d -m 0755 "$(dirname "${path}")"
+                mv "${saved}" "${path}"
+            fi
+        done
+
+        rm -rf "${tmpdir}"
+        restore_done=true
+    }
+
+    trap restore_preload RETURN
+
+    for path in "${preload_paths[@]}"; do
+        if [[ -e "${path}" ]]; then
+            install -d -m 0755 "$(dirname "${tmpdir}${path}")"
+            mv "${path}" "${tmpdir}${path}"
+            : >"${path}"
+        fi
+    done
+
+    set +e
     env -u LD_PRELOAD "$@"
+    status=$?
+    if [[ "${errexit_was_set}" == true ]]; then
+        set -e
+    else
+        set +e
+    fi
+
+    restore_preload
+    trap - RETURN
+    return "${status}"
 }
 
 without_preload pipx install --global --force --pip-args='--no-cache-dir' "pywalfox==${pywalfox_version}"

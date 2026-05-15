@@ -43,6 +43,8 @@ jobs:
           grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/nocblue-hardened.yml
           grep -q 'name: nocblue-hardened$' recipes/nocblue-hardened.yml
           grep -q 'image-version: 44' recipes/nocblue-hardened.yml
+          grep -q 'restore_preload' files/scripts/install-pywalfox.sh
+          grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
           grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh
           grep -q 'without_preload /usr/bin/pywalfox install --global' files/scripts/install-pywalfox.sh
 
