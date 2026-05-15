@@ -7,11 +7,17 @@ export PIPX_GLOBAL_HOME=/usr/lib/opt/pipx
 export PIPX_GLOBAL_BIN_DIR=/usr/bin
 export PIPX_GLOBAL_MAN_DIR=/usr/share/man
 
-pipx install --global --force --pip-args='--no-cache-dir' "pywalfox==${pywalfox_version}"
+# Fedora's uv can crash when secureblue's build-time preload is inherited.
+# pipx may call uv while creating the venv, so keep installer tooling unpreloaded.
+without_preload() {
+    env -u LD_PRELOAD "$@"
+}
+
+without_preload pipx install --global --force --pip-args='--no-cache-dir' "pywalfox==${pywalfox_version}"
 
 rm -f /usr/local/bin/pywalfox
 
-/usr/bin/pywalfox install --global
+without_preload /usr/bin/pywalfox install --global
 
 python3 - <<'PY'
 import json

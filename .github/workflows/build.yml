@@ -33,6 +33,8 @@ jobs:
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'noctalia-shell' recipes/recipe.yml
+          grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh
+          grep -q 'without_preload /usr/bin/pywalfox install --global' files/scripts/install-pywalfox.sh
           ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
           grep -q '! rpm -q kernel-cachyos' files/system/usr/bin/nocblue-tests
 
