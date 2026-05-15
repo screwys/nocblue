@@ -91,6 +91,9 @@ modules:
         - pkgconf-pkg-config
         - openssl
         - openssl-devel
+        - gstreamer1-devel
+        - gstreamer1-plugins-base-devel
+        - gstreamer1-plugins-bad-free-devel
         - patch
         - no_rlimit_as
 

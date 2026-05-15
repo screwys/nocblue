@@ -46,6 +46,9 @@ make
 cmake
 pkgconf-pkg-config
 openssl-devel
+gstreamer1-devel
+gstreamer1-plugins-base-devel
+gstreamer1-plugins-bad-free-devel
 gnome-keyring
 dbus-tools
 polkit
