@@ -26,21 +26,9 @@ fi
 
 state_dir="${HOME}/.config/nocblue"
 stamp="${state_dir}/nocblue-flatpak-setup.stamp"
+bazaar_cache_stamp="${state_dir}/nocblue-bazaar-flathub-verified-cache.stamp"
 manifest="/usr/share/nocblue/manifests/flatpaks.txt"
 install -d -m 0755 "${state_dir}"
-
-if [[ "${repair}" != true && -e "${stamp}" ]]; then
-    exit 0
-fi
-
-flatpak remote-add --if-not-exists --user \
-    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-if command -v ujust >/dev/null 2>&1; then
-    ujust harden-flatpak
-else
-    printf 'ujust is not available; skipping secureblue flatpak hardening\n' >&2
-fi
 
 ensure_flatpak_desktop_entry() {
     local app_id="$1"
@@ -97,6 +85,63 @@ install_flatpak_desktop_entries() {
     fi
 }
 
+clear_bazaar_stale_remote_cache() {
+    local cache_home="${XDG_CACHE_HOME:-${HOME}/.cache}"
+
+    rm -rf \
+        "${cache_home}/io.github.kolunmi.Bazaar/entry-cache" \
+        "${HOME}/.var/app/io.github.kolunmi.Bazaar/cache/io.github.kolunmi.Bazaar/entry-cache"
+    touch "${bazaar_cache_stamp}"
+}
+
+migrate_flathub_verified_refs() {
+    local needs_cache_clear=false
+    local ref_name
+
+    while IFS= read -r ref; do
+        [[ -n "${ref}" ]] || continue
+        needs_cache_clear=true
+        ref_name="${ref#app/}"
+        ref_name="${ref_name#runtime/}"
+        ref_name="${ref_name%%/*}"
+
+        case "${ref_name}" in
+            *.Locale|*.Debug|*.Sources)
+                # Related extension refs can be regenerated from the parent remote.
+                flatpak uninstall --user -y --noninteractive --force-remove --no-related "${ref}"
+                ;;
+            *)
+                flatpak install --user -y --noninteractive --reinstall --no-related flathub "${ref}"
+                ;;
+        esac
+    done < <(flatpak list --user --all --columns=ref,origin | awk '$2=="flathub-verified" {print $1}')
+
+    if flatpak remotes --user --columns=name | awk '$1=="flathub-verified" {found=1} END {exit found ? 0 : 1}'; then
+        needs_cache_clear=true
+    fi
+
+    flatpak remote-delete --user --force flathub-verified >/dev/null 2>&1 || true
+
+    if [[ "${needs_cache_clear}" == true || ! -e "${bazaar_cache_stamp}" ]]; then
+        clear_bazaar_stale_remote_cache
+    fi
+}
+
+flatpak remote-add --if-not-exists --user \
+    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+migrate_flathub_verified_refs
+
+if [[ "${repair}" != true && -e "${stamp}" ]]; then
+    exit 0
+fi
+
+if command -v ujust >/dev/null 2>&1; then
+    ujust harden-flatpak
+else
+    printf 'ujust is not available; skipping secureblue flatpak hardening\n' >&2
+fi
+
 while IFS= read -r ref; do
     [[ -z "${ref}" || "${ref}" =~ ^[[:space:]]*# ]] && continue
 
@@ -111,13 +156,6 @@ while IFS= read -r ref; do
         flatpak install --user -y --noninteractive flathub "${ref}"
     fi
 done < "${manifest}"
-
-while IFS= read -r ref; do
-    [[ -n "${ref}" ]] || continue
-    flatpak install --user -y --noninteractive --reinstall flathub "${ref}"
-done < <(flatpak list --user --columns=ref,origin | awk '$2=="flathub-verified" {print $1}')
-
-flatpak remote-delete --user --force flathub-verified >/dev/null 2>&1 || true
 nocblue-apply-flatpak-overrides --user
 install_flatpak_desktop_entries
 if command -v nocblue-fix-flatpak-icons >/dev/null 2>&1; then

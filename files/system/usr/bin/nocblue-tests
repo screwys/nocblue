@@ -547,7 +547,13 @@ grep -q 'flatpak remote-delete --user --force flathub-verified' /usr/bin/nocblue
 grep -q 'flatpak install --user -y --noninteractive flathub' /usr/bin/nocblue-setup-flatpaks
 grep -q 'flatpak info --user --show-origin' /usr/bin/nocblue-setup-flatpaks
 grep -q -- '--reinstall flathub' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak list --user --columns=ref,origin' /usr/bin/nocblue-setup-flatpaks
+grep -q -- '--reinstall --no-related flathub' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak uninstall --user -y --noninteractive --force-remove --no-related' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak list --user --all --columns=ref,origin' /usr/bin/nocblue-setup-flatpaks
+grep -q 'flatpak remotes --user --columns=name' /usr/bin/nocblue-setup-flatpaks
+grep -q 'clear_bazaar_stale_remote_cache' /usr/bin/nocblue-setup-flatpaks
+grep -q 'io.github.kolunmi.Bazaar/entry-cache' /usr/bin/nocblue-setup-flatpaks
+grep -q 'nocblue-bazaar-flathub-verified-cache.stamp' /usr/bin/nocblue-setup-flatpaks
 grep -q 'nocblue-apply-flatpak-overrides --user' /usr/bin/nocblue-setup-flatpaks
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-setup-flatpaks
 ! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-setup-flatpaks
