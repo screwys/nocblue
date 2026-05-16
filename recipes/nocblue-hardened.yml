@@ -41,6 +41,7 @@ modules:
         - qt6-qt5compat
         - qt6-qtsvg
         - qt6ct
+        - plasma-workspace
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
 

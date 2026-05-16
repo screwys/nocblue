@@ -154,6 +154,7 @@ spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPL
 spawn-at-startup "nocblue-refresh-portals"
 spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets"
 spawn-at-startup "qs" "-c" "noctalia-shell"
+spawn-at-startup "sh" "-lc" "sleep 4; command -v xembedsniproxy >/dev/null 2>&1 && exec xembedsniproxy"
 
 binds {
     Mod+Shift+Escape { show-hotkey-overlay; }
