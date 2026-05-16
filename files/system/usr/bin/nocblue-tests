@@ -269,6 +269,7 @@ else
     test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
     test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 fi
+test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
 test -L /etc/systemd/system/display-manager.service
 test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/sddm.service"
 test -L /etc/systemd/system/rpm-ostree-countme.timer
@@ -327,11 +328,14 @@ test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.timer
+test -f /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
+test -f /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-setup.service
 test -f /usr/lib/systemd/user/nocblue-flatpak-setup.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
+test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
 test -x /usr/bin/nocblue-sync-sddm-wallpaper
 test -x /usr/bin/nocblue-openrazer-plugdev
@@ -343,6 +347,7 @@ test ! -e /usr/bin/nocblue-install-brew-formulae
 test ! -e /usr/share/nocblue/manifests/brew-formulae.txt
 bash -n /usr/bin/nocblue-apply-user-defaults
 bash -n /usr/bin/nocblue-apply-adwsteamgtk
+bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-openrazer-plugdev
@@ -439,6 +444,11 @@ grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defau
 grep -q 'user-defaults.v22.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'user-defaults.v22.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
+grep -q '^ExecStart=/usr/bin/nocblue-sync-game-shortcuts$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
+grep -q '^OnUnitActiveSec=15min$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
+grep -q 'steam://rungameid' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'flatpak run com.valvesoftware.Steam' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'flatpak run net.lutris.Lutris' /usr/bin/nocblue-sync-game-shortcuts
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
 test ! -e /usr/bin/nocblue-apply-noctalia-theme

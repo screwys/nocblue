@@ -1,0 +1,9 @@
+[Unit]
+Description=Sync Steam and Lutris shortcuts for launcher search
+After=nocblue-flatpak-setup.service
+ConditionUser=!@system
+ConditionPathIsDirectory=%h
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nocblue-sync-game-shortcuts

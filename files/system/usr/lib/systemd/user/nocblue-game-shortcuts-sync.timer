@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Steam and Lutris launcher shortcuts
+ConditionUser=!@system
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=15min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

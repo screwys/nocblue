@@ -263,6 +263,7 @@ modules:
       enabled:
         - nocblue-user-defaults.service
         - nocblue-adwsteamgtk.timer
+        - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
         - nocblue-flatpak-icon-fixes.service
 

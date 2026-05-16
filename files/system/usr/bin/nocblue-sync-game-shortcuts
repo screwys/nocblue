@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ "$(id -u)" -eq 0 ]]; then
+    printf 'nocblue-sync-game-shortcuts must run as the target user\n' >&2
+    exit 1
+fi
+
+xdg_data_home="${XDG_DATA_HOME:-${HOME}/.local/share}"
+xdg_state_home="${XDG_STATE_HOME:-${HOME}/.local/state}"
+applications_dir="${xdg_data_home}/applications"
+icons_dir="${xdg_data_home}/icons/hicolor"
+state_dir="${xdg_state_home}/nocblue"
+state_file="${state_dir}/game-shortcuts.desktop-files"
+
+install -d -m 0755 "${applications_dir}" "${icons_dir}" "${state_dir}"
+
+sync_icon_tree() {
+    local src_root="$1"
+    local src rel dest
+
+    [[ -d "${src_root}" ]] || return 0
+
+    while IFS= read -r -d '' src; do
+        rel="${src#"${src_root}/"}"
+        case "${rel}" in
+            */apps/*)
+                ;;
+            *)
+                continue
+                ;;
+        esac
+
+        dest="${icons_dir}/${rel}"
+        install -D -m 0644 "${src}" "${dest}"
+    done < <(
+        find "${src_root}" -type f \
+            \( -name '*.png' -o -name '*.svg' -o -name '*.ico' -o -name '*.xpm' \) \
+            -print0 2>/dev/null
+    )
+}
+
+python3 - \
+    "${applications_dir}" \
+    "${state_file}" \
+    "${HOME}/.var/app/com.valvesoftware.Steam/.local/share/applications" \
+    "${HOME}/.var/app/net.lutris.Lutris/data/applications" \
+    "${HOME}/.var/app/net.lutris.Lutris/.local/share/applications" <<'PY'
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+apps_dir = Path(sys.argv[1])
+state_file = Path(sys.argv[2])
+steam_dirs = [Path(sys.argv[3])]
+lutris_dirs = [Path(value) for value in sys.argv[4:]]
+managed_marker = "X-Nocblue-Managed=game-shortcut"
+
+
+def desktop_files(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    return sorted(path for path in directory.glob("*.desktop") if path.is_file())
+
+
+def safe_token(value: str) -> str:
+    value = value.strip().lower()
+    value = re.sub(r"[^a-z0-9_.-]+", "-", value)
+    value = value.strip(".-")
+    return value or "game"
+
+
+def desktop_value(lines: list[str], key: str) -> str:
+    prefix = f"{key}="
+    in_desktop = False
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "[Desktop Entry]":
+            in_desktop = True
+            continue
+        if stripped.startswith("[") and stripped.endswith("]"):
+            in_desktop = False
+        if in_desktop and line.startswith(prefix):
+            return line[len(prefix) :]
+    return ""
+
+
+def ensure_desktop_keys(lines: list[str], updates: dict[str, str]) -> list[str]:
+    out: list[str] = []
+    in_desktop = False
+    saw_desktop = False
+    seen: set[str] = set()
+
+    def append_missing() -> None:
+        for key, value in updates.items():
+            if key not in seen:
+                out.append(f"{key}={value}")
+                seen.add(key)
+
+    for line in lines:
+        stripped = line.strip()
+        if stripped == "[Desktop Entry]":
+            if in_desktop:
+                append_missing()
+            in_desktop = True
+            saw_desktop = True
+            seen = set()
+            out.append(line)
+            continue
+
+        if in_desktop and stripped.startswith("[") and stripped.endswith("]"):
+            append_missing()
+            in_desktop = False
+
+        if in_desktop and "=" in line and not line.lstrip().startswith("#"):
+            key = line.split("=", 1)[0]
+            if key in updates:
+                out.append(f"{key}={updates[key]}")
+                seen.add(key)
+                continue
+
+        out.append(line)
+
+    if in_desktop:
+        append_missing()
+
+    if not saw_desktop:
+        out = ["[Desktop Entry]", *[f"{key}={value}" for key, value in updates.items()], *out]
+
+    return out
+
+
+def should_skip(lines: list[str]) -> bool:
+    for key in ("Hidden", "NoDisplay"):
+        if desktop_value(lines, key).strip().lower() == "true":
+            return True
+    return desktop_value(lines, "Name").strip() == ""
+
+
+def write_managed_desktop(dest: Path, lines: list[str]) -> bool:
+    if dest.exists() and managed_marker not in dest.read_text(encoding="utf-8", errors="replace"):
+        return False
+    dest.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
+    return True
+
+
+def steam_dest_name(src: Path, exec_line: str) -> str:
+    match = re.search(r"steam://rungameid/([0-9]+)", exec_line)
+    if match:
+        return f"steam-{match.group(1)}.desktop"
+    return f"steam-{safe_token(src.stem)}.desktop"
+
+
+def sync_steam_shortcut(src: Path) -> Path | None:
+    lines = src.read_text(encoding="utf-8", errors="replace").splitlines()
+    if should_skip(lines):
+        return None
+
+    exec_line = desktop_value(lines, "Exec")
+    match = re.search(r"(steam://[^\s\"']+)", exec_line)
+    if not match:
+        return None
+
+    uri = match.group(1)
+    dest = apps_dir / steam_dest_name(src, exec_line)
+    lines = ensure_desktop_keys(
+        lines,
+        {
+            "Type": "Application",
+            "Exec": f"flatpak run com.valvesoftware.Steam {uri}",
+            "TryExec": "flatpak",
+            "Terminal": "false",
+            "Categories": desktop_value(lines, "Categories").strip() or "Game;",
+            "X-Flatpak": "com.valvesoftware.Steam",
+            "X-Nocblue-Managed": "game-shortcut",
+            "X-Nocblue-Source": "steam-flatpak",
+        },
+    )
+    return dest if write_managed_desktop(dest, lines) else None
+
+
+def lutris_dest_name(src: Path, exec_line: str) -> str:
+    if src.name.startswith("net.lutris."):
+        return src.name
+    match = re.search(r"lutris:rungame(?:id)?/([^\s\"']+)", exec_line)
+    if match:
+        return f"net.lutris.{safe_token(match.group(1))}.desktop"
+    return f"net.lutris.{safe_token(src.stem)}.desktop"
+
+
+def sync_lutris_shortcut(src: Path) -> Path | None:
+    lines = src.read_text(encoding="utf-8", errors="replace").splitlines()
+    if should_skip(lines):
+        return None
+
+    exec_line = desktop_value(lines, "Exec")
+    match = re.search(r"(lutris:[^\s\"']+)", exec_line)
+    if not match:
+        return None
+
+    uri = match.group(1)
+    dest = apps_dir / lutris_dest_name(src, exec_line)
+    lines = ensure_desktop_keys(
+        lines,
+        {
+            "Type": "Application",
+            "Exec": f"env LUTRIS_SKIP_INIT=1 flatpak run net.lutris.Lutris {uri}",
+            "TryExec": "flatpak",
+            "Terminal": "false",
+            "Categories": desktop_value(lines, "Categories").strip() or "Game;",
+            "X-Flatpak": "net.lutris.Lutris",
+            "X-Nocblue-Managed": "game-shortcut",
+            "X-Nocblue-Source": "lutris-flatpak",
+        },
+    )
+    return dest if write_managed_desktop(dest, lines) else None
+
+
+current: set[Path] = set()
+for directory in steam_dirs:
+    for src in desktop_files(directory):
+        dest = sync_steam_shortcut(src)
+        if dest is not None:
+            current.add(dest)
+
+for directory in lutris_dirs:
+    for src in desktop_files(directory):
+        dest = sync_lutris_shortcut(src)
+        if dest is not None:
+            current.add(dest)
+
+previous = set()
+if state_file.exists():
+    previous = {Path(line) for line in state_file.read_text(encoding="utf-8").splitlines() if line}
+
+for dest in sorted(previous - current):
+    try:
+        if dest.exists() and managed_marker in dest.read_text(encoding="utf-8", errors="replace"):
+            dest.unlink()
+    except OSError:
+        pass
+
+tmp = state_file.with_suffix(".tmp")
+tmp.write_text("".join(f"{path}\n" for path in sorted(current)), encoding="utf-8")
+tmp.replace(state_file)
+PY
+
+sync_icon_tree "${HOME}/.var/app/com.valvesoftware.Steam/.local/share/icons/hicolor"
+sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/data/icons/hicolor"
+sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/.local/share/icons/hicolor"
+
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database "${applications_dir}" >/dev/null 2>&1 || true
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1 && [[ -d "${icons_dir}" ]]; then
+    gtk-update-icon-cache -q -t -f "${icons_dir}" >/dev/null 2>&1 || true
+fi
