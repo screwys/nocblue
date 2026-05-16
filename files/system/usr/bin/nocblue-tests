@@ -449,6 +449,10 @@ grep -q '^OnUnitActiveSec=15min$' /usr/lib/systemd/user/nocblue-game-shortcuts-s
 grep -q 'steam://rungameid' /usr/bin/nocblue-sync-game-shortcuts
 grep -q 'flatpak run com.valvesoftware.Steam' /usr/bin/nocblue-sync-game-shortcuts
 grep -q 'flatpak run net.lutris.Lutris' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'sync_icon_tree "${HOME}/.var/app/com.valvesoftware.Steam/.local/share/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/data/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/.local/share/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
+grep -q 'gtk-update-icon-cache -q -t -f "${icons_dir}"' /usr/bin/nocblue-sync-game-shortcuts
 ! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
 test ! -e /usr/bin/nocblue-apply-noctalia-theme
