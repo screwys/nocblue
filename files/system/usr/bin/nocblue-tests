@@ -627,6 +627,7 @@ grep -q '^Current=noctalia$' /etc/sddm.conf.d/10-nocblue-theme.conf
 test -f /etc/sddm.conf.d/20-nocblue-display.conf
 grep -q '^DisplayServer=x11$' /etc/sddm.conf.d/20-nocblue-display.conf
 grep -q '^GreeterEnvironment=XCURSOR_THEME=Adwaita,XCURSOR_SIZE=24$' /etc/sddm.conf.d/20-nocblue-display.conf
+grep -q '^InputMethod=$' /etc/sddm.conf.d/20-nocblue-display.conf
 grep -q '^CursorTheme=Adwaita$' /etc/sddm.conf.d/20-nocblue-display.conf
 grep -q '^CursorSize=24$' /etc/sddm.conf.d/20-nocblue-display.conf
 test -d /usr/share/sddm/themes/noctalia
