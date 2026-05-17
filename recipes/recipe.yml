@@ -105,6 +105,8 @@ modules:
         - flatpak-builder
         - podman-docker
         - podman-compose
+        - fuse
+        - fuse-libs
         - nm-connection-editor
         - NetworkManager-tui
         - NetworkManager-wifi
