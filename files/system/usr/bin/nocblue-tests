@@ -587,6 +587,7 @@ grep -q 'podman image trust set -t accept' /usr/share/nocblue/njust/Justfile
 grep -q 'trust-user' /usr/share/nocblue/njust/Justfile
 grep -q 'check-secureblue' /usr/share/nocblue/njust/Justfile
 grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
+grep -q '^repo_gpgcheck=0$' /etc/yum.repos.d/librewolf.repo 2>/dev/null || grep -q '^repo_gpgcheck=0$' /usr/etc/yum.repos.d/librewolf.repo
 if [[ "${is_hardened}" == true ]]; then
     [[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
     grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1

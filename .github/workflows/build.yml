@@ -37,6 +37,7 @@ jobs:
           grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
           grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh
           grep -q 'without_preload /usr/bin/pywalfox install --global' files/scripts/install-pywalfox.sh
+          grep -q '^repo_gpgcheck=0$' files/dnf/librewolf.repo
           ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
           grep -q '! rpm -q kernel-cachyos' files/system/usr/bin/nocblue-tests
 

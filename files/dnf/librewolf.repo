@@ -2,6 +2,8 @@
 name=LibreWolf Software Repository
 baseurl=https://repo.librewolf.net
 gpgcheck=1
-repo_gpgcheck=1
+# dnf5/librepo can abort while verifying this repo's metadata signature in
+# secureblue hardened builds; keep RPM package signature checks enabled.
+repo_gpgcheck=0
 gpgkey=https://repo.librewolf.net/pubkey.gpg
 enabled=1
