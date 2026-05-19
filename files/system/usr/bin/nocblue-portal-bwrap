@@ -1,4 +1,24 @@
 #!/usr/bin/bash
 set -euo pipefail
 
+allowed_caller() {
+    case "$1" in
+        /usr/libexec/xdg-desktop-portal|\
+        /usr/libexec/xdg-desktop-portal-gnome|\
+        /usr/libexec/xdg-desktop-portal-gtk|\
+        /usr/libexec/nocblue/flatpak-builder)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+caller="$(readlink -f "/proc/${PPID}/exe" 2>/dev/null || true)"
+if ! allowed_caller "${caller}"; then
+    printf 'nocblue-portal-bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2
+    exit 126
+fi
+
 exec /usr/bin/bwrap "$@"

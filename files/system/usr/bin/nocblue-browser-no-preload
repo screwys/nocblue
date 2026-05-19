@@ -6,6 +6,52 @@ if [[ "$#" -lt 1 ]]; then
     exit 2
 fi
 
+allowed_browser_command() {
+    case "$1" in
+        /opt/brave.com/brave-origin-beta/brave-origin-beta|\
+        /usr/lib/opt/brave.com/brave-origin-beta/brave-origin-beta|\
+        /opt/brave.com/brave-origin-beta/brave|\
+        /usr/lib/opt/brave.com/brave-origin-beta/brave|\
+        /opt/brave.com/brave-beta/brave-browser-beta|\
+        /usr/lib/opt/brave.com/brave-beta/brave-browser-beta|\
+        /opt/brave.com/brave/brave-browser|\
+        /usr/lib/opt/brave.com/brave/brave-browser|\
+        /opt/helium/helium-wrapper|\
+        /usr/lib/opt/helium/helium-wrapper|\
+        /opt/helium/helium|\
+        /usr/lib/opt/helium/helium)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+resolve_browser_command() {
+    local command="$1"
+    local path resolved
+
+    if [[ "${command}" == */* ]]; then
+        path="${command}"
+    else
+        path="$(command -v -- "${command}" 2>/dev/null || true)"
+    fi
+
+    resolved="$(readlink -f -- "${path}" 2>/dev/null || true)"
+    if [[ -z "${resolved}" || ! -x "${resolved}" ]]; then
+        printf 'nocblue-browser-no-preload cannot find executable browser command: %s\n' "${command}" >&2
+        exit 126
+    fi
+
+    if ! allowed_browser_command "${resolved}"; then
+        printf 'nocblue-browser-no-preload refuses unsupported browser command: %s\n' "${command}" >&2
+        exit 126
+    fi
+
+    printf '%s\n' "${resolved}"
+}
+
 restore_session_env() {
     local name value
 
@@ -26,6 +72,9 @@ restore_session_env() {
 
 restore_session_env
 unset LD_PRELOAD
+browser_command="$(resolve_browser_command "$1")"
+shift
+set -- "${browser_command}" "$@"
 
 if [[ -r /etc/ld.so.preload ]]; then
     exec bwrap \

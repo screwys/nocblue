@@ -9,6 +9,9 @@ for path in \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \
     /opt/helium \
-    /usr/lib/opt/helium; do
+    /usr/lib/opt/helium \
+    /usr/lib64/firefox \
+    /usr/share/librewolf \
+    /usr/lib/mullvad-browser; do
     [[ -e "${path}" ]] && restorecon -Rv "${path}" || true
 done
