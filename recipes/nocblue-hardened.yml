@@ -17,6 +17,10 @@ labels:
   org.opencontainers.image.source: https://github.com/screwys/nocblue
 
 modules:
+  - type: script
+    scripts:
+      - reconcile-recipe-dependencies.sh
+
   - type: dnf
     repos:
       files:
@@ -29,6 +33,7 @@ modules:
         - librewolf.repo
     install:
       install-weak-deps: false
+      allow-erasing: true
       packages:
         # Desktop/session stack.
         - niri
@@ -38,13 +43,10 @@ modules:
         - sddm
         - sddm-x11
         - xorg-x11-server-Xorg
-        # Noctalia is currently built against Qt 6.10 private ABI symbols.
-        # Keep these explicit desktop-stack packages on the compatible set
-        # until Terra rebuilds Noctalia for Qt 6.11.
-        - qt6-qt5compat-6.10.3-1.fc44.x86_64
-        - qt6-qtsvg-6.10.3-1.fc44.x86_64
+        - qt6-qt5compat
+        - qt6-qtsvg
         - qt6ct
-        - plasma-workspace-6.6.4-1.fc44.x86_64
+        - plasma-workspace
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
 

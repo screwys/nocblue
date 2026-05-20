@@ -33,6 +33,9 @@ jobs:
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'noctalia-shell' recipes/recipe.yml
+          grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
+          ! grep -Eq 'qt6-(qt5compat|qtsvg)-[0-9]' recipes/recipe.yml
+          ! grep -Eq 'plasma-workspace-[0-9]' recipes/recipe.yml
           grep -q 'restore_preload' files/scripts/install-pywalfox.sh
           grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
           grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh
