@@ -187,7 +187,7 @@ modules:
         - firefox
         - brave-origin-beta
         - helium-bin
-        - librewolf-150.0.2-1.x86_64
+        - librewolf
         - mullvad-browser
         - zed
         - libappindicator-gtk3

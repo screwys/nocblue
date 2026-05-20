@@ -174,8 +174,7 @@ modules:
         - firefox
         - brave-origin-beta
         - helium-bin
-        # Keep this pinned because LibreWolf repo signatures have been unstable.
-        - librewolf-150.0.2-1.x86_64
+        - librewolf
         - mullvad-browser
         - trivalent
         - trivalent-selinux
