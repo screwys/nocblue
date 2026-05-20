@@ -19,7 +19,14 @@ allowed_browser_command() {
         /opt/helium/helium-wrapper|\
         /usr/lib/opt/helium/helium-wrapper|\
         /opt/helium/helium|\
-        /usr/lib/opt/helium/helium)
+        /usr/lib/opt/helium/helium|\
+        /usr/bin/firefox|\
+        /usr/lib64/firefox/firefox|\
+        /usr/share/librewolf/librewolf|\
+        /usr/share/librewolf/librewolf-bin|\
+        /usr/lib/mullvad-browser/start-mullvad-browser|\
+        /usr/lib/mullvad-browser/mullvadbrowser|\
+        /usr/lib/mullvad-browser/mullvadbrowser.real)
             return 0
             ;;
         *)

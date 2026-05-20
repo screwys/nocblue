@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-standard_wrapper="/usr/bin/nocblue-standard-malloc-run"
 browser_no_preload_wrapper="/usr/bin/nocblue-browser-no-preload"
 applications_dir="${NOCBLUE_APPLICATIONS_DIR:-/usr/share/applications}"
 
@@ -68,21 +67,21 @@ PY
 
 patch_desktop_exec \
     "${applications_dir}/org.mozilla.firefox.desktop" \
-    "${standard_wrapper}" \
+    "${browser_no_preload_wrapper}" \
     firefox \
     /usr/bin/firefox \
     /usr/lib64/firefox/firefox
 
 patch_desktop_exec \
     "${applications_dir}/firefox.desktop" \
-    "${standard_wrapper}" \
+    "${browser_no_preload_wrapper}" \
     firefox \
     /usr/bin/firefox \
     /usr/lib64/firefox/firefox
 
 patch_desktop_exec \
     "${applications_dir}/librewolf.desktop" \
-    "${standard_wrapper}" \
+    "${browser_no_preload_wrapper}" \
     librewolf \
     /usr/bin/librewolf \
     /usr/share/librewolf/librewolf
@@ -114,7 +113,7 @@ patch_desktop_exec \
 
 patch_desktop_exec \
     "${applications_dir}/mullvad-browser.desktop" \
-    "${standard_wrapper}" \
+    "${browser_no_preload_wrapper}" \
     mullvad-browser \
     /usr/bin/mullvad-browser \
     /usr/lib/mullvad-browser/start-mullvad-browser

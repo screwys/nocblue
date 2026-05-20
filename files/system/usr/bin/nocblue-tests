@@ -374,8 +374,8 @@ grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t mozilla_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t mozilla_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_trivalent_script_domain' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -385,10 +385,7 @@ grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_n
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'roletype unconfined_r mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'typetransition user_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_browser_no_preload_t mozilla_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/share/librewolf/librewolf" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/share/librewolf/librewolf-bin" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/mullvad-browser/mullvadbrowser" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -402,6 +399,8 @@ grep -q 'trivalent_domain (brave_origin_t helium_t)' /usr/share/nocblue/selinux/
 grep -q 'kernel_system_state_reader (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'unconfined_t unconfined_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -410,6 +409,9 @@ bash -n /usr/bin/nocblue-browser-no-preload
 bash -n /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
 grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
+grep -q '/usr/bin/firefox' /usr/bin/nocblue-browser-no-preload
+grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
+grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 ! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
@@ -616,13 +618,16 @@ if [[ "${is_hardened}" == true ]]; then
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop
-    grep -Eq '^Exec=/usr/bin/nocblue-standard-malloc-run .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*firefox.* %u$' /usr/share/applications/org.mozilla.firefox.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*/usr/share/librewolf/librewolf %u$' /usr/share/applications/librewolf.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/com.brave.Origin.beta.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/helium.desktop
     test -f /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
     grep -qx 'Environment=FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
     ! grep -q 'XDP_VALIDATE_ICON_INSECURE' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    ! grep -Eq 'nocblue-standard-malloc-run.*(firefox|librewolf|mullvad)' /usr/share/applications/org.mozilla.firefox.desktop /usr/share/applications/librewolf.desktop /usr/share/applications/mullvad-browser.desktop
     ! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop
 else
     ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
