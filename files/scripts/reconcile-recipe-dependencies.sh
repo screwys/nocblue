@@ -27,6 +27,10 @@ repoquery_available() {
     "${dnf_cmd}" -q repoquery --available --arch "${base_arch}" --queryformat '%{full_nevra}\n' "$@" 2>/dev/null || true
 }
 
+repoquery_evr() {
+    "${dnf_cmd}" -q repoquery --available --arch "${base_arch}" --queryformat '%{evr}\n' "$1" 2>/dev/null | head -n 1
+}
+
 repoquery_provides() {
     "${dnf_cmd}" -q repoquery --available --provides "$@" 2>/dev/null || true
 }
@@ -59,18 +63,12 @@ select_latest_provider_for_capability() {
     repoquery_provider_nevras "${capability}" | sort -V | tail -n 1
 }
 
-select_latest_package_providing_qt_abi() {
+select_package_with_evr() {
     local package="$1"
-    local qt_abi="$2"
-    local candidate selected
+    local evr="$2"
+    local selected
 
-    while IFS= read -r candidate; do
-        [[ -n "${candidate}" ]] || continue
-        if repoquery_provides "${candidate}" | grep -q "Qt_${qt_abi}_PRIVATE_API"; then
-            selected="${candidate}"
-        fi
-    done < <(repoquery_available "${package}" | sort -V)
-
+    selected="$(repoquery_available "${package}-${evr}.${base_arch}" | sort -V | tail -n 1)"
     [[ -n "${selected:-}" ]] || return 1
     printf '%s\n' "${selected}"
 }
@@ -112,13 +110,25 @@ selected_nevras=()
 
 log "reconciling desktop Qt stack for Qt ${qt_abi} private ABI"
 
-while IFS= read -r capability; do
-    [[ -n "${capability}" ]] || continue
-    add_nevra "$(select_latest_provider_for_capability "${capability}")"
-done < <(repoquery_requires noctalia-qs | grep "Qt_${qt_abi}_PRIVATE_API" | sort -u)
+qtbase_capability="libQt6Core.so.6(Qt_${qt_abi}_PRIVATE_API)(64bit)"
+qtbase_nevra="$(select_latest_provider_for_capability "${qtbase_capability}")"
+qt_evr="$(repoquery_evr "${qtbase_nevra}")"
+if [[ -z "${qtbase_nevra}" || -z "${qt_evr}" ]]; then
+    printf 'nocblue dependency resolver: could not resolve provider for %s\n' "${qtbase_capability}" >&2
+    exit 1
+fi
 
-for package in qt6-qtsvg qt6-qt5compat; do
-    add_nevra "$(select_latest_package_providing_qt_abi "${package}" "${qt_abi}")"
+for package in \
+    qt6-qtbase \
+    qt6-qtbase-gui \
+    qt6-qtdeclarative \
+    qt6-qtmultimedia \
+    qt6-qtsvg \
+    qt6-qt5compat \
+    qt6-qtwayland; do
+    if nevra="$(select_package_with_evr "${package}" "${qt_evr}")"; then
+        add_nevra "${nevra}"
+    fi
 done
 
 add_nevra "$(select_latest_package_requiring_only_qt_abi plasma-workspace "${qt_abi}")"
