@@ -40,9 +40,13 @@ if [[ "${NOCBLUE_OPENRAZER_AKMOD_DRY_RUN:-}" == "1" ]]; then
 fi
 
 "${dnf_cmd}" -y --enablerepo="${akmods_repo}" --setopt=install_weak_deps=False install \
-    akmod-openrazer \
+    akmods \
     cpio \
-    kernel-devel-matched
+    kernel-devel-matched \
+    openrazer-kmod-common
+
+"${dnf_cmd}" -y --enablerepo="${akmods_repo}" --setopt=install_weak_deps=False --setopt=tsflags=noscripts install \
+    akmod-openrazer
 
 srpm="$(find /usr/src/akmods -maxdepth 1 -type f -name 'openrazer-kmod-*.src.rpm' | sort -V | tail -n 1)"
 if [[ -z "${srpm}" ]]; then
