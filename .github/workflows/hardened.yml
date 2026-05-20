@@ -44,6 +44,8 @@ jobs:
           grep -q 'name: nocblue-hardened$' recipes/nocblue-hardened.yml
           grep -q 'image-version: 44' recipes/nocblue-hardened.yml
           grep -q 'reconcile-recipe-dependencies.sh' recipes/nocblue-hardened.yml
+          grep -q 'build-openrazer-akmod.sh' recipes/nocblue-hardened.yml
+          ! grep -q 'type: akmods' recipes/nocblue-hardened.yml
           grep -q 'noctalia-shell' files/scripts/reconcile-recipe-dependencies.sh
           grep -q 'plasma-workspace' files/scripts/reconcile-recipe-dependencies.sh
           grep -q '^[[:space:]]*- librewolf$' recipes/nocblue-hardened.yml

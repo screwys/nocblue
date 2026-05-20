@@ -199,13 +199,12 @@ modules:
         - scx-scheds
         - scx-tools
 
-  - type: akmods
-    base: main
-    install:
-      - openrazer
+  - type: script
+    scripts:
+      - build-openrazer-akmod.sh
 
-  # Userspace only. Keep this after akmods so openrazer-kmod-common satisfies
-  # the daemon dependency without pulling the OBS DKMS package.
+  # Userspace only. Keep this after the local akmod build so openrazer-kmod
+  # satisfies the daemon dependency without pulling the OBS DKMS package.
   - type: dnf
     repos:
       files:
