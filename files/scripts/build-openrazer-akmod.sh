@@ -3,6 +3,7 @@ set -euo pipefail
 
 dnf_cmd="$(command -v dnf5 || command -v dnf)"
 repo_root="${CONFIG_DIRECTORY:-/tmp/files}/dnf"
+akmods_repo="copr:copr.fedorainfracloud.org:ublue-os:akmods"
 
 log() {
     printf 'nocblue openrazer akmod: %s\n' "$*"
@@ -34,11 +35,11 @@ printf 'nocblue openrazer akmod: target kernels:\n'
 printf '  %s\n' "${kernel_versions[@]}"
 
 if [[ "${NOCBLUE_OPENRAZER_AKMOD_DRY_RUN:-}" == "1" ]]; then
-    "${dnf_cmd}" -q repoquery --available --queryformat '%{full_nevra}\n' akmod-openrazer openrazer-kmod-common
+    "${dnf_cmd}" -q --enablerepo="${akmods_repo}" repoquery --available --queryformat '%{full_nevra}\n' akmod-openrazer openrazer-kmod-common
     exit 0
 fi
 
-"${dnf_cmd}" -y --setopt=install_weak_deps=False install \
+"${dnf_cmd}" -y --enablerepo="${akmods_repo}" --setopt=install_weak_deps=False install \
     akmod-openrazer \
     cpio \
     kernel-devel-matched
