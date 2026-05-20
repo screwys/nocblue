@@ -38,10 +38,13 @@ modules:
         - sddm
         - sddm-x11
         - xorg-x11-server-Xorg
-        - qt6-qt5compat
-        - qt6-qtsvg
+        # Noctalia is currently built against Qt 6.10 private ABI symbols.
+        # Keep these explicit desktop-stack packages on the compatible set
+        # until Terra rebuilds Noctalia for Qt 6.11.
+        - qt6-qt5compat-6.10.3-1.fc44.x86_64
+        - qt6-qtsvg-6.10.3-1.fc44.x86_64
         - qt6ct
-        - plasma-workspace
+        - plasma-workspace-6.6.4-1.fc44.x86_64
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
 
