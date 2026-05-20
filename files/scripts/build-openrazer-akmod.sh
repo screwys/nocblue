@@ -39,11 +39,12 @@ if [[ "${NOCBLUE_OPENRAZER_AKMOD_DRY_RUN:-}" == "1" ]]; then
     exit 0
 fi
 
+# Keep OpenRazer packages out of this transaction; openrazer-kmod-common can
+# pull akmod-openrazer before the no-script install below gets a chance to run.
 "${dnf_cmd}" -y --enablerepo="${akmods_repo}" --setopt=install_weak_deps=False install \
     akmods \
     cpio \
-    kernel-devel-matched \
-    openrazer-kmod-common
+    kernel-devel-matched
 
 "${dnf_cmd}" -y --enablerepo="${akmods_repo}" --setopt=install_weak_deps=False --setopt=tsflags=noscripts install \
     akmod-openrazer
