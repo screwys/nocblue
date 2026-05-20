@@ -34,7 +34,6 @@ modules:
       packages:
         - niri
         - xwayland-satellite
-        - noctalia-shell
         - ghostty
         - fish
         - fastfetch
@@ -94,10 +93,7 @@ modules:
         - sddm
         - sddm-x11
         - xorg-x11-server-Xorg
-        - qt6-qt5compat
-        - qt6-qtsvg
         - qt6ct
-        - plasma-workspace
         - fcitx5
         - fcitx5-mozc
         - fcitx5-configtool

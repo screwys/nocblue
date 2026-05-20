@@ -38,15 +38,11 @@ modules:
         # Desktop/session stack.
         - niri
         - xwayland-satellite
-        - noctalia-shell
         - ghostty
         - sddm
         - sddm-x11
         - xorg-x11-server-Xorg
-        - qt6-qt5compat
-        - qt6-qtsvg
         - qt6ct
-        - plasma-workspace
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
 

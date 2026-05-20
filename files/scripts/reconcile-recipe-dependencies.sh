@@ -63,6 +63,12 @@ select_latest_provider_for_capability() {
     repoquery_provider_nevras "${capability}" | sort -V | tail -n 1
 }
 
+select_latest_package() {
+    local package="$1"
+
+    repoquery_available "${package}" | sort -V | tail -n 1
+}
+
 select_package_with_evr() {
     local package="$1"
     local evr="$2"
@@ -131,6 +137,7 @@ for package in \
     fi
 done
 
+add_nevra "$(select_latest_package noctalia-shell)"
 add_nevra "$(select_latest_package_requiring_only_qt_abi plasma-workspace "${qt_abi}")"
 
 if ((${#selected_nevras[@]} == 0)); then
