@@ -79,6 +79,7 @@ restore_session_env() {
 
 restore_session_env
 unset LD_PRELOAD
+export NOCBLUE_BROWSER_NO_PRELOAD=1
 browser_command="$(resolve_browser_command "$1")"
 shift
 set -- "${browser_command}" "$@"
@@ -89,6 +90,7 @@ if [[ -r /etc/ld.so.preload ]]; then
         --cap-drop ALL \
         --ro-bind-try /dev/null /etc/ld.so.preload \
         --setenv LD_PRELOAD "" \
+        --setenv NOCBLUE_BROWSER_NO_PRELOAD "1" \
         -- "$@"
 fi
 

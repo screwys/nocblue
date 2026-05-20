@@ -33,10 +33,11 @@ jobs:
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
-          grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
-          ! grep -q 'type: akmods' recipes/recipe.yml
-          grep -q -- '--setopt=tsflags=noscripts' files/scripts/build-openrazer-akmod.sh
-          grep -q 'runuser -u akmods -- akmodsbuild' files/scripts/build-openrazer-akmod.sh
+          grep -q 'type: akmods' recipes/recipe.yml
+          grep -q '^[[:space:]]*base: main$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- openrazer$' recipes/recipe.yml
+          ! grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
+          test ! -e files/scripts/build-openrazer-akmod.sh
           grep -q 'noctalia-shell' files/scripts/reconcile-recipe-dependencies.sh
           grep -q 'plasma-workspace' files/scripts/reconcile-recipe-dependencies.sh
           grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml

@@ -40,6 +40,15 @@ done
 rpm -q noctalia-shell gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg plasma-workspace kf6-kitemmodels zram-generator wlsunset >/dev/null
 test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
+mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
+((${#openrazer_modules[@]} > 0))
+for module_path in "${openrazer_modules[@]}"; do
+    signer="$(modinfo -F signer "${module_path}")"
+    if [[ -z "${signer}" ]]; then
+        printf 'unsigned OpenRazer kernel module: %s\n' "${module_path}" >&2
+        exit 1
+    fi
+done
 rpm -q pipx >/dev/null
 rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
 rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
@@ -419,6 +428,7 @@ bash -n /usr/bin/nocblue-browser-no-preload
 bash -n /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
 grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
+grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/bin/firefox' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
@@ -625,6 +635,15 @@ if [[ "${is_hardened}" == true ]]; then
     test -x /usr/bin/nocblue-portal-bwrap
     test -x /usr/libexec/nocblue/flatpak-builder
     grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/bin/flatpak-builder
+    grep -qx '    Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }' /etc/xdg/niri/config.kdl
+    grep -qx '    Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }' /usr/share/nocblue/defaults/niri/config.kdl
+    test -x /usr/bin/librewolf
+    ! test -L /usr/bin/librewolf
+    grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/firefox
+    grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/lib/mullvad-browser/start-mullvad-browser
+    grep -Fqx 'exec /usr/bin/nocblue-browser-no-preload /usr/share/librewolf/librewolf "$@"' /usr/bin/librewolf
+    grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/bin/firefox "$@"' /usr/bin/firefox
+    grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib/mullvad-browser/start-mullvad-browser "$@"' /usr/lib/mullvad-browser/start-mullvad-browser
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop

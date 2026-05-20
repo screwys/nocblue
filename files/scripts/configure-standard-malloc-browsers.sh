@@ -4,6 +4,59 @@ set -euo pipefail
 browser_no_preload_wrapper="/usr/bin/nocblue-browser-no-preload"
 applications_dir="${NOCBLUE_APPLICATIONS_DIR:-/usr/share/applications}"
 
+install_command_wrapper() {
+    local command_path="$1"
+    local target_path="$2"
+    local tmpfile
+
+    if [[ ! -x "${target_path}" ]]; then
+        printf 'missing browser target for command wrapper: %s\n' "${target_path}" >&2
+        exit 1
+    fi
+
+    tmpfile="$(mktemp)"
+    cat >"${tmpfile}" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec ${browser_no_preload_wrapper} ${target_path} "\$@"
+EOF
+
+    rm -f "${command_path}"
+    install -D -m 0755 "${tmpfile}" "${command_path}"
+    rm -f "${tmpfile}"
+}
+
+patch_shell_launcher() {
+    local launcher_path="$1"
+    local wrapper_target="$2"
+
+    [[ -f "${launcher_path}" ]] || return 0
+
+    python3 - "${launcher_path}" "${browser_no_preload_wrapper}" "${wrapper_target}" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+wrapper = sys.argv[2]
+target = sys.argv[3]
+marker = "NOCBLUE_BROWSER_NO_PRELOAD"
+block = [
+    "",
+    f'if [ "${{{marker}:-}}" != "1" ]; then',
+    f'    exec {wrapper} {target} "$@"',
+    "fi",
+]
+
+lines = path.read_text(encoding="utf-8").splitlines()
+if any(marker in line for line in lines):
+    raise SystemExit(0)
+
+insert_at = 1 if lines and lines[0].startswith("#!") else 0
+lines[insert_at:insert_at] = block
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+}
+
 patch_desktop_exec() {
     local desktop_file="$1"
     local wrapper="$2"
@@ -20,6 +73,7 @@ import sys
 path = Path(sys.argv[1])
 wrapper = sys.argv[2]
 targets = sys.argv[3:]
+preferred_command = targets[0]
 hardened_wrapper = "/usr/bin/nocblue-hardened-malloc-run"
 standard_wrapper = "/usr/bin/nocblue-standard-malloc-run"
 browser_no_preload_wrapper = "/usr/bin/nocblue-browser-no-preload"
@@ -36,10 +90,6 @@ for line in lines:
         continue
 
     command = line.removeprefix("Exec=")
-    if command.startswith(f"{wrapper} "):
-        out.append(line)
-        continue
-
     try:
         parts = shlex.split(command, posix=True)
     except (IndexError, ValueError):
@@ -51,13 +101,14 @@ for line in lines:
         continue
 
     first = parts[0]
-    command_to_wrap = command
+    command_to_wrap = parts
     if first in known_wrappers and len(parts) > 1:
         first = parts[1]
-        command_to_wrap = shlex.join(parts[1:])
+        command_to_wrap = parts[1:]
 
     if first in aliases or Path(first).name in aliases:
-        out.append(f"Exec={wrapper} {command_to_wrap}")
+        command_to_wrap[0] = preferred_command
+        out.append(f"Exec={wrapper} {shlex.join(command_to_wrap)}")
     else:
         out.append(line)
 
@@ -68,23 +119,23 @@ PY
 patch_desktop_exec \
     "${applications_dir}/org.mozilla.firefox.desktop" \
     "${browser_no_preload_wrapper}" \
-    firefox \
     /usr/bin/firefox \
-    /usr/lib64/firefox/firefox
+    /usr/lib64/firefox/firefox \
+    firefox
 
 patch_desktop_exec \
     "${applications_dir}/firefox.desktop" \
     "${browser_no_preload_wrapper}" \
-    firefox \
     /usr/bin/firefox \
-    /usr/lib64/firefox/firefox
+    /usr/lib64/firefox/firefox \
+    firefox
 
 patch_desktop_exec \
     "${applications_dir}/librewolf.desktop" \
     "${browser_no_preload_wrapper}" \
-    librewolf \
+    /usr/share/librewolf/librewolf \
     /usr/bin/librewolf \
-    /usr/share/librewolf/librewolf
+    librewolf
 
 patch_desktop_exec \
     "${applications_dir}/brave-origin-beta.desktop" \
@@ -114,6 +165,10 @@ patch_desktop_exec \
 patch_desktop_exec \
     "${applications_dir}/mullvad-browser.desktop" \
     "${browser_no_preload_wrapper}" \
-    mullvad-browser \
+    /usr/lib/mullvad-browser/start-mullvad-browser \
     /usr/bin/mullvad-browser \
-    /usr/lib/mullvad-browser/start-mullvad-browser
+    mullvad-browser
+
+patch_shell_launcher /usr/bin/firefox /usr/bin/firefox
+install_command_wrapper /usr/bin/librewolf /usr/share/librewolf/librewolf
+patch_shell_launcher /usr/lib/mullvad-browser/start-mullvad-browser /usr/lib/mullvad-browser/start-mullvad-browser
