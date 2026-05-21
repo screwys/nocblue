@@ -331,7 +331,7 @@ grep -q '^vm.swappiness = 100$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.vfs_cache_pressure = 50$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^vm.page-cluster = 0$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^fs.inotify.max_user_instances = 8192$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^fs.inotify.max_user_watches = 524288$' /usr/lib/sysctl.d/60-nocblue-performance.conf
+grep -q '^fs.inotify.max_user_watches = 1048576$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^net.ipv4.tcp_congestion_control = bbr$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 grep -q '^net.ipv4.tcp_mtu_probing = 1$' /usr/lib/sysctl.d/60-nocblue-performance.conf
 test -f /usr/lib/systemd/zram-generator.conf
