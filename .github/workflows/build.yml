@@ -33,9 +33,11 @@ jobs:
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
-          grep -q 'type: akmods' recipes/recipe.yml
-          grep -q '^[[:space:]]*base: main$' recipes/recipe.yml
-          grep -q '^[[:space:]]*- openrazer$' recipes/recipe.yml
+          grep -q 'type: containerfile' recipes/recipe.yml
+          grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
+          grep -q '/tmp/rpms/common/\*openrazer\*\.rpm' recipes/recipe.yml
+          grep -q '/tmp/rpms/kmods/\*openrazer\*\.rpm' recipes/recipe.yml
+          ! grep -q 'type: akmods' recipes/recipe.yml
           ! grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
           test ! -e files/scripts/build-openrazer-akmod.sh
           grep -q 'noctalia-shell' files/scripts/reconcile-recipe-dependencies.sh
