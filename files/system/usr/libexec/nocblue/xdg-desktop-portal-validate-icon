@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap
+exec /usr/libexec/xdg-desktop-portal-validate-icon "$@"

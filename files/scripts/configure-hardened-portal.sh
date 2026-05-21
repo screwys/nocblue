@@ -6,5 +6,5 @@ install -d "${dropin_dir}"
 
 cat >"${dropin_dir}/50-nocblue-hardened-icon-validation.conf" <<'EOF'
 [Service]
-Environment=FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap
+Environment=XDP_VALIDATE_ICON=/usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 EOF

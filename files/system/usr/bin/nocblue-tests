@@ -454,6 +454,7 @@ grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/
 ! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 bash -n /usr/bin/nocblue-browser-no-preload
 bash -n /usr/bin/nocblue-portal-bwrap
+bash -n /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
 grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/nocblue-browser-no-preload
@@ -462,7 +463,9 @@ grep -q '/usr/lib64/firefox/firefox' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
+grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
+grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 ! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
 ! /usr/bin/nocblue-portal-bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null 2>&1
 ! test -e /usr/bin/nocblue-layer-openrazer
@@ -683,8 +686,10 @@ if [[ "${is_hardened}" == true ]]; then
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/com.brave.Origin.beta.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/helium.desktop
+    test -x /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
     test -f /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
-    grep -qx 'Environment=FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    grep -qx 'Environment=XDP_VALIDATE_ICON=/usr/libexec/nocblue/xdg-desktop-portal-validate-icon' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
+    ! grep -q 'FLATPAK_BWRAP' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
     ! grep -q 'XDP_VALIDATE_ICON_INSECURE' /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-hardened-icon-validation.conf
     ! grep -Eq 'nocblue-standard-malloc-run.*(firefox|librewolf|mullvad)' /usr/share/applications/org.mozilla.firefox.desktop /usr/share/applications/librewolf.desktop /usr/share/applications/mullvad-browser.desktop
     ! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop

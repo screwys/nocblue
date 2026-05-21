@@ -6,6 +6,7 @@ allowed_caller() {
         /usr/libexec/xdg-desktop-portal|\
         /usr/libexec/xdg-desktop-portal-gnome|\
         /usr/libexec/xdg-desktop-portal-gtk|\
+        /usr/libexec/xdg-desktop-portal-validate-icon|\
         /usr/libexec/nocblue/flatpak-builder)
             return 0
             ;;
