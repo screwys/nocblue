@@ -233,6 +233,9 @@ grep -q 'PALETTE_FILE="${PALETTE_FILE:-${HOME}/.cache/noctalia/starship-palette.
 grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
+grep -q 'PYWALFOX_FIREFOX_PROFILES_PATH' /usr/libexec/pywalfox-native-messaging-host-proxy
+grep -q '.config/mozilla/firefox' /usr/libexec/pywalfox-native-messaging-host-proxy
+grep -q '.librewolf' /usr/libexec/pywalfox-native-messaging-host-proxy
 grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
 grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
 grep -q '^MimeType=.*x-scheme-handler/http' /usr/share/applications/brave-origin-beta.desktop
@@ -393,8 +396,8 @@ grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_trivalent_script_domain' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -404,12 +407,33 @@ grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_n
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t mozilla_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t session_dbusd_tmp_t (sock_file (getattr read write open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t user_tmp_t (sock_file (getattr read write open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t unconfined_dbusd_t (unix_stream_socket (connectto))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t unconfined_t (unix_stream_socket (connectto))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t xserver_t (unix_stream_socket (connectto))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nsswitch_domain (nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t nocblue_firefox_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_browser_no_preload_t nocblue_firefox_t (process (transition noatsecure siginh rlimitinh))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'typetransition nocblue_browser_no_preload_t mozilla_exec_t process nocblue_firefox_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t mozilla_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (process (sigchld signull))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fd (use))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t nocblue_firefox_t (cap_userns (setpcap))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t cache_home_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t cache_home_t (lnk_file (getattr read create unlink))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t cgroup_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t gnome_home_type (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t gnome_home_type (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t mozilla_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t mozilla_home_t (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t user_home_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t var_lib_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t rtkit_daemon_t (dbus (send_msg))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'rtkit_daemon_t nocblue_firefox_t (process (setsched))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t sysctl_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (sock_file (append getattr open write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'systemd_logind_t nocblue_firefox_t (dbus (send_msg))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/share/librewolf/librewolf" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/share/librewolf/librewolf-bin" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/lib/mullvad-browser/mullvadbrowser" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -419,12 +443,11 @@ grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinu
 grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'kernel_system_state_reader (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'unconfined_t unconfined_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'nocblue_browser_no_preload_t session_dbusd_tmp_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 ! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -435,6 +458,7 @@ grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
 grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/bin/firefox' /usr/bin/nocblue-browser-no-preload
+grep -q '/usr/lib64/firefox/firefox' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
@@ -487,9 +511,10 @@ grep -q 'templates\\.nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
-grep -q 'pywalfox-native-messaging-host-proxy' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v22.done' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v22.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q '/usr/libexec/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
+! grep -q '.local/bin/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v23.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v23.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 grep -q '^ExecStart=/usr/bin/nocblue-sync-game-shortcuts$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
 grep -q '^OnUnitActiveSec=15min$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
@@ -647,12 +672,12 @@ if [[ "${is_hardened}" == true ]]; then
     grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/firefox
     grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/lib/mullvad-browser/start-mullvad-browser
     grep -Fqx 'exec /usr/bin/nocblue-browser-no-preload /usr/share/librewolf/librewolf "$@"' /usr/bin/librewolf
-    grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/bin/firefox "$@"' /usr/bin/firefox
+    grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib64/firefox/firefox "$@"' /usr/bin/firefox
     grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib/mullvad-browser/start-mullvad-browser "$@"' /usr/lib/mullvad-browser/start-mullvad-browser
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/brave-origin-beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*(brave-origin-beta|brave-browser-beta|brave-browser).* %U$' /usr/share/applications/com.brave.Origin.beta.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*helium.* %U$' /usr/share/applications/helium.desktop
-    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*firefox.* %u$' /usr/share/applications/org.mozilla.firefox.desktop
+    grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload /usr/lib64/firefox/firefox .*%u$' /usr/share/applications/org.mozilla.firefox.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*/usr/share/librewolf/librewolf %u$' /usr/share/applications/librewolf.desktop
     grep -Eq '^Exec=/usr/bin/nocblue-browser-no-preload .*/usr/lib/mullvad-browser/start-mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
     ! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop

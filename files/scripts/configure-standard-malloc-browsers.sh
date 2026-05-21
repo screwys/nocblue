@@ -48,8 +48,22 @@ block = [
 ]
 
 lines = path.read_text(encoding="utf-8").splitlines()
-if any(marker in line for line in lines):
-    raise SystemExit(0)
+filtered = []
+i = 0
+while i < len(lines):
+    if (
+        marker in lines[i]
+        and i + 2 < len(lines)
+        and lines[i + 1].lstrip().startswith("exec ")
+        and lines[i + 2] == "fi"
+    ):
+        if filtered and filtered[-1] == "":
+            filtered.pop()
+        i += 3
+        continue
+    filtered.append(lines[i])
+    i += 1
+lines = filtered
 
 insert_at = 1 if lines and lines[0].startswith("#!") else 0
 lines[insert_at:insert_at] = block
@@ -119,15 +133,15 @@ PY
 patch_desktop_exec \
     "${applications_dir}/org.mozilla.firefox.desktop" \
     "${browser_no_preload_wrapper}" \
-    /usr/bin/firefox \
     /usr/lib64/firefox/firefox \
+    /usr/bin/firefox \
     firefox
 
 patch_desktop_exec \
     "${applications_dir}/firefox.desktop" \
     "${browser_no_preload_wrapper}" \
-    /usr/bin/firefox \
     /usr/lib64/firefox/firefox \
+    /usr/bin/firefox \
     firefox
 
 patch_desktop_exec \
@@ -169,6 +183,6 @@ patch_desktop_exec \
     /usr/bin/mullvad-browser \
     mullvad-browser
 
-patch_shell_launcher /usr/bin/firefox /usr/bin/firefox
+patch_shell_launcher /usr/bin/firefox /usr/lib64/firefox/firefox
 install_command_wrapper /usr/bin/librewolf /usr/share/librewolf/librewolf
 patch_shell_launcher /usr/lib/mullvad-browser/start-mullvad-browser /usr/lib/mullvad-browser/start-mullvad-browser

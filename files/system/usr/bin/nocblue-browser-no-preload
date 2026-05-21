@@ -51,6 +51,14 @@ resolve_browser_command() {
         exit 126
     fi
 
+    case "${resolved}" in
+        /usr/bin/firefox)
+            if [[ -x /usr/lib64/firefox/firefox ]]; then
+                resolved="/usr/lib64/firefox/firefox"
+            fi
+            ;;
+    esac
+
     if ! allowed_browser_command "${resolved}"; then
         printf 'nocblue-browser-no-preload refuses unsupported browser command: %s\n' "${command}" >&2
         exit 126

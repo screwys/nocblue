@@ -74,6 +74,46 @@ without_preload pipx install --global --force --pip-args='--no-cache-dir' "pywal
 
 rm -f /usr/local/bin/pywalfox
 
+python3 - <<'PY'
+from pathlib import Path
+
+venv = Path("/usr/lib/opt/pipx/venvs/pywalfox")
+paths = sorted(venv.glob("lib*/python*/site-packages/pywalfox/custom_css.py"))
+if not paths:
+    raise SystemExit("pywalfox custom_css.py not found")
+
+old = """def get_firefox_profiles_path():
+    \"\"\"Gets the correct Firefox profiles folder based on the current OS.\"\"\"
+    if sys.platform.startswith('win32'):
+        return FIREFOX_PROFILES_PATH_WIN
+    elif sys.platform.startswith('darwin'):
+        return FIREFOX_PROFILES_PATH_DARWIN
+    else:
+        return FIREFOX_PROFILES_PATH_LINUX
+"""
+
+new = """def get_firefox_profiles_path():
+    \"\"\"Gets the correct Firefox profiles folder based on the current OS.\"\"\"
+    override = os.getenv('PYWALFOX_FIREFOX_PROFILES_PATH')
+    if override:
+        return override
+    if sys.platform.startswith('win32'):
+        return FIREFOX_PROFILES_PATH_WIN
+    elif sys.platform.startswith('darwin'):
+        return FIREFOX_PROFILES_PATH_DARWIN
+    else:
+        return FIREFOX_PROFILES_PATH_LINUX
+"""
+
+for path in paths:
+    text = path.read_text(encoding="utf-8")
+    if new in text:
+        continue
+    if old not in text:
+        raise SystemExit(f"pywalfox custom_css.py layout changed: {path}")
+    path.write_text(text.replace(old, new), encoding="utf-8")
+PY
+
 without_preload /usr/bin/pywalfox install --global
 
 python3 - <<'PY'
@@ -162,9 +202,30 @@ def drain_stderr(proc):
         log("child stderr " + line.decode(errors="replace").rstrip())
 
 
+def browser_profiles_path(argv):
+    home = os.path.expanduser("~")
+    manifest_hint = " ".join(argv[1:]).lower()
+    if "librewolf" in manifest_hint:
+        candidates = [os.path.join(home, ".librewolf")]
+    else:
+        candidates = [
+            os.path.join(home, ".config/mozilla/firefox"),
+            os.path.join(home, ".mozilla/firefox"),
+        ]
+
+    for path in candidates:
+        if os.path.exists(os.path.join(path, "profiles.ini")):
+            return path
+    return None
+
+
 env = os.environ.copy()
 log(f"proxy start LD_PRELOAD={env.get('LD_PRELOAD')!r}")
 env.pop("LD_PRELOAD", None)
+profiles_path = browser_profiles_path(sys.argv)
+if profiles_path:
+    env["PYWALFOX_FIREFOX_PROFILES_PATH"] = profiles_path
+    log(f"using profiles path {profiles_path}")
 
 proc = subprocess.Popen(
     ["/usr/bin/pywalfox", "start"],
