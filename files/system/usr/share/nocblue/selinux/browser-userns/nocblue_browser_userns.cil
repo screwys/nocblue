@@ -7,6 +7,7 @@
 (type helium_t)
 (type helium_exec_t)
 (type nocblue_firefox_t)
+(typeattribute nocblue_browser_wayland_clipboard_peer)
 
 (roletype unconfined_r nocblue_browser_no_preload_t)
 (roletype unconfined_r nocblue_portal_bwrap_t)
@@ -30,6 +31,7 @@
 (typeattributeset x_domain (brave_origin_t helium_t nocblue_firefox_t))
 (typeattributeset xcolormap_type (brave_origin_t helium_t nocblue_firefox_t))
 (typeattributeset xdrawable_type (brave_origin_t helium_t nocblue_firefox_t))
+(typeattributeset nocblue_browser_wayland_clipboard_peer (brave_origin_t helium_t nocblue_firefox_t))
 (typeattributeset file_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
 (typeattributeset exec_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
 (typeattributeset entry_type (nocblue_browser_no_preload_exec_t nocblue_portal_bwrap_exec_t brave_origin_exec_t helium_exec_t))
@@ -51,6 +53,10 @@
 
 (optional nocblue_browser_trivalent_domain
     (typeattributeset trivalent_domain (brave_origin_t helium_t nocblue_firefox_t))
+)
+
+(optional nocblue_browser_trivalent_wayland_clipboard_peer
+    (typeattributeset nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t))
 )
 
 (optional nocblue_browser_kernel_system_state_reader
@@ -122,6 +128,8 @@
 (allow brave_origin_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))
 (allow helium_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))
 (allow nocblue_firefox_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))
+(allow nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fd (use)))
+(allow nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fifo_file (getattr read write append ioctl lock open)))
 
 (allow nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create)))
 (allow nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create)))
