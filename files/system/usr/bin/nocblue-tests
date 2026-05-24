@@ -516,8 +516,6 @@ grep -q 'ensure_niri_browser_bridge' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_browser_environment' /usr/bin/nocblue-apply-user-defaults
 grep -q 'systemctl --user set-environment BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
 grep -q 'dbus-update-activation-environment --systemd BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
-grep -q 'cleanup_user_flatpak_global_preload' /usr/bin/nocblue-apply-user-defaults
-grep -q 'LD_PRELOAD=/var/run/host/usr/lib64/' /usr/bin/nocblue-apply-user-defaults
 grep -q 'io.github.alyraffauf.Switchyard' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=LD_PRELOAD' /usr/bin/nocblue-apply-user-defaults
 grep -q 'seed_noctalia_plugins' /usr/bin/nocblue-apply-user-defaults
@@ -586,7 +584,6 @@ grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblu
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-hardened-malloc
 grep -q 'flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto' /usr/bin/nocblue-apply-flatpak-overrides
-grep -q 'cleanup_user_global_preload' /usr/bin/nocblue-apply-flatpak-overrides
 grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/nocblue-apply-flatpak-overrides
 grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc

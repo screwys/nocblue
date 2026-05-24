@@ -900,43 +900,6 @@ if new_text != text:
 PY
 }
 
-cleanup_user_flatpak_global_preload() {
-    local override="${HOME}/.local/share/flatpak/overrides/global"
-    [[ -f "${override}" ]] || return 0
-
-    python3 - "${override}" <<'PY'
-from pathlib import Path
-import re
-import sys
-
-path = Path(sys.argv[1])
-lines = path.read_text(encoding="utf-8").splitlines()
-preload_re = re.compile(
-    r"LD_PRELOAD=/var/run/host/usr/lib64/(?:glibc-hwcaps/x86-64-v[234]/)?libhardened_malloc\.so"
-)
-removed_preload = False
-kept = []
-for line in lines:
-    if preload_re.fullmatch(line.strip()):
-        removed_preload = True
-        continue
-    kept.append(line)
-
-if not removed_preload:
-    raise SystemExit(0)
-
-out = []
-for line in kept:
-    if line.startswith("filesystems="):
-        entries = [entry for entry in line.split("=", 1)[1].split(";") if entry]
-        entries = [entry for entry in entries if entry != "host-os:ro"]
-        line = "filesystems=" + ";".join(entries) + (";" if entries else "")
-    out.append(line)
-
-path.write_text("\n".join(out) + "\n", encoding="utf-8")
-PY
-}
-
 ensure_browser_environment() {
     if command -v systemctl >/dev/null 2>&1; then
         systemctl --user set-environment BROWSER=/usr/bin/xdg-open >/dev/null 2>&1 || true
@@ -1142,7 +1105,6 @@ noctalia_settings_changed=0
 noctalia_templates_changed=0
 stage_user_icon_theme
 ensure_browser_environment
-cleanup_user_flatpak_global_preload
 apply_user_flatpak_theme_overrides
 install_flatpak_desktop_entries
 ensure_protonvpn_visible_launch
