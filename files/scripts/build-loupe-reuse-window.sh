@@ -2,6 +2,7 @@
 set -euo pipefail
 
 loupe_version="$(rpm -q --qf '%{VERSION}' loupe)"
+loupe_series="${loupe_version%%.*}"
 workdir="$(mktemp -d /tmp/nocblue-loupe-build-XXXXXX)"
 
 cleanup() {
@@ -22,16 +23,24 @@ dnf -y install --setopt=install_weak_deps=False \
     lcms2-devel \
     libseccomp-devel
 
-curl -L --fail --show-error \
-    --connect-timeout 20 \
-    --retry 5 \
-    --retry-all-errors \
-    --retry-delay 10 \
-    --retry-max-time 300 \
-    "https://gitlab.gnome.org/GNOME/loupe/-/archive/${loupe_version}/loupe-${loupe_version}.tar.gz" \
-    -o "${workdir}/loupe.tar.gz"
+download_source() {
+    curl -L --fail --show-error \
+        --connect-timeout 20 \
+        --retry 5 \
+        --retry-all-errors \
+        --retry-delay 10 \
+        --retry-max-time 300 \
+        "$1" \
+        -o "$2"
+}
 
-tar -xf "${workdir}/loupe.tar.gz" -C "${workdir}"
+archive="${workdir}/loupe.tar.xz"
+if ! download_source "https://download.gnome.org/sources/loupe/${loupe_series}/loupe-${loupe_version}.tar.xz" "${archive}"; then
+    archive="${workdir}/loupe.tar.gz"
+    download_source "https://gitlab.gnome.org/GNOME/loupe/-/archive/${loupe_version}/loupe-${loupe_version}.tar.gz" "${archive}"
+fi
+
+tar -xf "${archive}" -C "${workdir}"
 srcdir="${workdir}/loupe-${loupe_version}"
 
 python3 - "${srcdir}/src/application.rs" <<'PY'
