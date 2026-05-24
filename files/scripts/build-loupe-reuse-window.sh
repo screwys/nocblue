@@ -22,7 +22,12 @@ dnf -y install --setopt=install_weak_deps=False \
     lcms2-devel \
     libseccomp-devel
 
-curl -L --fail \
+curl -L --fail --show-error \
+    --connect-timeout 20 \
+    --retry 5 \
+    --retry-all-errors \
+    --retry-delay 10 \
+    --retry-max-time 300 \
     "https://gitlab.gnome.org/GNOME/loupe/-/archive/${loupe_version}/loupe-${loupe_version}.tar.gz" \
     -o "${workdir}/loupe.tar.gz"
 
