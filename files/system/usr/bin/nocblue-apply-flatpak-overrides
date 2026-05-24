@@ -6,6 +6,43 @@ if ! command -v flatpak >/dev/null 2>&1; then
     exit 1
 fi
 
+cleanup_user_global_preload() {
+    local override="${HOME}/.local/share/flatpak/overrides/global"
+    [[ -f "${override}" ]] || return 0
+
+    python3 - "${override}" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+preload_re = re.compile(
+    r"LD_PRELOAD=/var/run/host/usr/lib64/(?:glibc-hwcaps/x86-64-v[234]/)?libhardened_malloc\.so"
+)
+removed_preload = False
+kept = []
+for line in lines:
+    if preload_re.fullmatch(line.strip()):
+        removed_preload = True
+        continue
+    kept.append(line)
+
+if not removed_preload:
+    raise SystemExit(0)
+
+out = []
+for line in kept:
+    if line.startswith("filesystems="):
+        entries = [entry for entry in line.split("=", 1)[1].split(";") if entry]
+        entries = [entry for entry in entries if entry != "host-os:ro"]
+        line = "filesystems=" + ";".join(entries) + (";" if entries else "")
+    out.append(line)
+
+path.write_text("\n".join(out) + "\n", encoding="utf-8")
+PY
+}
+
 scope="--system"
 case "${1:-}" in
     --system|"")
@@ -22,6 +59,8 @@ esac
 
 if [[ "${scope}" == "--system" ]]; then
     flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto
+else
+    cleanup_user_global_preload
 fi
 
 while read -r app_id override_args; do

@@ -8,7 +8,7 @@ environment {
     XCURSOR_SIZE "24"
     XCURSOR_THEME "default"
     PYTHON_KEYRING_BACKEND "keyring.backends.SecretService.Keyring"
-    BROWSER "flatpak run io.github.alyraffauf.Switchyard"
+    BROWSER "/usr/bin/xdg-open"
     EDITOR "nvim"
     VISUAL "nvim"
     TERMINAL "/usr/bin/ghostty"

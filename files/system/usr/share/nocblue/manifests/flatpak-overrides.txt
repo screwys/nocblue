@@ -7,7 +7,7 @@ io.github.ilya_zlobintsev.LACT --filesystem=xdg-config/gtk-3.0:ro --filesystem=x
 io.github.radiolamp.mangojuice --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.missioncenter.MissionCenter --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.github.marhkb.Pods --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-io.github.alyraffauf.Switchyard --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+io.github.alyraffauf.Switchyard --unset-env=LD_PRELOAD --nofilesystem=host-os --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.github.tchx84.Flatseal --talk-name=org.gnome.Software --talk-name=org.freedesktop.impl.portal.PermissionStore
 it.mijorus.gearlever --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro

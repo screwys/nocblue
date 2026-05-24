@@ -1,7 +1,6 @@
 com.belmoussaoui.Authenticator
 com.github.tchx84.Flatseal
 io.github.Foldex.AdwSteamGtk
-io.github.alyraffauf.Switchyard
 io.github.diegopvlk.Cine
 it.mijorus.gearlever
 org.gnome.Fractal
