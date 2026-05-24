@@ -1001,6 +1001,7 @@ apply_user_flatpak_theme_overrides() {
         --unset-env=LD_PRELOAD \
         --env=MANGOHUD=1 \
         --nofilesystem=host-os \
+        --filesystem=~/Games \
         --filesystem=home \
         --filesystem=xdg-config/MangoHud:ro \
         --filesystem=xdg-config/gtk-3.0:ro \

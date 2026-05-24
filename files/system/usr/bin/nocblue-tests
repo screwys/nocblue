@@ -503,6 +503,8 @@ grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayla
 grep -q 'legacy_noctalia_css' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
+grep -q -- '--filesystem=~/Games' /usr/bin/nocblue-apply-user-defaults
+! grep -q -- '--filesystem=~/Games:create' /usr/bin/nocblue-apply-user-defaults
 grep -q 'xdg-config/MangoHud:ro' /usr/bin/nocblue-apply-user-defaults
 ! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.gitlab.somas.Apostrophe'
 ! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.TextEditor'
@@ -588,7 +590,8 @@ grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/no
 grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
 grep -q '^io.github.alyraffauf.Switchyard .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=~/Games .*--filesystem=home .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+! grep -q '^net.lutris.Lutris .*--filesystem=~/Games:create' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
