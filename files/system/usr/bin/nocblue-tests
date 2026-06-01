@@ -114,6 +114,9 @@ test -f /etc/trivalent/trivalent.conf.d/20-nocblue.conf
 test -f /etc/brave/policies/managed/nocblue-extensions.json
 test -f /etc/chromium/policies/managed/nocblue-extensions.json
 test -f /etc/helium/policies/managed/nocblue-extensions.json
+test -f /etc/brave/policies/recommended/nocblue-startup-defaults.json
+test -f /etc/chromium/policies/recommended/nocblue-startup-defaults.json
+test -f /etc/helium/policies/recommended/nocblue-startup-defaults.json
 python3 - <<'PY'
 import json
 from pathlib import Path
@@ -128,6 +131,9 @@ trivalent_preferences = json.loads(Path("/etc/trivalent/master_preferences").rea
 brave_extensions = json.loads(Path("/etc/brave/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 chromium_extensions = json.loads(Path("/etc/chromium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
 helium_extensions = json.loads(Path("/etc/helium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
+brave_startup = json.loads(Path("/etc/brave/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
+chromium_startup = json.loads(Path("/etc/chromium/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
+helium_startup = json.loads(Path("/etc/helium/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
 pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 pywalfox_lib64 = json.loads(Path("/usr/lib64/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
 pywalfox_share = json.loads(Path("/usr/share/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
@@ -195,17 +201,22 @@ chromium_ids = {
     "clngdbkpkpeebahjckkjfobafhncgmne",
     "dhdgffkkebhmkfjojejmpbldmpobfkfo",
 }
+chromium_startup_defaults = {
+    "HomepageIsNewTabPage": True,
+    "ImportHomepage": False,
+    "PromotionalTabsEnabled": False,
+    "RestoreOnStartup": 5,
+}
 for policy in (brave_extensions, chromium_extensions, helium_extensions):
-    assert policy["HomepageIsNewTabPage"] is True
-    assert policy["ImportHomepage"] is False
-    assert policy["PromotionalTabsEnabled"] is False
-    assert policy["RestoreOnStartup"] == 5
+    assert not set(chromium_startup_defaults).intersection(policy)
     settings = policy["ExtensionSettings"]
     assert set(settings) == chromium_ids
     assert "ExtensionInstallForcelist" not in policy
     for extension_id in chromium_ids:
         assert settings[extension_id]["installation_mode"] == "allowed"
         assert "update_url" not in settings[extension_id]
+for policy in (brave_startup, chromium_startup, helium_startup):
+    assert policy == chromium_startup_defaults
 
 trivalent_policy = trivalent_extensions["ExtensionSettings"]
 assert trivalent_extensions["HomepageIsNewTabPage"] is True
@@ -467,6 +478,9 @@ grep -q '/usr/bin/firefox' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/lib64/firefox/firefox' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
 grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
+test -f /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
+grep -Fxq 'UnsetEnvironment=GTK_USE_PORTAL' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
+! grep -q 'LD_PRELOAD' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap

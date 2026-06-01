@@ -1,8 +1,4 @@
 {
-  "HomepageIsNewTabPage": true,
-  "ImportHomepage": false,
-  "PromotionalTabsEnabled": false,
-  "RestoreOnStartup": 5,
   "ExtensionSettings": {
     "ghmbeldphafepmbegfdlkpapadhbakde": {
       "installation_mode": "allowed"

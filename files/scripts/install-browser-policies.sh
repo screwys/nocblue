@@ -55,9 +55,19 @@ install_chromium_policy() {
         "${target_dir}/nocblue-extensions.json"
 }
 
+install_chromium_startup_defaults() {
+    local target_dir="$1"
+    install -D -m 0644 \
+        /usr/share/nocblue/browser-policies/chromium-startup-defaults.json \
+        "${target_dir}/nocblue-startup-defaults.json"
+}
+
 install_chromium_policy /etc/brave/policies/managed
 install_chromium_policy /etc/chromium/policies/managed
 install_chromium_policy /etc/helium/policies/managed
+install_chromium_startup_defaults /etc/brave/policies/recommended
+install_chromium_startup_defaults /etc/chromium/policies/recommended
+install_chromium_startup_defaults /etc/helium/policies/recommended
 
 python3 - <<'PY'
 import json
