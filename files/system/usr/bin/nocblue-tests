@@ -604,6 +604,7 @@ grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/no
 grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
 grep -q '^io.github.alyraffauf.Switchyard .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^io.missioncenter.MissionCenter .*--unset-env=LD_PRELOAD .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=~/Games .*--filesystem=home .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 ! grep -q '^net.lutris.Lutris .*--filesystem=~/Games:create' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt

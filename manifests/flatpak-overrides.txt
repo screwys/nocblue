@@ -6,7 +6,7 @@ org.gnome.Papers --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesy
 org.gnome.Fractal --talk-name=org.freedesktop.secrets --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.ilya_zlobintsev.LACT --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.radiolamp.mangojuice --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-io.missioncenter.MissionCenter --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+io.missioncenter.MissionCenter --unset-env=LD_PRELOAD --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.github.marhkb.Pods --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.alyraffauf.Switchyard --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
