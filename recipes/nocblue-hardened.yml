@@ -282,5 +282,8 @@ modules:
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
         - nocblue-flatpak-icon-fixes.service
+      masked:
+        - security-update-notification.path
+        - security-update-notification.service
 
   - type: signing

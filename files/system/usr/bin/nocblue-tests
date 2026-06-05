@@ -299,6 +299,10 @@ if [[ "${is_hardened}" == true ]]; then
     test -L /etc/systemd/user/timers.target.wants/secureblue-flatpak-setup.timer
     test -L /etc/systemd/user/timers.target.wants/flatpak-user-update.timer
     test -L /etc/systemd/user/timers.target.wants/nocblue-flatpak-setup.timer
+    for masked_user_unit in security-update-notification.path security-update-notification.service; do
+        test -L "/etc/systemd/user/${masked_user_unit}"
+        test "$(readlink "/etc/systemd/user/${masked_user_unit}")" = "/dev/null"
+    done
 else
     test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
@@ -481,6 +485,14 @@ grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browse
 test -f /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
 grep -Fxq 'UnsetEnvironment=GTK_USE_PORTAL' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
 ! grep -q 'LD_PRELOAD' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
+for portal_dropin in \
+    /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-clean-activation-env.conf \
+    /usr/lib/systemd/user/xdg-desktop-portal-gnome.service.d/50-nocblue-clean-activation-env.conf \
+    /usr/lib/systemd/user/xdg-desktop-portal-gtk.service.d/50-nocblue-clean-activation-env.conf; do
+    test -f "${portal_dropin}"
+    grep -Fxq 'UnsetEnvironment=GTK_USE_PORTAL' "${portal_dropin}"
+    ! grep -q 'LD_PRELOAD' "${portal_dropin}"
+done
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
@@ -796,6 +808,8 @@ grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kd
 test -x /usr/bin/nocblue-refresh-portals
 grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
 grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl
+grep -q '^export BROWSER=/usr/bin/xdg-open$' /usr/bin/nocblue-refresh-portals
+grep -q '^    BROWSER >/dev/null' /usr/bin/nocblue-refresh-portals
 grep -q 'xdg-desktop-portal-gnome.service' /usr/bin/nocblue-refresh-portals
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
 grep -q '"name": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/themes/noctalia.json
