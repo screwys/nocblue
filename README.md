@@ -27,37 +27,6 @@ For testing in Gnome Boxes, you need to set OS as Silverblue. After machine is s
 
 ## nocblue commands
 
-```bash
-njust status
-njust update
-njust auto-update-status
-njust rollback
-njust tests
-njust audit-hardening run
-njust audit-hardening kargs
-njust audit-hardening container-userns-off
-njust flatpaks
-njust flatpak-icon-fixes
-njust flatpak-overrides
-njust flatpak-overrides-user
-njust flatpaks-repair
-njust brew
-njust android-sdk 36 36.0.0
-njust secureboot-check
-njust openrazer-plugdev status
-njust openrazer-plugdev enable
-njust fde-list
-njust fde-status /dev/nvme0n1p3
-njust fde-tpm2 /dev/nvme0n1p3 yes 7
-njust fde-recovery-key /dev/nvme0n1p3
-njust container-userns status
-njust unconfined-userns status
-njust image trust ghcr.io/screwys
-njust image trust-user ghcr.io/screwys
-njust image trust-show
-njust image trust-show-user
-njust image check-secureblue
-```
 
 `njust image trust ...` changes the system container policy through `run0` or `sudo`. `njust image trust-user ...` writes the current user's rootless Podman policy.
 `njust image check-secureblue` compares the published `nocblue-hardened` image against the current secureblue base image.
