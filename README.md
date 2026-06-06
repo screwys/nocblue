@@ -29,6 +29,9 @@ For testing in Gnome Boxes, you need to set OS as Silverblue. After machine is s
 
 
 `njust image trust ...` changes the system container policy through `run0` or `sudo`. `njust image trust-user ...` writes the current user's rootless Podman policy.
+
 `njust image check-secureblue` compares the published `nocblue-hardened` image against the current secureblue base image.
+
 `njust audit-hardening ...` wraps secureblue audit and selected host hardening actions so they stay deliberate.
+
 `njust openrazer-plugdev enable` opts the current user into the `plugdev` group for OpenRazer; log out and back in afterwards.
