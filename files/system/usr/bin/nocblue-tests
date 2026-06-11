@@ -486,8 +486,8 @@ test -f /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.co
 grep -Fxq 'UnsetEnvironment=GTK_USE_PORTAL' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
 ! grep -q 'LD_PRELOAD' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
 for nautilus_service in \
-    /usr/local/share/dbus-1/services/org.freedesktop.FileManager1.service \
-    /usr/local/share/dbus-1/services/org.gnome.Nautilus.service; do
+    /usr/share/dbus-1/services/org.freedesktop.FileManager1.service \
+    /usr/share/dbus-1/services/org.gnome.Nautilus.service; do
     test -f "${nautilus_service}"
     grep -Fxq 'Exec=/usr/bin/nocblue-standard-malloc-run /usr/bin/nautilus --gapplication-service' "${nautilus_service}"
 done
