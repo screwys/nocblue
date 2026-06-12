@@ -427,6 +427,18 @@ grep -q 'trivalent_domain (brave_origin_t helium_t nocblue_firefox_t)' /usr/shar
 grep -q 'typeattribute nocblue_browser_wayland_clipboard_peer' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_wayland_clipboard_peer (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'optional nocblue_browser_read_removable_media' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain mnt_t (dir (getattr open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain removable_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain removable_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain removable_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain dosfs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain dosfs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain dosfs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain fusefs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain fusefs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_domain fusefs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -Eq 'trivalent_domain (removable_t|dosfs_t|fusefs_t) .*\\b(write|append|create|unlink|rename|setattr|relabelfrom|relabelto)\\b' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fd (use))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil

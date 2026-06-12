@@ -59,6 +59,19 @@
     (typeattributeset nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t))
 )
 
+(optional nocblue_browser_read_removable_media
+    (allow trivalent_domain mnt_t (dir (getattr open read search)))
+    (allow trivalent_domain removable_t (dir (getattr ioctl lock open read search)))
+    (allow trivalent_domain removable_t (file (getattr ioctl lock map open read)))
+    (allow trivalent_domain removable_t (lnk_file (getattr read)))
+    (allow trivalent_domain dosfs_t (dir (getattr ioctl lock open read search)))
+    (allow trivalent_domain dosfs_t (file (getattr ioctl lock map open read)))
+    (allow trivalent_domain dosfs_t (lnk_file (getattr read)))
+    (allow trivalent_domain fusefs_t (dir (getattr ioctl lock open read search)))
+    (allow trivalent_domain fusefs_t (file (getattr ioctl lock map open read)))
+    (allow trivalent_domain fusefs_t (lnk_file (getattr read)))
+)
+
 (optional nocblue_browser_kernel_system_state_reader
     (typeattributeset kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t))
 )
