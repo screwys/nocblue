@@ -5,6 +5,24 @@ set -euo pipefail
 # environment. Refresh it, then restart portals so GNOME exposes FileChooser.
 sleep "${NOCBLUE_PORTAL_REFRESH_DELAY:-2}"
 export BROWSER=/usr/bin/xdg-open
+
+runtime_dir="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [[ -z "${WAYLAND_DISPLAY:-}" || ! -S "${runtime_dir}/${WAYLAND_DISPLAY}" ]]; then
+    wayland_display="$(find "${runtime_dir}" -maxdepth 1 -type s -name 'wayland-[0-9]*' -printf '%f\n' 2>/dev/null | sort -V | head -n 1)"
+    [[ -n "${wayland_display}" ]] && export WAYLAND_DISPLAY="${wayland_display}"
+fi
+if [[ -z "${DISPLAY:-}" || ! -S "/tmp/.X11-unix/X${DISPLAY#:}" ]]; then
+    xdisplay="$(find /tmp/.X11-unix -maxdepth 1 -type s -user "$(id -u)" -name 'X[0-9]*' -printf '%f\n' 2>/dev/null | sort -V | head -n 1)"
+    [[ -n "${xdisplay}" ]] && export DISPLAY=":${xdisplay#X}"
+fi
+if [[ -z "${NIRI_SOCKET:-}" || ! -S "${NIRI_SOCKET}" ]]; then
+    niri_socket="$(find "${runtime_dir}" -maxdepth 1 -type s -name 'niri.wayland-*.sock' -printf '%p\n' 2>/dev/null | sort -V | head -n 1)"
+    [[ -n "${niri_socket}" ]] && export NIRI_SOCKET="${niri_socket}"
+fi
+export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-niri}"
+export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-niri}"
+export XDG_SESSION_TYPE="${XDG_SESSION_TYPE:-wayland}"
+
 dbus-update-activation-environment --systemd \
     WAYLAND_DISPLAY \
     DISPLAY \

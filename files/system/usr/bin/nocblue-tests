@@ -828,6 +828,9 @@ test -x /usr/bin/nocblue-refresh-portals
 grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
 grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl
 grep -q '^export BROWSER=/usr/bin/xdg-open$' /usr/bin/nocblue-refresh-portals
+grep -q 'wayland-\[0-9\]' /usr/bin/nocblue-refresh-portals
+grep -q '/tmp/.X11-unix' /usr/bin/nocblue-refresh-portals
+grep -q 'niri.wayland-\*\.sock' /usr/bin/nocblue-refresh-portals
 grep -q '^    BROWSER >/dev/null' /usr/bin/nocblue-refresh-portals
 grep -q 'xdg-desktop-portal-gnome.service' /usr/bin/nocblue-refresh-portals
 test -f /usr/share/nocblue/defaults/zed/themes/noctalia.json
