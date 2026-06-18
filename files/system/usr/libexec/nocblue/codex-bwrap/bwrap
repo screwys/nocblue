@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+allowed_caller() {
+    case "$1" in
+        /var/home/linuxbrew/.linuxbrew/Caskroom/codex/*/codex-*-unknown-linux-musl|\
+        /home/linuxbrew/.linuxbrew/Caskroom/codex/*/codex-*-unknown-linux-musl)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+caller="$(readlink -f "/proc/${PPID}/exe" 2>/dev/null || true)"
+if ! allowed_caller "${caller}"; then
+    printf 'nocblue codex bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2
+    exit 126
+fi
+
+exec /usr/bin/bwrap "$@"
