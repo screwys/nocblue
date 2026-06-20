@@ -37,6 +37,8 @@ window-padding-y = 6
 window-padding-color = background
 confirm-close-surface = false
 gtk-single-instance = true
+quit-after-last-window-closed = true
+quit-after-last-window-closed-delay = 5m
 
 # Clipboard
 clipboard-read = ask

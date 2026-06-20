@@ -159,7 +159,7 @@ spawn-at-startup "sh" "-lc" "sleep 4; command -v xembedsniproxy >/dev/null 2>&1 
 binds {
     Mod+Shift+Escape { show-hotkey-overlay; }
 
-    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty"; }
+    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }
     Mod+Ctrl+Return hotkey-overlay-title="Open App Launcher: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
     Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }
     Mod+Alt+L hotkey-overlay-title="Lock Screen: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call lockScreen lock"; }
@@ -242,7 +242,7 @@ binds {
     XF86Launch5 hotkey-overlay-title="M2: OCR Japanese" { spawn "/usr/bin/nocblue-ocr-japanese"; }
     XF86Launch6 hotkey-overlay-title="M3: Record Toggle" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit recordToggle"; }
     XF86Launch7 hotkey-overlay-title="M4: Mission Center" { spawn "flatpak" "run" "io.missioncenter.MissionCenter"; }
-    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty"; }
+    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty" "+new-window"; }
     XF86Launch9 hotkey-overlay-title="M6: Session Menu" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
     Print hotkey-overlay-title="Screenshot Region" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit annotate"; }
 

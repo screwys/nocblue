@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v24.done"
+version_stamp="${state_dir}/user-defaults.v25.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -314,6 +314,64 @@ PY
 
 legacy_ghostty_config() {
     grep -qx 'font-family = JetBrainsMono Nerd Font' "$1"
+}
+
+ensure_ghostty_keep_warm() {
+    local config="${HOME}/.config/ghostty/config"
+    [[ -f "${config}" ]] || return 0
+
+    python3 - "${config}" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+lines = path.read_text(encoding="utf-8").splitlines()
+
+def has_key(name: str) -> bool:
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        if stripped.split("=", 1)[0].strip() == name:
+            return True
+    return False
+
+wanted = [
+    ("quit-after-last-window-closed", "true"),
+    ("quit-after-last-window-closed-delay", "5m"),
+]
+missing = [(key, value) for key, value in wanted if not has_key(key)]
+if not missing:
+    raise SystemExit(0)
+
+if lines and lines[-1].strip():
+    lines.append("")
+lines.append("# Startup")
+for key, value in missing:
+    lines.append(f"{key} = {value}")
+
+path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+PY
+}
+
+ensure_ghostty_user_service() {
+    local stamp="${state_dir}/ghostty-service.defaulted"
+    local enabled_state
+
+    [[ -f "${stamp}" ]] && return 0
+    command -v systemctl >/dev/null 2>&1 || return 0
+
+    enabled_state="$(systemctl --user is-enabled app-com.mitchellh.ghostty.service 2>/dev/null || true)"
+    case "${enabled_state}" in
+        enabled | masked)
+            : >"${stamp}"
+            return 0
+            ;;
+    esac
+
+    if systemctl --user enable app-com.mitchellh.ghostty.service >/dev/null 2>&1; then
+        : >"${stamp}"
+    fi
 }
 
 legacy_wallpaper_cache() {
@@ -879,6 +937,30 @@ legacy_niri_config() {
     grep -q 'spawn-at-startup "waybar"' "$1" && ! grep -q 'noctalia-shell' "$1"
 }
 
+ensure_niri_ghostty_launcher() {
+    local config="${HOME}/.config/niri/config.kdl"
+    [[ -f "${config}" ]] || return 0
+
+    python3 - "${config}" <<'PY'
+from pathlib import Path
+import sys
+
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+new_text = text
+replacements = {
+    '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty"; }':
+    '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }',
+    '    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty"; }':
+    '    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty" "+new-window"; }',
+}
+for old, new in replacements.items():
+    new_text = new_text.replace(old, new)
+if new_text != text:
+    path.write_text(new_text, encoding="utf-8")
+PY
+}
+
 ensure_niri_browser_bridge() {
     local config="${HOME}/.config/niri/config.kdl"
     [[ -f "${config}" ]] || return 0
@@ -1220,6 +1302,7 @@ for colorscheme in "${defaults_dir}"/noctalia/colorschemes/*/*.json; do
     copy_if_missing "${colorscheme}" "${HOME}/.config/noctalia/colorschemes/${scheme_name}/$(basename "${colorscheme}")"
 done
 copy_if_missing_or_legacy "${defaults_dir}/niri/config.kdl" "${HOME}/.config/niri/config.kdl" legacy_niri_config
+ensure_niri_ghostty_launcher
 ensure_niri_browser_bridge
 copy_if_missing "${defaults_dir}/xdg/mimeapps.list" "${HOME}/.config/mimeapps.list"
 copy_if_missing_or_legacy "${defaults_dir}/zed/settings.json" "${HOME}/.config/zed/settings.json" legacy_zed_settings
@@ -1232,6 +1315,8 @@ if [[ -d "${defaults_dir}/nvim" ]]; then
     done < <(find "${defaults_dir}/nvim" -type f -print)
 fi
 copy_if_missing_or_legacy "${defaults_dir}/ghostty/config" "${HOME}/.config/ghostty/config" legacy_ghostty_config
+ensure_ghostty_keep_warm
+ensure_ghostty_user_service
 copy_if_missing "${defaults_dir}/ghostty/themes/noctalia" "${HOME}/.config/ghostty/themes/noctalia"
 copy_if_missing "${defaults_dir}/btop/btop.conf" "${HOME}/.config/btop/btop.conf"
 copy_if_missing "${defaults_dir}/MangoHud/MangoHud.conf" "${HOME}/.config/MangoHud/MangoHud.conf"

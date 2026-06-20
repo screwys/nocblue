@@ -86,6 +86,8 @@ grep -q 'xembedsniproxy' /usr/share/nocblue/defaults/niri/config.kdl
 test -x /usr/bin/ghostty
 test ! -e /usr/local/bin/ghostty
 grep -q '^mouse-shift-capture = never$' /usr/share/nocblue/defaults/ghostty/config
+grep -q '^quit-after-last-window-closed = true$' /usr/share/nocblue/defaults/ghostty/config
+grep -q '^quit-after-last-window-closed-delay = 5m$' /usr/share/nocblue/defaults/ghostty/config
 test -f /usr/share/applications/nocblue-nvim.desktop
 grep -q '^Exec=/usr/bin/ghostty -e /usr/bin/nvim %F$' /usr/share/applications/nocblue-nvim.desktop
 grep -q '^MimeType=.*text/plain.*text/markdown.*application/json' /usr/share/applications/nocblue-nvim.desktop
@@ -627,8 +629,9 @@ grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
 grep -q '/usr/libexec/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
 ! grep -q '.local/bin/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v24.done' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v24.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'user-defaults.v25.done' /usr/bin/nocblue-apply-user-defaults
+grep -q 'user-defaults.v25.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+grep -q 'systemctl --user enable app-com.mitchellh.ghostty.service' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
 grep -q '^ExecStart=/usr/bin/nocblue-sync-game-shortcuts$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
 grep -q '^OnUnitActiveSec=15min$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
@@ -877,6 +880,10 @@ grep -q 'set -q EDITOR; or set -gx EDITOR nvim' /usr/share/nocblue/defaults/fish
 grep -q 'export EDITOR="${EDITOR:-nvim}"' /etc/profile.d/nocblue.sh
 grep -q 'EDITOR "nvim"' /etc/xdg/niri/config.kdl
 grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kdl
+grep -Fqx '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }' /etc/xdg/niri/config.kdl
+grep -Fqx '    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty" "+new-window"; }' /etc/xdg/niri/config.kdl
+grep -Fqx '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }' /usr/share/nocblue/defaults/niri/config.kdl
+grep -Fqx '    XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty" "+new-window"; }' /usr/share/nocblue/defaults/niri/config.kdl
 test -x /usr/bin/nocblue-refresh-portals
 grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
 grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl
