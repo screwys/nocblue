@@ -103,7 +103,7 @@
 (typetransition unconfined_t helium_exec_t process helium_t)
 
 (allow nocblue_browser_no_preload_t nocblue_browser_no_preload_exec_t (file (entrypoint execute read getattr open map ioctl)))
-(allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map)))
+(allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl)))
 (allow nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map)))
 (allow nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map)))
 (allow nocblue_browser_no_preload_t brave_origin_exec_t (file (getattr open read execute map)))
