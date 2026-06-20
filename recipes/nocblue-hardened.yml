@@ -260,6 +260,7 @@ modules:
   - type: systemd
     system:
       enabled:
+        - nocblue-browser-userns-selinux.service
         - nocblue-session-defaults.service
         - input-remapper.service
         - firewalld.service

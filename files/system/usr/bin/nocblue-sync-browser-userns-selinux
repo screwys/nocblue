@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cil=/usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+module=nocblue_browser_userns
+stamp=/var/lib/nocblue/selinux/browser-userns.sha256
+
+if ! selinuxenabled; then
+    exit 0
+fi
+
+module_loaded() {
+    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx "${module}"
+}
+
+read -r current_hash _ < <(sha256sum "${cil}")
+if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
+    read -r stamped_hash <"${stamp}"
+    if [[ "${stamped_hash}" == "${current_hash}" ]] && module_loaded; then
+        exit 0
+    fi
+fi
+
+semodule -X 300 -i "${cil}"
+
+for path in \
+    /usr/bin/nocblue-browser-no-preload \
+    /usr/bin/nocblue-portal-bwrap \
+    /usr/libexec/nocblue/codex-bwrap \
+    /opt/brave.com/brave-origin-beta \
+    /usr/lib/opt/brave.com/brave-origin-beta \
+    /opt/helium \
+    /usr/lib/opt/helium \
+    /usr/lib64/firefox \
+    /usr/share/librewolf \
+    /usr/lib/mullvad-browser; do
+    [[ -e "${path}" ]] && restorecon -Rv "${path}" || true
+done
+
+if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" ]]; then
+    install -d -m 0755 -- "$(dirname "${stamp}")"
+    printf '%s\n' "${current_hash}" >"${stamp}"
+fi

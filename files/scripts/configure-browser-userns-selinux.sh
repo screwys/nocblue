@@ -1,18 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-semodule -X 300 -i /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-
-for path in \
-    /usr/bin/nocblue-browser-no-preload \
-    /usr/bin/nocblue-portal-bwrap \
-    /usr/libexec/nocblue/codex-bwrap \
-    /opt/brave.com/brave-origin-beta \
-    /usr/lib/opt/brave.com/brave-origin-beta \
-    /opt/helium \
-    /usr/lib/opt/helium \
-    /usr/lib64/firefox \
-    /usr/share/librewolf \
-    /usr/lib/mullvad-browser; do
-    [[ -e "${path}" ]] && restorecon -Rv "${path}" || true
-done
+NOCBLUE_SELINUX_SYNC_NO_STAMP=1 /usr/bin/nocblue-sync-browser-userns-selinux

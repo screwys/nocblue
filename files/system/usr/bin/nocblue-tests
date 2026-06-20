@@ -299,6 +299,7 @@ grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/system
 if [[ "${is_hardened}" == true ]]; then
     test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test ! -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+    test -L /etc/systemd/system/multi-user.target.wants/nocblue-browser-userns-selinux.service
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
     test -L /etc/systemd/system/multi-user.target.wants/securebluecleanup.service
@@ -312,6 +313,9 @@ if [[ "${is_hardened}" == true ]]; then
 else
     test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+    if test -L /etc/systemd/system/multi-user.target.wants/nocblue-browser-userns-selinux.service; then
+        exit 1
+    fi
     test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 fi
 test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
@@ -368,6 +372,7 @@ grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
 grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
+test -f /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 ! test -L /etc/systemd/system/graphical.target.wants/nocblue-openrazer-plugdev.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
@@ -383,6 +388,7 @@ test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
 test -x /usr/bin/nocblue-sync-sddm-wallpaper
+test -x /usr/bin/nocblue-sync-browser-userns-selinux
 test -x /usr/bin/nocblue-openrazer-plugdev
 test -x /usr/bin/nocblue-setup-flatpaks
 test -x /usr/bin/nocblue-setup-android-sdk
@@ -395,6 +401,7 @@ bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
+bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
@@ -415,6 +422,10 @@ grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
 grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -qx 'module=nocblue_browser_userns' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -Fqx "semodule -X 300 -i \"\${cil}\"" /usr/bin/nocblue-sync-browser-userns-selinux
+grep -qx 'stamp=/var/lib/nocblue/selinux/browser-userns.sha256' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -qx '^ExecStart=/usr/bin/nocblue-sync-browser-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -424,6 +435,34 @@ grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bw
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+if [[ "${is_hardened}" == true ]]; then
+    command -v sesearch >/dev/null
+    command -v seinfo >/dev/null
+    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
+    sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
+        | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
+        | grep -Fq ioctl
+    for userns_domain in \
+        nocblue_browser_no_preload_t \
+        nocblue_portal_bwrap_t \
+        brave_origin_t \
+        helium_t \
+        nocblue_firefox_t; do
+        sesearch -A -s "${userns_domain}" -t "${userns_domain}" -c user_namespace -p create \
+            | grep -Fxq "allow ${userns_domain} ${userns_domain}:user_namespace create;"
+        if seinfo -t "${userns_domain}" -x | grep -q 'unconfined_domain_type'; then
+            printf 'unexpected unconfined_domain_type for %s\n' "${userns_domain}" >&2
+            exit 1
+        fi
+    done
+    # cap_userns may arrive through secureblue/Trivalent attributes; the boundary is no broad user_namespace create.
+    for denied_userns_domain in unconfined_t mozilla_t staff_t user_t xdm_t; do
+        if sesearch -A -s "${denied_userns_domain}" -c user_namespace -p create | grep -q .; then
+            printf 'unexpected user_namespace create allow for %s\n' "${denied_userns_domain}" >&2
+            exit 1
+        fi
+    done
+fi
 grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
