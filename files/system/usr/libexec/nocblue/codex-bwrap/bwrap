@@ -1,7 +1,9 @@
 #!/usr/bin/bash
 set -euo pipefail
 
-allowed_caller() {
+real_bwrap=/usr/bin/bwrap
+
+is_codex_binary() {
     case "$1" in
         /var/home/linuxbrew/.linuxbrew/Caskroom/codex/*/codex-*-unknown-linux-musl|\
         /home/linuxbrew/.linuxbrew/Caskroom/codex/*/codex-*-unknown-linux-musl)
@@ -13,16 +15,200 @@ allowed_caller() {
     esac
 }
 
-case "${1:-}" in
-    --help|--version)
-        exec /usr/bin/bwrap "$@"
-        ;;
-esac
+allowed_caller() {
+    is_codex_binary "$1"
+}
 
-caller="$(readlink -f "/proc/${PPID}/exe" 2>/dev/null || true)"
-if ! allowed_caller "${caller}"; then
-    printf 'nocblue codex bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2
-    exit 126
+is_true_command() {
+    case "$1" in
+        /usr/bin/true|/bin/true)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+has_arg() {
+    local needle=$1
+    shift
+
+    local arg
+    for arg in "$@"; do
+        if [[ "${arg}" == "${needle}" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+has_pair() {
+    local key=$1
+    local value=$2
+    shift 2
+
+    while (($# >= 2)); do
+        if [[ "$1" == "${key}" && "$2" == "${value}" ]]; then
+            return 0
+        fi
+        shift
+    done
+
+    return 1
+}
+
+has_root_writable_bind() {
+    while (($# >= 3)); do
+        case "$1" in
+            --bind|--bind-try|--dev-bind|--dev-bind-try)
+                if [[ "$2" == "/" && "$3" == "/" ]]; then
+                    return 0
+                fi
+                ;;
+        esac
+        shift
+    done
+
+    return 1
+}
+
+first_separator_index() {
+    local i=0
+    local arg
+    for arg in "$@"; do
+        if [[ "${arg}" == "--" ]]; then
+            printf '%s\n' "${i}"
+            return 0
+        fi
+        ((i += 1))
+    done
+
+    return 1
+}
+
+prefix_has_argv0_codex() {
+    local sep_index=$1
+    shift
+    local args=("$@")
+    local i
+
+    for ((i = 0; i + 1 < sep_index; i += 1)); do
+        if [[ "${args[i]}" == "--argv0" && "${args[i + 1]}" == "codex-linux-sandbox" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+has_helper_flag_value() {
+    local flag=$1
+    shift
+    local args=("$@")
+    local i
+
+    for ((i = 0; i + 1 < ${#args[@]}; i += 1)); do
+        if [[ "${args[i]}" == "${flag}" && "${args[i + 1]}" != "--" ]]; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+helper_separator_index() {
+    local i=0
+    local arg
+    for arg in "$@"; do
+        if [[ "${arg}" == "--" ]]; then
+            printf '%s\n' "${i}"
+            return 0
+        fi
+        ((i += 1))
+    done
+
+    return 1
+}
+
+common_codex_bwrap_shape() {
+    (($# >= 4)) || return 1
+    [[ "$1" == "--new-session" && "$2" == "--die-with-parent" ]] || return 1
+    has_arg "--unshare-user" "$@" || return 1
+    has_arg "--unshare-pid" "$@" || return 1
+    ! has_root_writable_bind "$@" || return 1
+}
+
+allowed_namespace_warning_probe() {
+    (($# == 6)) || return 1
+    [[ "$1" == "--unshare-user" ]] || return 1
+    [[ "$2" == "--unshare-net" ]] || return 1
+    [[ "$3" == "--ro-bind" && "$4" == "/" && "$5" == "/" ]] || return 1
+    is_true_command "$6"
+}
+
+allowed_codex_true_preflight() {
+    local sep_index
+    sep_index=$(first_separator_index "$@") || return 1
+    local args=("$@")
+    local bwrap_args=("${args[@]:0:sep_index}")
+
+    ((sep_index + 2 == $#)) || return 1
+    common_codex_bwrap_shape "${bwrap_args[@]}" || return 1
+    has_pair "--proc" "/proc" "${bwrap_args[@]}" || return 1
+    is_true_command "${args[sep_index + 1]}"
+}
+
+allowed_codex_sandbox() {
+    local sep_index
+    sep_index=$(first_separator_index "$@") || return 1
+    local args=("$@")
+    local bwrap_args=("${args[@]:0:sep_index}")
+
+    ((sep_index + 3 < $#)) || return 1
+    common_codex_bwrap_shape "${bwrap_args[@]}" || return 1
+    prefix_has_argv0_codex "${sep_index}" "${bwrap_args[@]}" || return 1
+    is_codex_binary "${args[sep_index + 1]}" || return 1
+
+    local helper_args=("${args[@]:sep_index + 2}")
+    local helper_sep
+    helper_sep=$(helper_separator_index "${helper_args[@]}") || return 1
+    ((helper_sep + 1 < ${#helper_args[@]})) || return 1
+
+    has_helper_flag_value "--sandbox-policy-cwd" "${helper_args[@]:0:helper_sep}" || return 1
+    has_helper_flag_value "--permission-profile" "${helper_args[@]:0:helper_sep}" || return 1
+    has_arg "--apply-seccomp-then-exec" "${helper_args[@]:0:helper_sep}" || return 1
+}
+
+allowed_codex_bwrap() {
+    allowed_namespace_warning_probe "$@" \
+        || allowed_codex_true_preflight "$@" \
+        || allowed_codex_sandbox "$@"
+}
+
+main() {
+    case "${1:-}" in
+        --help|--version)
+            exec "${real_bwrap}" "$@"
+            ;;
+    esac
+
+    local caller
+    caller="$(readlink -f "/proc/${PPID}/exe" 2>/dev/null || true)"
+    if ! allowed_caller "${caller}"; then
+        printf 'nocblue codex bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2
+        exit 126
+    fi
+
+    if ! allowed_codex_bwrap "$@"; then
+        printf 'nocblue codex bwrap refuses unsupported argv\n' >&2
+        exit 126
+    fi
+
+    exec "${real_bwrap}" "$@"
+}
+
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+    main "$@"
 fi
-
-exec /usr/bin/bwrap "$@"

@@ -442,6 +442,8 @@ grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bw
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t unconfined_t (dir (getattr search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t unconfined_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 if [[ "${is_hardened}" == true ]]; then
     command -v sesearch >/dev/null
     command -v seinfo >/dev/null
@@ -453,6 +455,10 @@ if [[ "${is_hardened}" == true ]]; then
     sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
         | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
         | grep -Fq ioctl
+    sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c lnk_file -p read \
+        | grep -Fxq 'allow nocblue_portal_bwrap_t unconfined_t:lnk_file { getattr read };'
+    sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c dir -p search \
+        | grep -Fxq 'allow nocblue_portal_bwrap_t unconfined_t:dir { getattr search };'
     for userns_domain in \
         nocblue_browser_no_preload_t \
         nocblue_portal_bwrap_t \
@@ -576,14 +582,63 @@ grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'allowed_codex_bwrap' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'allowed_codex_true_preflight' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'allowed_namespace_warning_probe' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'has_root_writable_bind' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'codex-linux-sandbox' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q -- '--sandbox-policy-cwd' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q -- '--apply-seccomp-then-exec' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'Caskroom/codex' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'refuses unsupported caller' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q 'refuses unsupported argv' /usr/libexec/nocblue/codex-bwrap/bwrap
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--perms'
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--argv0'
+! bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --unshare-user --unshare-net --ro-bind / / true'
+bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --new-session --die-with-parent --ro-bind / / --dev /dev --unshare-user --unshare-pid --proc /proc -- /usr/bin/true'
+for codex_root_bind in --bind --bind-try --dev-bind --dev-bind-try; do
+    ! bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --new-session --die-with-parent "$1" / / --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl --sandbox-policy-cwd /tmp --permission-profile "{}" --apply-seccomp-then-exec -- /usr/bin/true' _ "${codex_root_bind}"
+done
 grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 ! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
 ! /usr/bin/nocblue-portal-bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null 2>&1
-! /usr/libexec/nocblue/codex-bwrap/bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null 2>&1
+codex_bwrap_reject="$({ /usr/libexec/nocblue/codex-bwrap/bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null; } 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_reject}" | grep -q 'refuses unsupported caller'
+codex_bwrap_spoof_reject="$({
+    /usr/libexec/nocblue/codex-bwrap/bwrap \
+        --new-session --die-with-parent --ro-bind / / --dev /dev \
+        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
+        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
+        --sandbox-policy-cwd /tmp \
+        --permission-profile '{"type":"disabled"}' \
+        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
+} 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_spoof_reject}" | grep -q 'refuses unsupported caller'
+codex_bwrap_root_bind_reject="$({
+    /usr/libexec/nocblue/codex-bwrap/bwrap \
+        --new-session --die-with-parent --bind / / \
+        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
+        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
+        --sandbox-policy-cwd /tmp \
+        --permission-profile '{}' \
+        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
+} 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_root_bind_reject}" | grep -q 'refuses unsupported caller'
+codex_bwrap_root_bind_try_reject="$({
+    /usr/libexec/nocblue/codex-bwrap/bwrap \
+        --new-session --die-with-parent --bind-try / / \
+        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
+        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
+        --sandbox-policy-cwd /tmp \
+        --permission-profile '{}' \
+        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
+} 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_root_bind_try_reject}" | grep -q 'refuses unsupported caller'
+codex_bwrap_bare_true_reject="$({
+    /usr/libexec/nocblue/codex-bwrap/bwrap \
+        --unshare-user --unshare-net --ro-bind / / true >/dev/null
+} 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_bare_true_reject}" | grep -q 'refuses unsupported caller'
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
