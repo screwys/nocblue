@@ -478,6 +478,7 @@ if [[ "${is_hardened}" == true ]]; then
     matchpathcon -V \
         /usr/bin/nocblue-browser-no-preload \
         /usr/bin/nocblue-portal-bwrap \
+        /usr/libexec/nocblue/codex-bwrap-path/bwrap \
         /usr/libexec/nocblue/codex-bwrap/bwrap
     sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
         | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
@@ -637,7 +638,12 @@ grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
 ! grep -Fq 'readlink -f "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q '/usr/libexec/nocblue/codex-bwrap' /usr/bin/nocblue-codex
+grep -Fq '/usr/bin/readlink "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
+test -x /usr/libexec/nocblue/codex-bwrap-path/bwrap
+grep -q '/usr/libexec/nocblue/codex-bwrap-path' /usr/bin/nocblue-codex
+grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap' /usr/libexec/nocblue/codex-bwrap-path/bwrap
+grep -q '/usr/bin/bwrap' /usr/libexec/nocblue/codex-bwrap-path/bwrap
+grep -Fq '/usr/bin/readlink "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap-path/bwrap
 grep -q 'type -P -a codex' /usr/bin/nocblue-codex
 grep -q 'command /usr/bin/nocblue-codex' /etc/profile.d/nocblue-codex-bwrap.sh
 grep -q 'command /usr/bin/nocblue-codex' /etc/fish/conf.d/nocblue-codex-bwrap.fish
@@ -653,15 +659,24 @@ grep -q 'refuses unsupported caller' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'refuses unsupported argv' /usr/libexec/nocblue/codex-bwrap/bwrap
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--perms'
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--argv0'
+/usr/libexec/nocblue/codex-bwrap-path/bwrap --version | grep -q '^bubblewrap '
 codex_probe_dir="$(mktemp -d)"
 trap 'rm -rf "${codex_probe_dir}"' EXIT
 cat >"${codex_probe_dir}/codex" <<'EOF'
 #!/usr/bin/env bash
 case ":${PATH}:" in
-    *:/usr/libexec/nocblue/codex-bwrap:*) exit 0 ;;
+    *:/usr/libexec/nocblue/codex-bwrap-path:*) ;;
+    *)
+        printf 'codex bwrap router path was not injected\n' >&2
+        exit 1
+        ;;
 esac
-printf 'codex bwrap shim path was not injected\n' >&2
-exit 1
+case ":${PATH}:" in
+    *:/usr/libexec/nocblue/codex-bwrap:*)
+        printf 'codex bwrap shim path leaked into child PATH\n' >&2
+        exit 1
+        ;;
+esac
 EOF
 chmod 0755 "${codex_probe_dir}/codex"
 PATH="${codex_probe_dir}:/usr/bin:/usr/sbin" /usr/bin/nocblue-codex --probe
@@ -712,6 +727,24 @@ codex_bwrap_bare_true_reject="$({
         --unshare-user --unshare-net --ro-bind / / true >/dev/null
 } 2>&1 || true)"
 printf '%s\n' "${codex_bwrap_bare_true_reject}" | grep -q 'refuses unsupported caller'
+codex_bwrap_readlink_shadow_reject="$({
+    readlink_probe_dir="$(mktemp -d)"
+    trap 'rm -rf "${readlink_probe_dir}"' EXIT
+    cat >"${readlink_probe_dir}/readlink" <<'EOF'
+#!/usr/bin/env bash
+printf '/home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl\n'
+EOF
+    chmod 0755 "${readlink_probe_dir}/readlink"
+    PATH="${readlink_probe_dir}:/usr/bin:/usr/sbin" \
+        /usr/libexec/nocblue/codex-bwrap/bwrap \
+            --new-session --die-with-parent --ro-bind / / --dev /dev \
+            --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
+            /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
+            --sandbox-policy-cwd /tmp \
+            --permission-profile '{}' \
+            --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
+} 2>&1 || true)"
+printf '%s\n' "${codex_bwrap_readlink_shadow_reject}" | grep -q 'refuses unsupported caller'
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
@@ -744,6 +777,35 @@ grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--filesystem=~/Games' /usr/bin/nocblue-apply-user-defaults
 ! grep -q -- '--filesystem=~/Games:create' /usr/bin/nocblue-apply-user-defaults
+lutris_apply_override="$(awk '
+    /flatpak override --user \\/ { block=$0 ORS; capture=1; next }
+    capture { block=block $0 ORS }
+    capture && /net[.]lutris[.]Lutris/ { print block; exit }
+' /usr/bin/nocblue-apply-user-defaults)"
+[[ "${lutris_apply_override}" != *"--filesystem=home"* ]]
+lutris_private_paths=(
+    '~/.ssh'
+    '~/.gnupg'
+    '~/.password-store'
+    '~/.local/share/keyrings'
+    '~/.mozilla'
+    '~/.librewolf'
+    '~/.mullvad-browser'
+    '~/.config/BraveSoftware'
+    '~/.config/helium'
+    '~/.config/Helium'
+    '~/.config/trivalent'
+    '~/.cache/mozilla'
+    '~/.cache/librewolf'
+    '~/.cache/mullvad-browser'
+    '~/.cache/BraveSoftware'
+    '~/.cache/helium'
+    '~/.cache/Helium'
+    '~/.cache/trivalent'
+)
+for lutris_private_path in "${lutris_private_paths[@]}"; do
+    grep -Fq -- "--nofilesystem=${lutris_private_path}" /usr/bin/nocblue-apply-user-defaults
+done
 grep -q 'xdg-config/MangoHud:ro' /usr/bin/nocblue-apply-user-defaults
 ! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.gitlab.somas.Apostrophe'
 ! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.TextEditor'
@@ -831,7 +893,12 @@ grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
 ! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
 grep -q '^io.github.alyraffauf.Switchyard .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.missioncenter.MissionCenter .*--unset-env=LD_PRELOAD .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=~/Games .*--filesystem=home .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=~/Games .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
+lutris_manifest_override="$(grep '^net[.]lutris[.]Lutris ' /usr/share/nocblue/manifests/flatpak-overrides.txt)"
+[[ "${lutris_manifest_override}" != *"--filesystem=home"* ]]
+for lutris_private_path in "${lutris_private_paths[@]}"; do
+    [[ "${lutris_manifest_override}" == *"--nofilesystem=${lutris_private_path}"* ]]
+done
 ! grep -q '^net.lutris.Lutris .*--filesystem=~/Games:create' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.ilya_zlobintsev.LACT .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
 grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt

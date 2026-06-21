@@ -1084,7 +1084,24 @@ apply_user_flatpak_theme_overrides() {
         --env=MANGOHUD=1 \
         --nofilesystem=host-os \
         --filesystem=~/Games \
-        --filesystem=home \
+        --nofilesystem=~/.ssh \
+        --nofilesystem=~/.gnupg \
+        --nofilesystem=~/.password-store \
+        --nofilesystem=~/.local/share/keyrings \
+        --nofilesystem=~/.mozilla \
+        --nofilesystem=~/.librewolf \
+        --nofilesystem=~/.mullvad-browser \
+        --nofilesystem=~/.config/BraveSoftware \
+        --nofilesystem=~/.config/helium \
+        --nofilesystem=~/.config/Helium \
+        --nofilesystem=~/.config/trivalent \
+        --nofilesystem=~/.cache/mozilla \
+        --nofilesystem=~/.cache/librewolf \
+        --nofilesystem=~/.cache/mullvad-browser \
+        --nofilesystem=~/.cache/BraveSoftware \
+        --nofilesystem=~/.cache/helium \
+        --nofilesystem=~/.cache/Helium \
+        --nofilesystem=~/.cache/trivalent \
         --filesystem=xdg-config/MangoHud:ro \
         --filesystem=xdg-config/gtk-3.0:ro \
         --filesystem=xdg-config/gtk-4.0:ro \

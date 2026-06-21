@@ -195,7 +195,7 @@ main() {
     esac
 
     local caller
-    caller="$(readlink "/proc/${PPID}/exe" 2>/dev/null || true)"
+    caller="$(/usr/bin/readlink "/proc/${PPID}/exe" 2>/dev/null || true)"
     if ! allowed_caller "${caller}"; then
         printf 'nocblue codex bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2
         exit 126

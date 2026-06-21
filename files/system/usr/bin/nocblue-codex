@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-shim_dir=/usr/libexec/nocblue/codex-bwrap
+shim_dir=/usr/libexec/nocblue/codex-bwrap-path
 
 if [[ -x "${shim_dir}/bwrap" ]]; then
     case ":${PATH}:" in
