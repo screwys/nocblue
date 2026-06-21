@@ -188,7 +188,7 @@
 (allow nocblue_codex_bwrap_t tmpfs_t (file (create mounton open write)))
 (allow nocblue_codex_bwrap_t tmpfs_t (lnk_file (create)))
 (allow nocblue_codex_bwrap_t proc_t (dir (mounton)))
-(allow nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write)))
+(allow nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock mounton open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write)))
 (allow nocblue_codex_bwrap_t user_home_t (file (append create execute execute_no_trans getattr ioctl link lock map open read rename setattr unlink watch watch_reads write)))
 (allow nocblue_codex_bwrap_t user_home_t (lnk_file (create getattr read rename setattr unlink)))
 (allow brave_origin_t brave_origin_t (user_namespace (create)))
