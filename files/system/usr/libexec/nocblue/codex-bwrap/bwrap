@@ -13,6 +13,12 @@ allowed_caller() {
     esac
 }
 
+case "${1:-}" in
+    --help|--version)
+        exec /usr/bin/bwrap "$@"
+        ;;
+esac
+
 caller="$(readlink -f "/proc/${PPID}/exe" 2>/dev/null || true)"
 if ! allowed_caller "${caller}"; then
     printf 'nocblue codex bwrap refuses unsupported caller: %s\n' "${caller:-unknown}" >&2

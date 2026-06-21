@@ -571,6 +571,8 @@ grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'Caskroom/codex' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'refuses unsupported caller' /usr/libexec/nocblue/codex-bwrap/bwrap
+/usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--perms'
+/usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--argv0'
 grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 ! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
 ! /usr/bin/nocblue-portal-bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null 2>&1
