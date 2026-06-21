@@ -465,8 +465,11 @@ grep -q 'nocblue_codex_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/se
 grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (cap_userns (dac_override dac_read_search net_admin))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (netlink_route_socket (bind create nlmsg_write read write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_codex_bwrap_t proc_t (filesystem (mount remount))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (file (execute execute_no_trans map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (file (append create execute execute_no_trans getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (lnk_file (create getattr read rename setattr unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 ! grep -q 'nocblue_portal_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'nocblue_portal_bwrap_t user_home_t (file .*write' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 if [[ "${is_hardened}" == true ]]; then
     command -v sesearch >/dev/null
     command -v seinfo >/dev/null
@@ -484,8 +487,18 @@ if [[ "${is_hardened}" == true ]]; then
         | grep -Fq ioctl
     sesearch -A -s nocblue_codex_bwrap_t -t unconfined_t -c file -p read \
         | grep -Fxq 'allow nocblue_codex_bwrap_t unconfined_t:file read;'
+    sesearch -A -s nocblue_codex_bwrap_t -t user_home_t -c dir -p read \
+        | grep -F 'allow nocblue_codex_bwrap_t user_home_t:dir' \
+        | grep -Fq read
+    sesearch -A -s nocblue_codex_bwrap_t -t user_home_t -c file -p write \
+        | grep -F 'allow nocblue_codex_bwrap_t user_home_t:file' \
+        | grep -Fq write
     if sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c file -p read | grep -q .; then
         printf 'unexpected portal parent file-read allow\n' >&2
+        exit 1
+    fi
+    if sesearch -A -s nocblue_portal_bwrap_t -t user_home_t -c file -p write | grep -q .; then
+        printf 'unexpected portal home file-write allow\n' >&2
         exit 1
     fi
     sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c lnk_file -p read \
@@ -518,6 +531,9 @@ grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute ex
 grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_codex_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_codex_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (file (append create execute execute_no_trans getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (lnk_file (create getattr read rename setattr unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_codex_bwrap_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
