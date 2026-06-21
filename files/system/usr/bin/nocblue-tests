@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset xembedsniproxy kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset xembedsniproxy kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature nocblue-codex xdg-open; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -388,11 +388,14 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-setup.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
+test -f /etc/profile.d/nocblue-codex-bwrap.sh
+test -f /etc/fish/conf.d/nocblue-codex-bwrap.fish
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
 test -x /usr/bin/nocblue-sync-sddm-wallpaper
 test -x /usr/bin/nocblue-sync-sandbox-userns-selinux
 test -x /usr/bin/nocblue-sync-browser-userns-selinux
+test -x /usr/bin/nocblue-codex
 test -x /usr/bin/nocblue-openrazer-plugdev
 test -x /usr/bin/nocblue-setup-flatpaks
 test -x /usr/bin/nocblue-setup-android-sdk
@@ -407,6 +410,9 @@ bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
+bash -n /usr/bin/nocblue-codex
+bash -n /etc/profile.d/nocblue-codex-bwrap.sh
+fish -n /etc/fish/conf.d/nocblue-codex-bwrap.fish
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
@@ -612,6 +618,10 @@ grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
 ! grep -Fq 'readlink -f "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
+grep -q '/usr/libexec/nocblue/codex-bwrap' /usr/bin/nocblue-codex
+grep -q 'type -P -a codex' /usr/bin/nocblue-codex
+grep -q 'command /usr/bin/nocblue-codex' /etc/profile.d/nocblue-codex-bwrap.sh
+grep -q 'command /usr/bin/nocblue-codex' /etc/fish/conf.d/nocblue-codex-bwrap.fish
 grep -q 'allowed_codex_bwrap' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'allowed_codex_true_preflight' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'allowed_namespace_warning_probe' /usr/libexec/nocblue/codex-bwrap/bwrap
@@ -624,6 +634,20 @@ grep -q 'refuses unsupported caller' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'refuses unsupported argv' /usr/libexec/nocblue/codex-bwrap/bwrap
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--perms'
 /usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--argv0'
+codex_probe_dir="$(mktemp -d)"
+trap 'rm -rf "${codex_probe_dir}"' EXIT
+cat >"${codex_probe_dir}/codex" <<'EOF'
+#!/usr/bin/env bash
+case ":${PATH}:" in
+    *:/usr/libexec/nocblue/codex-bwrap:*) exit 0 ;;
+esac
+printf 'codex bwrap shim path was not injected\n' >&2
+exit 1
+EOF
+chmod 0755 "${codex_probe_dir}/codex"
+PATH="${codex_probe_dir}:/usr/bin:/usr/sbin" /usr/bin/nocblue-codex --probe
+rm -rf "${codex_probe_dir}"
+trap - EXIT
 ! bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --unshare-user --unshare-net --ro-bind / / true'
 bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --new-session --die-with-parent --ro-bind / / --dev /dev --unshare-user --unshare-pid --proc /proc -- /usr/bin/true'
 for codex_root_bind in --bind --bind-try --dev-bind --dev-bind-try; do
