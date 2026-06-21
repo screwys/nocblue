@@ -435,15 +435,23 @@ grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-br
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-browser-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_trivalent_script_domain' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t unconfined_t (dir (getattr search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t unconfined_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (cap_userns (dac_override dac_read_search net_admin))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (netlink_route_socket (bind create nlmsg_write read write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t proc_t (filesystem (mount remount))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (file (execute execute_no_trans map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+! grep -q 'nocblue_portal_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 if [[ "${is_hardened}" == true ]]; then
     command -v sesearch >/dev/null
     command -v seinfo >/dev/null
@@ -455,6 +463,15 @@ if [[ "${is_hardened}" == true ]]; then
     sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
         | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
         | grep -Fq ioctl
+    sesearch -A -s nocblue_codex_bwrap_t -t nocblue_codex_bwrap_exec_t -c file -p ioctl \
+        | grep -F 'allow nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t:file' \
+        | grep -Fq ioctl
+    sesearch -A -s nocblue_codex_bwrap_t -t unconfined_t -c file -p read \
+        | grep -Fxq 'allow nocblue_codex_bwrap_t unconfined_t:file read;'
+    if sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c file -p read | grep -q .; then
+        printf 'unexpected portal parent file-read allow\n' >&2
+        exit 1
+    fi
     sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c lnk_file -p read \
         | grep -Fxq 'allow nocblue_portal_bwrap_t unconfined_t:lnk_file { getattr read };'
     sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c dir -p search \
@@ -462,6 +479,7 @@ if [[ "${is_hardened}" == true ]]; then
     for userns_domain in \
         nocblue_browser_no_preload_t \
         nocblue_portal_bwrap_t \
+        nocblue_codex_bwrap_t \
         brave_origin_t \
         helium_t \
         nocblue_firefox_t; do
@@ -482,9 +500,10 @@ if [[ "${is_hardened}" == true ]]; then
 fi
 grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_codex_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_portal_bwrap_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'nocblue_codex_bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_codex_bwrap_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
