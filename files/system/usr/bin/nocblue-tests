@@ -425,7 +425,9 @@ grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -qx 'module=nocblue_browser_userns' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -Fqx "semodule -X 300 -i \"\${cil}\"" /usr/bin/nocblue-sync-browser-userns-selinux
+grep -qx 'target_priority=300' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -Fq "semodule -X \"\${priority}\" -r \"\${module}\"" /usr/bin/nocblue-sync-browser-userns-selinux
+grep -Fqx "semodule -X \"\${target_priority}\" -i \"\${cil}\"" /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx 'stamp=/var/lib/nocblue/selinux/browser-userns.sha256' /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-browser-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil

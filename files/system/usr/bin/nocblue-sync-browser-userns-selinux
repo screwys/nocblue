@@ -3,25 +3,45 @@ set -euo pipefail
 
 cil=/usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 module=nocblue_browser_userns
+target_priority=300
 stamp=/var/lib/nocblue/selinux/browser-userns.sha256
 
 if ! selinuxenabled; then
     exit 0
 fi
 
-module_loaded() {
-    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx "${module}"
+module_priorities() {
+    semodule -lfull 2>/dev/null | awk -v module="${module}" '$2 == module {print $1}'
+}
+
+module_loaded_at_target() {
+    module_priorities | grep -qx "${target_priority}"
+}
+
+module_has_stale_priority() {
+    module_priorities | grep -vx "${target_priority}" | grep -q .
+}
+
+remove_stale_modules() {
+    local priority
+
+    while read -r priority; do
+        [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
+        semodule -X "${priority}" -r "${module}"
+    done < <(module_priorities)
 }
 
 read -r current_hash _ < <(sha256sum "${cil}")
 if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
     read -r stamped_hash <"${stamp}"
-    if [[ "${stamped_hash}" == "${current_hash}" ]] && module_loaded; then
+    if [[ "${stamped_hash}" == "${current_hash}" ]] && module_loaded_at_target && ! module_has_stale_priority; then
         exit 0
     fi
 fi
 
-semodule -X 300 -i "${cil}"
+# Old live fixes can leave a higher-priority copy that shadows the image policy.
+remove_stale_modules
+semodule -X "${target_priority}" -i "${cil}"
 
 for path in \
     /usr/bin/nocblue-browser-no-preload \
