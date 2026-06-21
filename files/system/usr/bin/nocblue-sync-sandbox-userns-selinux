@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cil=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+module=nocblue_sandbox_userns
+legacy_modules=(nocblue_browser_userns)
+target_priority=300
+stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256
+
+if [[ "${NOCBLUE_SELINUX_SYNC_FORCE:-}" != "1" ]] && ! selinuxenabled; then
+    exit 0
+fi
+
+critical_label_paths=(
+    /usr/bin/nocblue-browser-no-preload
+    /usr/bin/nocblue-portal-bwrap
+    /usr/libexec/nocblue/codex-bwrap/bwrap
+)
+
+module_priorities_for() {
+    local queried_module=$1
+    semodule -lfull 2>/dev/null | awk -v module="${queried_module}" '$2 == module {print $1}'
+}
+
+module_priorities() {
+    module_priorities_for "${module}"
+}
+
+module_loaded_at_target() {
+    module_priorities | grep -qx "${target_priority}"
+}
+
+module_has_stale_priority() {
+    module_priorities | grep -vx "${target_priority}" | grep -q .
+}
+
+legacy_modules_loaded() {
+    local legacy_module
+
+    for legacy_module in "${legacy_modules[@]}"; do
+        if module_priorities_for "${legacy_module}" | grep -q .; then
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+critical_labels_match() {
+    local path
+
+    for path in "${critical_label_paths[@]}"; do
+        [[ -e "${path}" ]] || continue
+        matchpathcon -V "${path}" >/dev/null || return 1
+    done
+
+    return 0
+}
+
+remove_module_priorities() {
+    local remove_module=$1
+    local priority
+
+    while read -r priority; do
+        [[ -n "${priority}" ]] || continue
+        semodule -X "${priority}" -r "${remove_module}"
+    done < <(module_priorities_for "${remove_module}")
+}
+
+remove_stale_modules() {
+    local priority
+    local legacy_module
+
+    while read -r priority; do
+        [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
+        semodule -X "${priority}" -r "${module}"
+    done < <(module_priorities)
+
+    for legacy_module in "${legacy_modules[@]}"; do
+        remove_module_priorities "${legacy_module}"
+    done
+}
+
+read -r current_hash _ < <(sha256sum "${cil}")
+if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
+    read -r stamped_hash <"${stamp}"
+    if [[ "${stamped_hash}" == "${current_hash}" ]] \
+        && module_loaded_at_target \
+        && ! module_has_stale_priority \
+        && ! legacy_modules_loaded \
+        && critical_labels_match; then
+        exit 0
+    fi
+fi
+
+# Old live fixes can leave a higher-priority copy that shadows the image policy.
+# The pre-rename module declares the same types, so remove it before installing
+# the neutral module name.
+remove_stale_modules
+semodule -X "${target_priority}" -i "${cil}"
+
+label_failed=0
+for path in \
+    /usr/bin/nocblue-browser-no-preload \
+    /usr/bin/nocblue-portal-bwrap \
+    /usr/libexec/nocblue/codex-bwrap \
+    /opt/brave.com/brave-origin-beta \
+    /usr/lib/opt/brave.com/brave-origin-beta \
+    /opt/helium \
+    /usr/lib/opt/helium \
+    /usr/lib64/firefox \
+    /usr/share/librewolf \
+    /usr/lib/mullvad-browser; do
+    [[ -e "${path}" ]] || continue
+    restorecon -Rv "${path}" || label_failed=1
+done
+
+if ((label_failed)); then
+    printf 'warning: one or more SELinux relabel operations failed\n' >&2
+    exit 1
+fi
+
+if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && "${label_failed}" == "0" ]]; then
+    install -d -m 0755 -- "$(dirname "${stamp}")"
+    printf '%s\n' "${current_hash}" >"${stamp}"
+fi

@@ -244,7 +244,7 @@ modules:
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
-      - configure-browser-userns-selinux.sh
+      - configure-sandbox-userns-selinux.sh
       - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh
       - install-noctalia-sddm-theme.sh
@@ -260,7 +260,7 @@ modules:
   - type: systemd
     system:
       enabled:
-        - nocblue-browser-userns-selinux.service
+        - nocblue-sandbox-userns-selinux.service
         - nocblue-session-defaults.service
         - input-remapper.service
         - firewalld.service

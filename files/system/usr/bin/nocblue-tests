@@ -301,7 +301,7 @@ grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/system
 if [[ "${is_hardened}" == true ]]; then
     test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test ! -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
-    test -L /etc/systemd/system/multi-user.target.wants/nocblue-browser-userns-selinux.service
+    test -L /etc/systemd/system/multi-user.target.wants/nocblue-sandbox-userns-selinux.service
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
     test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
     test -L /etc/systemd/system/multi-user.target.wants/securebluecleanup.service
@@ -315,7 +315,7 @@ if [[ "${is_hardened}" == true ]]; then
 else
     test -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
     test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
-    if test -L /etc/systemd/system/multi-user.target.wants/nocblue-browser-userns-selinux.service; then
+    if test -L /etc/systemd/system/multi-user.target.wants/nocblue-sandbox-userns-selinux.service; then
         exit 1
     fi
     test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
@@ -374,6 +374,7 @@ grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
 grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
+test -f /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
 test -f /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 ! test -L /etc/systemd/system/graphical.target.wants/nocblue-openrazer-plugdev.service
@@ -390,6 +391,7 @@ test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
 test -x /usr/bin/nocblue-sync-sddm-wallpaper
+test -x /usr/bin/nocblue-sync-sandbox-userns-selinux
 test -x /usr/bin/nocblue-sync-browser-userns-selinux
 test -x /usr/bin/nocblue-openrazer-plugdev
 test -x /usr/bin/nocblue-setup-flatpaks
@@ -403,6 +405,7 @@ bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
+bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
@@ -423,39 +426,46 @@ grep -q 'set-kargs-hardening' /usr/share/nocblue/njust/Justfile
 grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
 grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
-test -f /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -qx 'module=nocblue_browser_userns' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -qx 'target_priority=300' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -Fq "semodule -X \"\${priority}\" -r \"\${module}\"" /usr/bin/nocblue-sync-browser-userns-selinux
-grep -Fqx "semodule -X \"\${target_priority}\" -i \"\${cil}\"" /usr/bin/nocblue-sync-browser-userns-selinux
-grep -qx 'stamp=/var/lib/nocblue/selinux/browser-userns.sha256' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -q 'NOCBLUE_SELINUX_SYNC_FORCE' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -q 'critical_labels_match' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -qx '^ExecStart=/usr/bin/nocblue-sync-browser-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
-grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'optional nocblue_browser_trivalent_script_domain' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_portal_bwrap_t unconfined_t (dir (getattr search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_portal_bwrap_t unconfined_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (cap_userns (dac_override dac_read_search net_admin))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (netlink_route_socket (bind create nlmsg_write read write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t proc_t (filesystem (mount remount))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (file (execute execute_no_trans map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'nocblue_portal_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+test -f /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! test -e /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -qx 'module=nocblue_sandbox_userns' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -qx 'legacy_modules=(nocblue_browser_userns)' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -qx 'target_priority=300' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -q 'legacy_modules_loaded' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fq "semodule -X \"\${priority}\" -r \"\${remove_module}\"" /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fq 'remove_module_priorities "${legacy_module}"' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fqx "semodule -X \"\${target_priority}\" -i \"\${cil}\"" /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -qx 'stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -q 'NOCBLUE_SELINUX_SYNC_FORCE' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -q 'critical_labels_match' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fxq 'exec /usr/bin/nocblue-sync-sandbox-userns-selinux "$@"' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
+grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
+grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'optional nocblue_sandbox_deny_alg_socket' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'optional nocblue_sandbox_trivalent_script_domain' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_portal_bwrap_t unconfined_t (dir (getattr search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_portal_bwrap_t unconfined_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (cap_userns (dac_override dac_read_search net_admin))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (netlink_route_socket (bind create nlmsg_write read write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t proc_t (filesystem (mount remount))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t user_home_t (file (execute execute_no_trans map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'nocblue_portal_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 if [[ "${is_hardened}" == true ]]; then
     command -v sesearch >/dev/null
     command -v seinfo >/dev/null
-    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
+    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
+    ! semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
     matchpathcon -V \
         /usr/bin/nocblue-browser-no-preload \
         /usr/bin/nocblue-portal-bwrap \
@@ -498,77 +508,77 @@ if [[ "${is_hardened}" == true ]]; then
         fi
     done
 fi
-grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_codex_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_codex_bwrap_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'typeattribute nocblue_browser_wayland_clipboard_peer' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'optional nocblue_browser_read_removable_media' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain mnt_t (dir (getattr open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain removable_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain removable_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain removable_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain dosfs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain dosfs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain dosfs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain fusefs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain fusefs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'trivalent_domain fusefs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Eq 'trivalent_domain (removable_t|dosfs_t|fusefs_t) .*\\b(write|append|create|unlink|rename|setattr|relabelfrom|relabelto)\\b' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Eq 'trivalent_domain unlabeled_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fd (use))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nsswitch_domain (nocblue_firefox_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t nocblue_firefox_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_browser_no_preload_t nocblue_firefox_t (process (transition noatsecure siginh rlimitinh))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'typetransition nocblue_browser_no_preload_t mozilla_exec_t process nocblue_firefox_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t mozilla_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (process (sigchld signull))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fd (use))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t nocblue_firefox_t (cap_userns (setpcap))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t cache_home_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t cache_home_t (lnk_file (getattr read create unlink))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t cgroup_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t gnome_home_type (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t gnome_home_type (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t mozilla_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t mozilla_home_t (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t user_home_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t var_lib_t (file (map))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t rtkit_daemon_t (dbus (send_msg))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'rtkit_daemon_t nocblue_firefox_t (process (setsched))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t sysctl_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (sock_file (append getattr open write))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'systemd_logind_t nocblue_firefox_t (dbus (send_msg))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/share/librewolf/librewolf" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/share/librewolf/librewolf-bin" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/mullvad-browser/mullvadbrowser" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/mullvad-browser/mullvadbrowser\[.\]real" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'execute_no_trans' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'unconfined_t unconfined_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -q 'nocblue_browser_no_preload_t session_dbusd_tmp_t' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_codex_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_codex_bwrap_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'typeattribute nocblue_browser_wayland_clipboard_peer' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_browser_wayland_clipboard_peer (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'optional nocblue_browser_read_removable_media' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain mnt_t (dir (getattr open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain removable_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain removable_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain removable_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain dosfs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain dosfs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain dosfs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain fusefs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain fusefs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_domain fusefs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Eq 'trivalent_domain (removable_t|dosfs_t|fusefs_t) .*\\b(write|append|create|unlink|rename|setattr|relabelfrom|relabelto)\\b' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Eq 'trivalent_domain unlabeled_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fd (use))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nsswitch_domain (nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t nocblue_firefox_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_browser_no_preload_t nocblue_firefox_t (process (transition noatsecure siginh rlimitinh))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'typetransition nocblue_browser_no_preload_t mozilla_exec_t process nocblue_firefox_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t mozilla_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (process (sigchld signull))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fd (use))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t nocblue_firefox_t (cap_userns (setpcap))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t cache_home_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t cache_home_t (lnk_file (getattr read create unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t cgroup_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t gnome_home_type (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t gnome_home_type (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t mozilla_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t mozilla_home_t (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t user_home_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t var_lib_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t rtkit_daemon_t (dbus (send_msg))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'rtkit_daemon_t nocblue_firefox_t (process (setsched))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t sysctl_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (sock_file (append getattr open write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'systemd_logind_t nocblue_firefox_t (dbus (send_msg))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/share/librewolf/librewolf" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/share/librewolf/librewolf-bin" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/mullvad-browser/mullvadbrowser" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/mullvad-browser/mullvadbrowser\[.\]real" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'execute_no_trans' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'unconfined_t unconfined_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'nocblue_browser_no_preload_t session_dbusd_tmp_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 bash -n /usr/bin/nocblue-browser-no-preload
 bash -n /usr/bin/nocblue-portal-bwrap
 bash -n /usr/libexec/nocblue/codex-bwrap/bwrap

@@ -1,5 +1,5 @@
 [Unit]
-Description=Compatibility alias for nocblue sandbox SELinux policy sync
+Description=Sync nocblue sandbox SELinux policy
 ConditionSecurity=selinux
 ConditionPathExists=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 After=local-fs.target
