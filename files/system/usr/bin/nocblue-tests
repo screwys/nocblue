@@ -582,6 +582,7 @@ grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
 grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
+! grep -Fq 'readlink -f "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'allowed_codex_bwrap' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'allowed_codex_true_preflight' /usr/libexec/nocblue/codex-bwrap/bwrap
 grep -q 'allowed_namespace_warning_probe' /usr/libexec/nocblue/codex-bwrap/bwrap
