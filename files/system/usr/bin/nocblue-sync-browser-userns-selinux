@@ -6,9 +6,15 @@ module=nocblue_browser_userns
 target_priority=300
 stamp=/var/lib/nocblue/selinux/browser-userns.sha256
 
-if ! selinuxenabled; then
+if [[ "${NOCBLUE_SELINUX_SYNC_FORCE:-}" != "1" ]] && ! selinuxenabled; then
     exit 0
 fi
+
+critical_label_paths=(
+    /usr/bin/nocblue-browser-no-preload
+    /usr/bin/nocblue-portal-bwrap
+    /usr/libexec/nocblue/codex-bwrap/bwrap
+)
 
 module_priorities() {
     semodule -lfull 2>/dev/null | awk -v module="${module}" '$2 == module {print $1}'
@@ -20,6 +26,17 @@ module_loaded_at_target() {
 
 module_has_stale_priority() {
     module_priorities | grep -vx "${target_priority}" | grep -q .
+}
+
+critical_labels_match() {
+    local path
+
+    for path in "${critical_label_paths[@]}"; do
+        [[ -e "${path}" ]] || continue
+        matchpathcon -V "${path}" >/dev/null || return 1
+    done
+
+    return 0
 }
 
 remove_stale_modules() {
@@ -34,7 +51,10 @@ remove_stale_modules() {
 read -r current_hash _ < <(sha256sum "${cil}")
 if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
     read -r stamped_hash <"${stamp}"
-    if [[ "${stamped_hash}" == "${current_hash}" ]] && module_loaded_at_target && ! module_has_stale_priority; then
+    if [[ "${stamped_hash}" == "${current_hash}" ]] \
+        && module_loaded_at_target \
+        && ! module_has_stale_priority \
+        && critical_labels_match; then
         exit 0
     fi
 fi
@@ -43,6 +63,7 @@ fi
 remove_stale_modules
 semodule -X "${target_priority}" -i "${cil}"
 
+label_failed=0
 for path in \
     /usr/bin/nocblue-browser-no-preload \
     /usr/bin/nocblue-portal-bwrap \
@@ -54,10 +75,16 @@ for path in \
     /usr/lib64/firefox \
     /usr/share/librewolf \
     /usr/lib/mullvad-browser; do
-    [[ -e "${path}" ]] && restorecon -Rv "${path}" || true
+    [[ -e "${path}" ]] || continue
+    restorecon -Rv "${path}" || label_failed=1
 done
 
-if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" ]]; then
+if ((label_failed)); then
+    printf 'warning: one or more SELinux relabel operations failed\n' >&2
+    exit 1
+fi
+
+if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && "${label_failed}" == "0" ]]; then
     install -d -m 0755 -- "$(dirname "${stamp}")"
     printf '%s\n' "${current_hash}" >"${stamp}"
 fi

@@ -429,6 +429,9 @@ grep -qx 'target_priority=300' /usr/bin/nocblue-sync-browser-userns-selinux
 grep -Fq "semodule -X \"\${priority}\" -r \"\${module}\"" /usr/bin/nocblue-sync-browser-userns-selinux
 grep -Fqx "semodule -X \"\${target_priority}\" -i \"\${cil}\"" /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx 'stamp=/var/lib/nocblue/selinux/browser-userns.sha256' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -q 'NOCBLUE_SELINUX_SYNC_FORCE' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -q 'critical_labels_match' /usr/bin/nocblue-sync-browser-userns-selinux
+grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-browser-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -q 'optional nocblue_browser_deny_alg_socket' /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
@@ -443,6 +446,10 @@ if [[ "${is_hardened}" == true ]]; then
     command -v sesearch >/dev/null
     command -v seinfo >/dev/null
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
+    matchpathcon -V \
+        /usr/bin/nocblue-browser-no-preload \
+        /usr/bin/nocblue-portal-bwrap \
+        /usr/libexec/nocblue/codex-bwrap/bwrap
     sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
         | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
         | grep -Fq ioctl
