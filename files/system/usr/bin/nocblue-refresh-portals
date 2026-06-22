@@ -33,6 +33,7 @@ dbus-update-activation-environment --systemd \
     BROWSER >/dev/null 2>&1 || true
 
 systemctl --user restart \
+    flatpak-portal.service \
     xdg-desktop-portal.service \
     xdg-desktop-portal-gnome.service \
     xdg-desktop-portal-gtk.service >/dev/null 2>&1 || true

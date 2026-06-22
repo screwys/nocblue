@@ -169,7 +169,7 @@ def sync_steam_shortcut(src: Path) -> Path | None:
         lines,
         {
             "Type": "Application",
-            "Exec": f"flatpak run com.valvesoftware.Steam {uri}",
+            "Exec": f"env -u LD_PRELOAD flatpak run com.valvesoftware.Steam {uri}",
             "TryExec": "flatpak",
             "Terminal": "false",
             "Categories": desktop_value(lines, "Categories").strip() or "Game;",
@@ -206,7 +206,7 @@ def sync_lutris_shortcut(src: Path) -> Path | None:
         lines,
         {
             "Type": "Application",
-            "Exec": f"env LUTRIS_SKIP_INIT=1 flatpak run net.lutris.Lutris {uri}",
+            "Exec": f"env -u LD_PRELOAD LUTRIS_SKIP_INIT=1 flatpak run net.lutris.Lutris {uri}",
             "TryExec": "flatpak",
             "Terminal": "false",
             "Categories": desktop_value(lines, "Categories").strip() or "Game;",
