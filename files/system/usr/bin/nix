@@ -3,6 +3,19 @@ set -euo pipefail
 
 payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
 proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/proot}"
+post_build_hook="${NOCBLUE_NIX_PORTABLE_POST_BUILD_HOOK:-/usr/libexec/nocblue/nix-portable/clean-build-home}"
+
+clean_nix_portable_build_home() {
+    local emptyroot="${NP_LOCATION}/.nix-portable/emptyroot"
+    local build_home="${emptyroot}/homeless-shelter"
+
+    if [[ -z "${NP_LOCATION}" || "${NP_LOCATION}" != /* || "${NP_LOCATION}" == "/" || "${emptyroot}" == "/" || "${build_home}" == "/" ]]; then
+        printf 'nix: refusing to clean invalid nix-portable build home: %s\n' "${build_home}" >&2
+        exit 1
+    fi
+
+    rm -rf -- "${build_home}"
+}
 
 if [[ ! -x "${payload}" ]]; then
     cat >&2 <<'MSG'
@@ -20,6 +33,14 @@ MSG
     exit 127
 fi
 
+if [[ ! -x "${post_build_hook}" ]]; then
+    cat >&2 <<MSG
+nocblue nix-portable build-home cleanup hook is not installed.
+Expected executable: ${post_build_hook}
+MSG
+    exit 127
+fi
+
 if [[ -z "${HOME:-}" ]]; then
     home_from_passwd="$(getent passwd "$(id -u)" | cut -d: -f6 || true)"
     if [[ -z "${home_from_passwd}" ]]; then
@@ -32,6 +53,7 @@ fi
 export NP_LOCATION="${NP_LOCATION:-${HOME}}"
 export NP_RUNTIME=proot
 export NP_PROOT="${proot_payload}"
+clean_nix_portable_build_home
 
 unset NIX_REMOTE
 unset NIX_PROFILES
@@ -41,4 +63,4 @@ unset NIX_SSL_CERT_FILE
 unset LD_PRELOAD
 unset LD_AUDIT
 
-exec "${payload}" nix "$@"
+exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"

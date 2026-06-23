@@ -298,6 +298,8 @@ done
 test -x /usr/bin/nix
 test -x /usr/libexec/nocblue/nix-portable/nix-portable
 test -x /usr/libexec/nocblue/nix-portable/proot
+test -x /usr/libexec/nocblue/nix-portable/clean-build-home
+grep -Fqx 'rm -rf -- /homeless-shelter' /usr/libexec/nocblue/nix-portable/clean-build-home
 test -f /usr/libexec/nocblue/nix-portable/source-version
 grep -qx 'v012' /usr/libexec/nocblue/nix-portable/source-version
 test -f /usr/libexec/nocblue/nix-portable/proot-source-commit
@@ -322,11 +324,15 @@ grep -qx 'export NP_RUNTIME=proot' /usr/bin/nix
 grep -qx 'export NP_PROOT="${proot_payload}"' /usr/bin/nix
 grep -qx 'unset LD_PRELOAD' /usr/bin/nix
 grep -qx 'unset LD_AUDIT' /usr/bin/nix
-grep -Fqx 'exec "${payload}" nix "$@"' /usr/bin/nix
+grep -qx '    local build_home="${emptyroot}/homeless-shelter"' /usr/bin/nix
+grep -qx 'clean_nix_portable_build_home' /usr/bin/nix
+grep -Fqx 'exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"' /usr/bin/nix
 (
     nix_wrapper_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_wrapper_probe}"' EXIT
     mkdir -p "${nix_wrapper_probe}/home"
+    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo"
+    printf 'stale cargo cache\n' >"${nix_wrapper_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo/.package-cache"
     cat >"${nix_wrapper_probe}/payload" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -334,12 +340,17 @@ printf 'argv=%s\n' "$*"
 printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
 printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
 printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
+if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
+    printf 'stale build home still exists\n' >&2
+    exit 43
+fi
 for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
     if [[ -v "${name}" ]]; then
         printf 'leaked %s\n' "${name}" >&2
         exit 42
     fi
 done
+printf 'build-home-clean\n'
 printf 'env-clean\n'
 SH
     chmod 0755 "${nix_wrapper_probe}/payload"
@@ -356,10 +367,11 @@ SH
             NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
             /usr/bin/nix --version
     )"
-    grep -Fxq 'argv=nix --version' <<<"${nix_wrapper_output}"
+    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' <<<"${nix_wrapper_output}"
     grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_wrapper_output}"
     grep -Fxq "NP_LOCATION=${nix_wrapper_probe}/home" <<<"${nix_wrapper_output}"
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
+    grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
 )
 test -f /usr/lib/systemd/user/nix-portable-gc.service
