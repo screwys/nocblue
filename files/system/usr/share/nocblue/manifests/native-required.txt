@@ -45,6 +45,7 @@ gcc-c++
 make
 cmake
 pkgconf-pkg-config
+libtalloc-devel
 openssl-devel
 gnome-keyring
 dbus-tools

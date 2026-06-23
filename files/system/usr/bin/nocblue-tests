@@ -42,7 +42,7 @@ for package in noctalia-qs; do
     done < <(rpm -q --requires "${package}" | grep 'Qt_.*_PRIVATE_API' || true)
 done
 
-rpm -q noctalia-shell gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg kf6-kitemmodels zram-generator wlsunset >/dev/null
+rpm -q noctalia-shell gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg kf6-kitemmodels zram-generator wlsunset >/dev/null
 test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
@@ -297,15 +297,71 @@ for brew_service in brew-update.service brew-upgrade.service; do
 done
 test -x /usr/bin/nix
 test -x /usr/libexec/nocblue/nix-portable/nix-portable
+test -x /usr/libexec/nocblue/nix-portable/proot
 test -f /usr/libexec/nocblue/nix-portable/source-version
 grep -qx 'v012' /usr/libexec/nocblue/nix-portable/source-version
+test -f /usr/libexec/nocblue/nix-portable/proot-source-commit
+grep -qx 'acd6ca53375ff830fdf6e77251ee005c9c68b0d0' /usr/libexec/nocblue/nix-portable/proot-source-commit
+test -f /usr/libexec/nocblue/nix-portable/proot-source-sha256
+grep -qx '59e30229c852de246946c5ff32039f7a5d4e5ea917b1d4a80639694edf76dc91' /usr/libexec/nocblue/nix-portable/proot-source-sha256
+(
+    proot_copy_probe="$(mktemp -d)"
+    trap 'rm -rf "${proot_copy_probe}"' EXIT
+    mkdir -p "${proot_copy_probe}/src/inner" "${proot_copy_probe}/dst"
+    printf 'nix-portable proot copy probe\n' >"${proot_copy_probe}/src/inner/file.txt"
+    (
+        cd "${proot_copy_probe}/dst"
+        /usr/libexec/nocblue/nix-portable/proot /usr/bin/cp -r "${proot_copy_probe}/src" source
+    )
+    grep -qx 'nix-portable proot copy probe' "${proot_copy_probe}/dst/source/inner/file.txt"
+)
 for nix_package in nix nix-daemon; do
     ! rpm -q "${nix_package}" >/dev/null 2>&1
 done
 grep -qx 'export NP_RUNTIME=proot' /usr/bin/nix
+grep -qx 'export NP_PROOT="${proot_payload}"' /usr/bin/nix
 grep -qx 'unset LD_PRELOAD' /usr/bin/nix
 grep -qx 'unset LD_AUDIT' /usr/bin/nix
 grep -Fqx 'exec "${payload}" nix "$@"' /usr/bin/nix
+(
+    nix_wrapper_probe="$(mktemp -d)"
+    trap 'rm -rf "${nix_wrapper_probe}"' EXIT
+    mkdir -p "${nix_wrapper_probe}/home"
+    cat >"${nix_wrapper_probe}/payload" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'argv=%s\n' "$*"
+printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
+printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
+printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
+for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
+    if [[ -v "${name}" ]]; then
+        printf 'leaked %s\n' "${name}" >&2
+        exit 42
+    fi
+done
+printf 'env-clean\n'
+SH
+    chmod 0755 "${nix_wrapper_probe}/payload"
+    nix_wrapper_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            LD_PRELOAD= \
+            LD_AUDIT= \
+            NIX_REMOTE=daemon \
+            NIX_PROFILES=/nix/var/nix/profiles/default \
+            NIX_USER_CONF_FILES=/tmp/nix.conf \
+            NIX_PATH=nixpkgs=/tmp/nixpkgs \
+            NIX_SSL_CERT_FILE=/tmp/certs.pem \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            /usr/bin/nix --version
+    )"
+    grep -Fxq 'argv=nix --version' <<<"${nix_wrapper_output}"
+    grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_wrapper_output}"
+    grep -Fxq "NP_LOCATION=${nix_wrapper_probe}/home" <<<"${nix_wrapper_output}"
+    grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
+    grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
+)
 test -f /usr/lib/systemd/user/nix-portable-gc.service
 test -f /usr/lib/systemd/user/nix-portable-gc.timer
 grep -qx 'ExecStart=/usr/bin/nix store gc' /usr/lib/systemd/user/nix-portable-gc.service

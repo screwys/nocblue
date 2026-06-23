@@ -2,11 +2,20 @@
 set -euo pipefail
 
 payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
+proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/proot}"
 
 if [[ ! -x "${payload}" ]]; then
     cat >&2 <<'MSG'
 nix-portable is not installed in this nocblue image.
 Expected executable: /usr/libexec/nocblue/nix-portable/nix-portable
+MSG
+    exit 127
+fi
+
+if [[ ! -x "${proot_payload}" ]]; then
+    cat >&2 <<MSG
+nocblue patched proot is not installed.
+Expected executable: ${proot_payload}
 MSG
     exit 127
 fi
@@ -22,6 +31,7 @@ fi
 
 export NP_LOCATION="${NP_LOCATION:-${HOME}}"
 export NP_RUNTIME=proot
+export NP_PROOT="${proot_payload}"
 
 unset NIX_REMOTE
 unset NIX_PROFILES

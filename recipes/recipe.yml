@@ -89,6 +89,7 @@ modules:
         - make
         - cmake
         - pkgconf-pkg-config
+        - libtalloc-devel
         - openssl
         - openssl-devel
         - gstreamer1-devel
@@ -246,6 +247,7 @@ modules:
       - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh
       - install-nix-portable.sh
+      - install-nix-portable-proot.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
       - configure-anticheat-support.sh
