@@ -1,9 +1,12 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+#
+# This is the only nocblue image. It starts from secureblue and layers nocblue
+# desktop ergonomics without re-running nocblue's borrowed hardening modules.
 name: nocblue
-description: Personal Fedora 44 bootc image with niri, Noctalia, BlueBuild, Brew, and gaming defaults.
+description: Personal Fedora 44 bootc image with nocblue desktop defaults on a secureblue Silverblue base.
 
-base-image: ghcr.io/ublue-os/silverblue-main
+base-image: ghcr.io/secureblue/silverblue-main-hardened
 image-version: 44
 platforms:
   - linux/amd64
@@ -21,20 +24,29 @@ modules:
       files:
         - niri.repo
         - terra.repo
-        - secureblue-packages-fedora.repo
+        - ublue-akmods.repo
         - brave-browser-beta.repo
         - helium.repo
         - mullvad.repo
         - librewolf.repo
-        - https://repo.secureblue.dev/secureblue.repo
-      nonfree: rpmfusion
     install:
       install-weak-deps: false
       allow-erasing: true
       packages:
+        # Desktop/session stack.
         - niri
         - xwayland-satellite
         - ghostty
+        - sddm
+        - sddm-x11
+        - xorg-x11-server-Xorg
+        - qt6ct
+        - xdg-desktop-portal-gnome
+        - xdg-desktop-portal-gtk
+
+        # Standard nocblue shell/dev tools. Some are already supplied by
+        # secureblue, but keeping them here makes hardened package parity
+        # deliberate instead of accidental.
         - fish
         - fastfetch
         - just
@@ -77,10 +89,15 @@ modules:
         - make
         - cmake
         - pkgconf-pkg-config
+        - openssl
         - openssl-devel
         - gstreamer1-devel
         - gstreamer1-plugins-base-devel
         - gstreamer1-plugins-bad-free-devel
+        - patch
+        - no_rlimit_as
+
+        # Desktop apps and integration.
         - gnome-keyring
         - dbus-tools
         - polkit
@@ -88,12 +105,6 @@ modules:
         - nautilus-python
         - loupe
         - showtime
-        - xdg-desktop-portal-gnome
-        - xdg-desktop-portal-gtk
-        - sddm
-        - sddm-x11
-        - xorg-x11-server-Xorg
-        - qt6ct
         - fcitx5
         - fcitx5-mozc
         - fcitx5-configtool
@@ -112,6 +123,8 @@ modules:
         - network-manager-applet
         - bubblewrap
         - xdg-dbus-proxy
+
+        # Installer and boot helpers. Keep these until the ISO story is decided.
         - shim-x64
         - grub2-efi-x64-cdboot
         - grub2-tools
@@ -129,17 +142,15 @@ modules:
         - python3-mako
         - pipx
         - mokutil
-        - openssl
         - kmod
         - cryptsetup
         - tpm2-tools
         - zram-generator
-        - hardened_malloc
-        - no_rlimit_as
         - xz
         - zstd
         - dracut
-        - patch
+
+        # Wayland, OCR, gaming, local services, and browsers.
         - wl-clipboard
         - grim
         - slurp
@@ -164,9 +175,9 @@ modules:
         - nginx
         - input-remapper
         - libinput-utils
-        - steam-devices
         - gamescope
         - mangohud
+        - steam-devices
         - vulkan-tools
         - vkBasalt
         - firefox
@@ -174,8 +185,6 @@ modules:
         - helium-bin
         - librewolf
         - mullvad-browser
-        - trivalent
-        - trivalent-selinux
         - zed
         - libappindicator-gtk3
     remove:
@@ -192,8 +201,8 @@ modules:
       install-weak-deps: false
       skip-unavailable: true
       packages:
-        - umu-launcher
         - adw-gtk3-theme
+        - umu-launcher
         - scx-scheds
         - scx-tools
 
@@ -226,17 +235,20 @@ modules:
   - type: script
     scripts:
       - install-candy-icons.sh
+      - configure-nocblue-branding.sh
       - stage-noctalia-plugins.sh
       - install-pywalfox.sh
       - patch-noctalia-starship-template.sh
       - install-browser-policies.sh
+      - configure-hardened-portal.sh
+      - configure-standard-malloc-browsers.sh
+      - configure-sandbox-userns-selinux.sh
+      - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh
       - install-nix-portable.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
       - configure-anticheat-support.sh
-      - configure-hardened-malloc.sh
-      - configure-ipsec-selinux.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
@@ -247,11 +259,8 @@ modules:
   - type: systemd
     system:
       enabled:
-        - nocblue-flatpak-overrides.service
-        - nocblue-hardened-malloc-flatpaks.service
+        - nocblue-sandbox-userns-selinux.service
         - nocblue-session-defaults.service
-        - bootc-fetch-apply-updates.timer
-        - flatpak-system-update.timer
         - input-remapper.service
         - firewalld.service
         - me.proton.vpn.split_tunneling.service
@@ -260,22 +269,26 @@ modules:
         - gdm.service
       masked:
         - geoclue.service
-        - rpm-ostree-countme.timer
         - sshd.service
         - sshd.socket
         - sshd-keygen.target
     user:
       enabled:
+        - secureblue-flatpak-setup.timer
+        - flatpak-user-update.timer
+        - nocblue-flatpak-setup.timer
         - nocblue-user-defaults.service
         - nocblue-adwsteamgtk.timer
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
         - nix-portable-gc.timer
         - nocblue-flatpak-icon-fixes.service
+      masked:
+        - security-update-notification.path
+        - security-update-notification.service
 
   - type: script
     scripts:
-      - finalize.sh
       - validate-image.sh
 
   - type: signing

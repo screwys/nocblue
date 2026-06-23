@@ -1,6 +1,9 @@
 name: bluebuild
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
   schedule:
     - cron: "17 7 * * *"
@@ -27,12 +30,16 @@ jobs:
       - name: repository shape
         run: |
           test -f recipes/recipe.yml
+          test ! -e recipes/nocblue-hardened.yml
           test ! -e Containerfile
           test ! -d build_files
-          grep -q 'base-image: ghcr.io/ublue-os/silverblue-main' recipes/recipe.yml
+          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/recipe.yml
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
+          grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
+          grep -q 'validate-image.sh' recipes/recipe.yml
+          ! grep -q 'configure-hardened-branding.sh' recipes/recipe.yml
           grep -q 'type: containerfile' recipes/recipe.yml
           grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
           grep -q '/tmp/rpms/common/\*openrazer\*\.rpm' recipes/recipe.yml
@@ -79,3 +86,4 @@ jobs:
           maximize_build_space: true
           use_cache: false
           rechunk: false
+          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}

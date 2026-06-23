@@ -9,9 +9,6 @@ if [[ "${image_ref}" == *":docker://"* ]]; then
 fi
 
 case "${image_ref}" in
-    ghcr.io/screwys/nocblue-hardened | ghcr.io/screwys/nocblue-hardened:* | ghcr.io/screwys/nocblue-hardened@sha256:*)
-        key_name="nocblue-hardened"
-        ;;
     ghcr.io/screwys/nocblue | ghcr.io/screwys/nocblue:* | ghcr.io/screwys/nocblue@sha256:*)
         key_name="nocblue"
         ;;

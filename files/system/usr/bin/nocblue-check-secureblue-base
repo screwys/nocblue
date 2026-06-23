@@ -64,21 +64,21 @@ def image_info(repo, ref):
 
 def main():
     upstream = image_info("secureblue/silverblue-main-hardened", "44")
-    nocblue = image_info("screwys/nocblue-hardened", "44")
+    nocblue = image_info("screwys/nocblue", "44")
 
     print(f"secureblue 44: {upstream['version']} created {upstream['created']}")
     print(f"  index:    {upstream['index']}")
     print(f"  platform: {upstream['platform']}")
-    print(f"nocblue-hardened 44: {nocblue['version']} created {nocblue['created']}")
+    print(f"nocblue 44: {nocblue['version']} created {nocblue['created']}")
     print(f"  index:    {nocblue['index']}")
     print(f"  platform: {nocblue['platform']}")
     print(f"  base:     {nocblue['base_name']} @ {nocblue['base']}")
 
     if nocblue["base"] in {upstream["platform"], upstream["index"]}:
-        print("status: nocblue-hardened was built from the current secureblue 44 image")
+        print("status: nocblue was built from the current secureblue 44 image")
         return 0
 
-    print("status: nocblue-hardened is behind the current secureblue 44 image")
+    print("status: nocblue is behind the current secureblue 44 image")
     return 1
 
 

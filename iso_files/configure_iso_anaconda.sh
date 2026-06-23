@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-install_image="ghcr.io/screwys/nocblue-hardened:latest"
+install_image="ghcr.io/screwys/nocblue:latest"
 dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 "${dnf_cmd}" install -y --allowerasing \
@@ -46,16 +46,17 @@ set_os_release_key() {
 
 for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
     [[ -f "${os_release}" && ! -L "${os_release}" ]] || continue
-    set_os_release_key "${os_release}" NAME '"nocblue-hardened"'
-    set_os_release_key "${os_release}" PRETTY_NAME '"nocblue-hardened"'
+    set_os_release_key "${os_release}" NAME '"nocblue"'
+    set_os_release_key "${os_release}" PRETTY_NAME '"Nocblue"'
     set_os_release_key "${os_release}" CPE_NAME '"cpe:/o:nocblue:nocblue:44"'
     set_os_release_key "${os_release}" DEFAULT_HOSTNAME '"desktop"'
     set_os_release_key "${os_release}" HOME_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" DOCUMENTATION_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" SUPPORT_URL '"https://github.com/screwys/nocblue/issues"'
     set_os_release_key "${os_release}" BUG_REPORT_URL '"https://github.com/screwys/nocblue/issues"'
-    set_os_release_key "${os_release}" VARIANT '"nocblue-hardened"'
-    set_os_release_key "${os_release}" IMAGE_ID '"nocblue-hardened"'
+    set_os_release_key "${os_release}" VARIANT '"Nocblue"'
+    set_os_release_key "${os_release}" VARIANT_ID 'nocblue'
+    set_os_release_key "${os_release}" IMAGE_ID '"nocblue"'
 done
 
 printf 'desktop\n' >/etc/hostname
@@ -79,7 +80,7 @@ config.optionxform = str
 config.read(path)
 if not config.has_section("Main"):
     config.add_section("Main")
-config.set("Main", "Product", "nocblue-hardened")
+config.set("Main", "Product", "nocblue")
 config.set("Main", "Version", "44")
 if not config.has_option("Main", "IsFinal"):
     config.set("Main", "IsFinal", "False")
@@ -290,7 +291,7 @@ EOF
 cat >/etc/skel/.config/autostart/nocblue-liveinst.desktop <<'EOF'
 [Desktop Entry]
 Type=Application
-Name=Install nocblue-hardened
+Name=Install nocblue
 Exec=/usr/bin/nocblue-liveinst-once
 X-GNOME-Autostart-enabled=true
 NoDisplay=true
