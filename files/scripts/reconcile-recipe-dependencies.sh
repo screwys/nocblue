@@ -79,23 +79,6 @@ select_package_with_evr() {
     printf '%s\n' "${selected}"
 }
 
-select_latest_package_requiring_only_qt_abi() {
-    local package="$1"
-    local qt_abi="$2"
-    local candidate required_versions selected
-
-    while IFS= read -r candidate; do
-        [[ -n "${candidate}" ]] || continue
-        required_versions="$(repoquery_requires "${candidate}" | private_abi_versions_from_requires)"
-        if [[ -z "${required_versions}" || "${required_versions}" == "${qt_abi}" ]]; then
-            selected="${candidate}"
-        fi
-    done < <(repoquery_available "${package}" | sort -V)
-
-    [[ -n "${selected:-}" ]] || return 1
-    printf '%s\n' "${selected}"
-}
-
 install_repo_file terra.repo
 
 mapfile -t noctalia_qt_abis < <(repoquery_requires noctalia-qs | private_abi_versions_from_requires)
@@ -138,7 +121,6 @@ for package in \
 done
 
 add_nevra "$(select_latest_package noctalia-shell)"
-add_nevra "$(select_latest_package_requiring_only_qt_abi plasma-workspace "${qt_abi}")"
 
 if ((${#selected_nevras[@]} == 0)); then
     log 'no packages selected; nothing to reconcile'

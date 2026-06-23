@@ -48,7 +48,7 @@ jobs:
           ! grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
           test ! -e files/scripts/build-openrazer-akmod.sh
           grep -q 'noctalia-shell' files/scripts/reconcile-recipe-dependencies.sh
-          grep -q 'plasma-workspace' files/scripts/reconcile-recipe-dependencies.sh
+          ! grep -q 'plasma-workspace' files/scripts/reconcile-recipe-dependencies.sh
           grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- (noctalia-shell|qt6-qt5compat|qt6-qtsvg|plasma-workspace)$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
