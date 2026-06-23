@@ -1,0 +1,8 @@
+[Unit]
+Description=Collect unused Nix store paths
+Documentation=https://github.com/DavHau/nix-portable
+ConditionPathExists=%h/.nix-portable
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/nix store gc

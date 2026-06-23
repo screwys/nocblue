@@ -13,7 +13,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset xembedsniproxy kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature nocblue-codex xdg-open; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset xembedsniproxy kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature nocblue-codex xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -290,6 +290,29 @@ for brew_service in brew-update.service brew-upgrade.service; do
     grep -qx 'ConditionPathIsSymbolicLink=' "${brew_dropin}"
     grep -qx 'ConditionFileIsExecutable=/home/linuxbrew/.linuxbrew/bin/brew' "${brew_dropin}"
 done
+test -x /usr/bin/nix
+test -x /usr/libexec/nocblue/nix-portable/nix-portable
+test -f /usr/libexec/nocblue/nix-portable/source-version
+grep -qx 'v012' /usr/libexec/nocblue/nix-portable/source-version
+for nix_package in nix nix-daemon; do
+    ! rpm -q "${nix_package}" >/dev/null 2>&1
+done
+grep -qx 'export NP_RUNTIME=proot' /usr/bin/nix
+grep -qx 'unset LD_PRELOAD' /usr/bin/nix
+grep -qx 'unset LD_AUDIT' /usr/bin/nix
+grep -Fqx 'exec "${payload}" nix "$@"' /usr/bin/nix
+test -f /usr/lib/systemd/user/nix-portable-gc.service
+test -f /usr/lib/systemd/user/nix-portable-gc.timer
+grep -qx 'ExecStart=/usr/bin/nix store gc' /usr/lib/systemd/user/nix-portable-gc.service
+grep -qx 'OnCalendar=weekly' /usr/lib/systemd/user/nix-portable-gc.timer
+grep -qx 'RandomizedDelaySec=2h' /usr/lib/systemd/user/nix-portable-gc.timer
+test ! -e /nix
+test ! -e /etc/profile.d/nix-daemon.sh
+test ! -e /usr/lib/systemd/system/nix-daemon.service
+test ! -e /usr/lib/systemd/system/nix-daemon.socket
+test ! -e /usr/lib/tmpfiles.d/nix-daemon.conf
+test ! -e /usr/lib/sysusers.d/nix-daemon.conf
+! grep -RIn '\.nix-profile\|/nix/var/nix/profiles/default' /etc/profile.d /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
 test -f /usr/lib/systemd/system/flatpak-system-update.service
@@ -321,6 +344,7 @@ else
     test -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 fi
 test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
+test -L /etc/systemd/user/timers.target.wants/nix-portable-gc.timer
 test -L /etc/systemd/system/display-manager.service
 test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/sddm.service"
 test -L /etc/systemd/system/rpm-ostree-countme.timer
@@ -412,6 +436,7 @@ bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/bin/nocblue-codex
 bash -n /etc/profile.d/nocblue-codex-bwrap.sh
+bash -n /usr/bin/nix
 fish -n /etc/fish/conf.d/nocblue-codex-bwrap.fish
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks

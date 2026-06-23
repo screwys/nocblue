@@ -231,6 +231,7 @@ modules:
       - patch-noctalia-starship-template.sh
       - install-browser-policies.sh
       - install-protonvpn.sh
+      - install-nix-portable.sh
       - install-noctalia-sddm-theme.sh
       - configure-sddm.sh
       - configure-anticheat-support.sh
@@ -269,6 +270,7 @@ modules:
         - nocblue-adwsteamgtk.timer
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
+        - nix-portable-gc.timer
         - nocblue-flatpak-icon-fixes.service
 
   - type: script

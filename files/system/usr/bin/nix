@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
+
+if [[ ! -x "${payload}" ]]; then
+    cat >&2 <<'MSG'
+nix-portable is not installed in this nocblue image.
+Expected executable: /usr/libexec/nocblue/nix-portable/nix-portable
+MSG
+    exit 127
+fi
+
+if [[ -z "${HOME:-}" ]]; then
+    home_from_passwd="$(getent passwd "$(id -u)" | cut -d: -f6 || true)"
+    if [[ -z "${home_from_passwd}" ]]; then
+        printf 'nix: HOME is not set and no passwd home exists for uid %s\n' "$(id -u)" >&2
+        exit 1
+    fi
+    export HOME="${home_from_passwd}"
+fi
+
+export NP_LOCATION="${NP_LOCATION:-${HOME}}"
+export NP_RUNTIME=proot
+
+unset NIX_REMOTE
+unset NIX_PROFILES
+unset NIX_USER_CONF_FILES
+unset NIX_PATH
+unset NIX_SSL_CERT_FILE
+unset LD_PRELOAD
+unset LD_AUDIT
+
+exec "${payload}" nix "$@"
