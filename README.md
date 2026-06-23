@@ -23,10 +23,8 @@ sudo systemctl reboot
 
 For testing in GNOME Boxes, you need to set OS as Silverblue. After machine is set up, you need to enable 3D Accelaration & restart it.
 
-## nocblue commands
+## commands
 
-`njust image trust ...` changes the system container policy through `run0` or `sudo`. `njust image trust-user ...` writes the current user's rootless Podman policy.
+`njust image trust REPO_URL` handles necessary steps to set up a docker container
 
-`njust image check-secureblue` compares the published `nocblue` image against the current secureblue base image.
 
-`njust openrazer-plugdev enable` opts the current user into the `plugdev` group for OpenRazer; log out and back in afterwards.
