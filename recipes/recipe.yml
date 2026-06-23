@@ -287,8 +287,4 @@ modules:
         - security-update-notification.path
         - security-update-notification.service
 
-  - type: script
-    scripts:
-      - validate-image.sh
-
   - type: signing

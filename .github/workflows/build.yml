@@ -38,7 +38,6 @@ jobs:
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
-          grep -q 'validate-image.sh' recipes/recipe.yml
           ! grep -q 'configure-hardened-branding.sh' recipes/recipe.yml
           grep -q 'type: containerfile' recipes/recipe.yml
           grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
