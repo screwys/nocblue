@@ -47,6 +47,9 @@ cmake
 pkgconf-pkg-config
 libtalloc-devel
 openssl-devel
+dbus-devel
+libepoxy-devel
+mpv-devel
 gnome-keyring
 dbus-tools
 polkit
