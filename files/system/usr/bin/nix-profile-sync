@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+profile_exec="${NOCBLUE_NIX_PROFILE_EXEC:-/usr/bin/nix-profile-exec}"
+marker="# nocblue-nix-profile-shim v1"
+
+usage() {
+    cat <<'MSG'
+Usage: nix-profile-sync
+
+Create safe ~/.local/bin shims for commands installed by nix profile.
+Existing host commands are not shadowed.
+MSG
+}
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ $# -ne 0 ]]; then
+    usage >&2
+    exit 2
+fi
+
+if [[ -z "${HOME:-}" ]]; then
+    home_from_passwd="$(getent passwd "$(id -u)" | cut -d: -f6 || true)"
+    if [[ -z "${home_from_passwd}" ]]; then
+        printf 'nix-profile-sync: HOME is not set and no passwd home exists for uid %s\n' "$(id -u)" >&2
+        exit 1
+    fi
+    export HOME="${home_from_passwd}"
+fi
+
+if [[ ! -x "${profile_exec}" ]]; then
+    printf 'nix-profile-sync: profile runner is not executable: %s\n' "${profile_exec}" >&2
+    exit 127
+fi
+
+shim_dir="${NOCBLUE_NIX_PROFILE_SHIM_DIR:-${HOME}/.local/bin}"
+state_home="${XDG_STATE_HOME:-${HOME}/.local/state}"
+state_dir="${NOCBLUE_NIX_PROFILE_STATE_DIR:-${state_home}/nocblue}"
+manifest="${NOCBLUE_NIX_PROFILE_SHIM_MANIFEST:-${state_dir}/nix-profile-shims}"
+
+mkdir -p "${shim_dir}" "${state_dir}"
+
+path_without_shim_dir() {
+    local entry output=""
+    local -a entries
+
+    IFS=':' read -r -a entries <<<"${PATH:-}"
+    for entry in "${entries[@]}"; do
+        [[ -z "${entry}" || "${entry}" == "${shim_dir}" ]] && continue
+        if [[ -z "${output}" ]]; then
+            output="${entry}"
+        else
+            output="${output}:${entry}"
+        fi
+    done
+
+    printf '%s\n' "${output}"
+}
+
+is_managed_shim() {
+    local path="${1}"
+    [[ -f "${path}" ]] && head -n 2 "${path}" | grep -Fxq "${marker}"
+}
+
+write_shim() {
+    local name="${1}"
+    local path="${shim_dir}/${name}"
+    local tmp
+
+    tmp="$(mktemp "${shim_dir}/.${name}.tmp.XXXXXX")"
+    cat >"${tmp}" <<SH
+#!/usr/bin/env bash
+${marker}
+exec /usr/bin/nix-profile-exec "${name}" "\$@"
+SH
+    chmod 0755 "${tmp}"
+    mv -f -- "${tmp}" "${path}"
+}
+
+installed_tmp="$(mktemp)"
+managed_tmp="$(mktemp)"
+trap 'rm -f "${installed_tmp}" "${managed_tmp}"' EXIT
+
+"${profile_exec}" --list | sed '/^$/d' | sort -u >"${installed_tmp}"
+
+if [[ -f "${manifest}" ]]; then
+    while IFS= read -r name; do
+        [[ -z "${name}" ]] && continue
+        if ! grep -Fxq "${name}" "${installed_tmp}"; then
+            shim="${shim_dir}/${name}"
+            if is_managed_shim "${shim}"; then
+                rm -f -- "${shim}"
+            fi
+        fi
+    done <"${manifest}"
+fi
+
+host_path="$(path_without_shim_dir)"
+
+while IFS= read -r name; do
+    [[ -z "${name}" ]] && continue
+
+    if [[ ! "${name}" =~ ^[A-Za-z0-9._+-]+$ ]]; then
+        printf 'nix-profile-sync: skipping invalid command name: %s\n' "${name}" >&2
+        continue
+    fi
+
+    shim="${shim_dir}/${name}"
+
+    if existing="$(PATH="${host_path}" command -v -- "${name}" 2>/dev/null)" && [[ -n "${existing}" ]]; then
+        if is_managed_shim "${shim}"; then
+            rm -f -- "${shim}"
+        fi
+        printf 'nix-profile-sync: skipping %s; would shadow %s\n' "${name}" "${existing}" >&2
+        continue
+    fi
+
+    if [[ -e "${shim}" ]] && ! is_managed_shim "${shim}"; then
+        printf 'nix-profile-sync: skipping %s; unmanaged file exists at %s\n' "${name}" "${shim}" >&2
+        continue
+    fi
+
+    write_shim "${name}"
+    printf '%s\n' "${name}" >>"${managed_tmp}"
+done <"${installed_tmp}"
+
+sort -u "${managed_tmp}" >"${manifest}"

@@ -296,6 +296,8 @@ for brew_service in brew-update.service brew-upgrade.service; do
     grep -qx 'ConditionFileIsExecutable=/home/linuxbrew/.linuxbrew/bin/brew' "${brew_dropin}"
 done
 test -x /usr/bin/nix
+test -x /usr/bin/nix-profile-exec
+test -x /usr/bin/nix-profile-sync
 test -x /usr/libexec/nocblue/nix-portable/nix-portable
 test -x /usr/libexec/nocblue/nix-portable/proot
 test -x /usr/libexec/nocblue/nix-portable/clean-build-home
@@ -326,6 +328,9 @@ grep -qx 'unset LD_PRELOAD' /usr/bin/nix
 grep -qx 'unset LD_AUDIT' /usr/bin/nix
 grep -qx '    local build_home="${emptyroot}/homeless-shelter"' /usr/bin/nix
 grep -qx 'clean_nix_portable_build_home' /usr/bin/nix
+grep -qx 'profile_sync="${NOCBLUE_NIX_PROFILE_SYNC:-/usr/bin/nix-profile-sync}"' /usr/bin/nix
+grep -qx 'should_sync_nix_profile() {' /usr/bin/nix
+grep -qx '            "${profile_sync}" || printf '\''nix: warning: failed to sync nix profile shims\\n'\'' >&2' /usr/bin/nix
 grep -Fqx 'exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"' /usr/bin/nix
 (
     nix_wrapper_probe="$(mktemp -d)"
@@ -373,6 +378,157 @@ SH
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
+    cat >"${nix_wrapper_probe}/profile-sync" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'profile-sync-called\n'
+SH
+    chmod 0755 "${nix_wrapper_probe}/profile-sync"
+    nix_wrapper_profile_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            LD_PRELOAD= \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            NOCBLUE_NIX_PROFILE_SYNC="${nix_wrapper_probe}/profile-sync" \
+            /usr/bin/nix profile install nixpkgs#hello
+    )"
+    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile install nixpkgs#hello' <<<"${nix_wrapper_profile_output}"
+    grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_output}"
+    nix_wrapper_profile_list_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            NOCBLUE_NIX_PROFILE_SYNC="${nix_wrapper_probe}/profile-sync" \
+            /usr/bin/nix profile list
+    )"
+    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile list' <<<"${nix_wrapper_profile_list_output}"
+    ! grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_list_output}"
+)
+grep -Fq 'exec "${payload}" debug sh -c' /usr/bin/nix-profile-exec
+grep -qx '    profile_bin="${HOME}/.nix-profile/bin/${command_name}"' /usr/bin/nix-profile-exec
+grep -qx '    unset LD_PRELOAD LD_AUDIT' /usr/bin/nix-profile-exec
+grep -Fq 'post-build-hook = ${post_build_hook}' /usr/bin/nix-profile-exec
+(
+    nix_profile_exec_probe="$(mktemp -d)"
+    trap 'rm -rf "${nix_profile_exec_probe}"' EXIT
+    mkdir -p "${nix_profile_exec_probe}/home/.nix-profile/bin"
+    mkdir -p "${nix_profile_exec_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo"
+    printf 'stale cargo cache\n' >"${nix_profile_exec_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo/.package-cache"
+    cat >"${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'tool-argv=%s\n' "$*"
+printf 'NIX_CONFIG=%s\n' "${NIX_CONFIG-}"
+for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
+    if [[ -v "${name}" ]]; then
+        printf 'leaked %s\n' "${name}" >&2
+        exit 42
+    fi
+done
+printf 'profile-env-clean\n'
+SH
+    chmod 0755 "${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool"
+    cat >"${nix_profile_exec_probe}/payload" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'payload-mode=%s %s %s\n' "$1" "$2" "$3"
+printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
+printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
+printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
+if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
+    printf 'stale build home still exists\n' >&2
+    exit 43
+fi
+if [[ "$1" != "debug" || "$2" != "sh" || "$3" != "-c" ]]; then
+    printf 'unexpected payload argv\n' >&2
+    exit 44
+fi
+printf 'build-home-clean\n'
+if [[ $# -eq 4 ]]; then
+    exec sh -c "$4"
+fi
+exec sh -c "$4" "$5" "${@:6}"
+SH
+    chmod 0755 "${nix_profile_exec_probe}/payload"
+    nix_profile_exec_output="$(
+        env \
+            HOME="${nix_profile_exec_probe}/home" \
+            LD_PRELOAD= \
+            LD_AUDIT= \
+            NIX_REMOTE=daemon \
+            NIX_PROFILES=/nix/var/nix/profiles/default \
+            NIX_USER_CONF_FILES=/tmp/nix.conf \
+            NIX_PATH=nixpkgs=/tmp/nixpkgs \
+            NIX_SSL_CERT_FILE=/tmp/certs.pem \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_profile_exec_probe}/payload" \
+            /usr/bin/nix-profile-exec probe-tool one "two words"
+    )"
+    grep -Fxq 'payload-mode=debug sh -c' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_profile_exec_output}"
+    grep -Fxq "NP_LOCATION=${nix_profile_exec_probe}/home" <<<"${nix_profile_exec_output}"
+    grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'build-home-clean' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'tool-argv=one two words' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'NIX_CONFIG=post-build-hook = /usr/libexec/nocblue/nix-portable/clean-build-home' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'profile-env-clean' <<<"${nix_profile_exec_output}"
+    nix_profile_exec_list="$(
+        env \
+            HOME="${nix_profile_exec_probe}/home" \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_profile_exec_probe}/payload" \
+            /usr/bin/nix-profile-exec --list
+    )"
+    grep -Fxq 'probe-tool' <<<"${nix_profile_exec_list}"
+    ! env HOME="${nix_profile_exec_probe}/home" /usr/bin/nix-profile-exec ./probe-tool >/dev/null 2>&1
+)
+grep -Fqx '# nocblue-nix-profile-shim v1' /usr/bin/nix-profile-sync
+grep -Fqx 'exec /usr/bin/nix-profile-exec "${name}" "$@"' /usr/bin/nix-profile-sync
+grep -qx '        printf '\''nix-profile-sync: skipping %s; would shadow %s\\n'\'' "${name}" "${existing}" >&2' /usr/bin/nix-profile-sync
+(
+    nix_profile_sync_probe="$(mktemp -d)"
+    trap 'rm -rf "${nix_profile_sync_probe}"' EXIT
+    mkdir -p "${nix_profile_sync_probe}/host-bin" "${nix_profile_sync_probe}/shims" "${nix_profile_sync_probe}/state/nocblue"
+    cat >"${nix_profile_sync_probe}/profile-exec" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+if [[ "$*" != "--list" ]]; then
+    printf 'unexpected profile-exec argv: %s\n' "$*" >&2
+    exit 44
+fi
+printf 'nixpkgs-review\n'
+printf 'python\n'
+printf 'bad/name\n'
+SH
+    chmod 0755 "${nix_profile_sync_probe}/profile-exec"
+    cat >"${nix_profile_sync_probe}/host-bin/python" <<'SH'
+#!/usr/bin/env bash
+exit 0
+SH
+    chmod 0755 "${nix_profile_sync_probe}/host-bin/python"
+    cat >"${nix_profile_sync_probe}/shims/stale-tool" <<'SH'
+#!/usr/bin/env bash
+# nocblue-nix-profile-shim v1
+exit 0
+SH
+    chmod 0755 "${nix_profile_sync_probe}/shims/stale-tool"
+    printf 'stale-tool\n' >"${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
+    nix_profile_sync_output="$(
+        env \
+            HOME="${nix_profile_sync_probe}/home" \
+            PATH="${nix_profile_sync_probe}/host-bin:/usr/bin:/usr/sbin" \
+            XDG_STATE_HOME="${nix_profile_sync_probe}/state" \
+            NOCBLUE_NIX_PROFILE_EXEC="${nix_profile_sync_probe}/profile-exec" \
+            NOCBLUE_NIX_PROFILE_SHIM_DIR="${nix_profile_sync_probe}/shims" \
+            /usr/bin/nix-profile-sync 2>&1
+    )"
+    test -x "${nix_profile_sync_probe}/shims/nixpkgs-review"
+    grep -Fqx '# nocblue-nix-profile-shim v1' "${nix_profile_sync_probe}/shims/nixpkgs-review"
+    grep -Fqx 'exec /usr/bin/nix-profile-exec "nixpkgs-review" "$@"' "${nix_profile_sync_probe}/shims/nixpkgs-review"
+    test ! -e "${nix_profile_sync_probe}/shims/python"
+    test ! -e "${nix_profile_sync_probe}/shims/stale-tool"
+    grep -Fxq 'nixpkgs-review' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
+    ! grep -Fxq 'python' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
+    grep -Fxq "nix-profile-sync: skipping python; would shadow ${nix_profile_sync_probe}/host-bin/python" <<<"${nix_profile_sync_output}"
+    grep -Fxq 'nix-profile-sync: skipping invalid command name: bad/name' <<<"${nix_profile_sync_output}"
 )
 test -f /usr/lib/systemd/user/nix-portable-gc.service
 test -f /usr/lib/systemd/user/nix-portable-gc.timer
@@ -499,6 +655,8 @@ bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/bin/nocblue-codex
 bash -n /etc/profile.d/nocblue-codex-bwrap.sh
 bash -n /usr/bin/nix
+bash -n /usr/bin/nix-profile-exec
+bash -n /usr/bin/nix-profile-sync
 fish -n /etc/fish/conf.d/nocblue-codex-bwrap.fish
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks

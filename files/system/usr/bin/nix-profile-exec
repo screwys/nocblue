@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
+proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/proot}"
+post_build_hook="${NOCBLUE_NIX_PORTABLE_POST_BUILD_HOOK:-/usr/libexec/nocblue/nix-portable/clean-build-home}"
+
+usage() {
+    cat <<'MSG'
+Usage: nix-profile-exec <command> [args...]
+       nix-profile-exec --list
+
+Run a command from ~/.nix-profile/bin inside nocblue's nix-portable environment.
+MSG
+}
+
+clean_nix_portable_build_home() {
+    local emptyroot="${NP_LOCATION}/.nix-portable/emptyroot"
+    local build_home="${emptyroot}/homeless-shelter"
+
+    if [[ -z "${NP_LOCATION}" || "${NP_LOCATION}" != /* || "${NP_LOCATION}" == "/" || "${emptyroot}" == "/" || "${build_home}" == "/" ]]; then
+        printf 'nix-profile-exec: refusing to clean invalid nix-portable build home: %s\n' "${build_home}" >&2
+        exit 1
+    fi
+
+    rm -rf -- "${build_home}"
+}
+
+if [[ $# -eq 0 || "${1}" == "--help" || "${1}" == "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [[ ! -x "${payload}" ]]; then
+    cat >&2 <<MSG
+nix-portable is not installed in this nocblue image.
+Expected executable: ${payload}
+MSG
+    exit 127
+fi
+
+if [[ ! -x "${proot_payload}" ]]; then
+    cat >&2 <<MSG
+nocblue patched proot is not installed.
+Expected executable: ${proot_payload}
+MSG
+    exit 127
+fi
+
+if [[ ! -x "${post_build_hook}" ]]; then
+    cat >&2 <<MSG
+nocblue nix-portable build-home cleanup hook is not installed.
+Expected executable: ${post_build_hook}
+MSG
+    exit 127
+fi
+
+if [[ -z "${HOME:-}" ]]; then
+    home_from_passwd="$(getent passwd "$(id -u)" | cut -d: -f6 || true)"
+    if [[ -z "${home_from_passwd}" ]]; then
+        printf 'nix-profile-exec: HOME is not set and no passwd home exists for uid %s\n' "$(id -u)" >&2
+        exit 1
+    fi
+    export HOME="${home_from_passwd}"
+fi
+
+export NP_LOCATION="${NP_LOCATION:-${HOME}}"
+export NP_RUNTIME=proot
+export NP_PROOT="${proot_payload}"
+clean_nix_portable_build_home
+
+unset NIX_REMOTE
+unset NIX_PROFILES
+unset NIX_USER_CONF_FILES
+unset NIX_PATH
+unset NIX_SSL_CERT_FILE
+unset LD_PRELOAD
+unset LD_AUDIT
+
+if [[ -n "${NIX_CONFIG:-}" ]]; then
+    export NIX_CONFIG="${NIX_CONFIG}"$'\n'"post-build-hook = ${post_build_hook}"
+else
+    export NIX_CONFIG="post-build-hook = ${post_build_hook}"
+fi
+
+if [[ "${1}" == "--list" ]]; then
+    if [[ $# -ne 1 ]]; then
+        printf 'nix-profile-exec: --list does not take arguments\n' >&2
+        exit 2
+    fi
+
+    exec "${payload}" debug sh -c '
+        set -eu
+        unset LD_PRELOAD LD_AUDIT
+        profile_bin="${HOME}/.nix-profile/bin"
+        if [ ! -d "${profile_bin}" ]; then
+            exit 0
+        fi
+        for path in "${profile_bin}"/*; do
+            [ -e "${path}" ] || exit 0
+            basename "${path}"
+        done | sort
+    '
+fi
+
+command_name="${1}"
+shift
+
+if [[ -z "${command_name}" || "${command_name}" == */* ]]; then
+    printf 'nix-profile-exec: command must be a profile binary name, not a path: %s\n' "${command_name}" >&2
+    exit 2
+fi
+
+exec "${payload}" debug sh -c '
+    set -eu
+    command_name="${1}"
+    shift
+    profile_bin="${HOME}/.nix-profile/bin/${command_name}"
+    if [ ! -e "${profile_bin}" ]; then
+        printf "nix-profile-exec: command not found in profile: %s\n" "${command_name}" >&2
+        exit 127
+    fi
+    if [ ! -x "${profile_bin}" ]; then
+        printf "nix-profile-exec: profile command is not executable: %s\n" "${command_name}" >&2
+        exit 126
+    fi
+    unset LD_PRELOAD LD_AUDIT
+    exec "${profile_bin}" "$@"
+' nix-profile-exec "${command_name}" "$@"

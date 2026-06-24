@@ -4,6 +4,7 @@ set -euo pipefail
 payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
 proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/proot}"
 post_build_hook="${NOCBLUE_NIX_PORTABLE_POST_BUILD_HOOK:-/usr/libexec/nocblue/nix-portable/clean-build-home}"
+profile_sync="${NOCBLUE_NIX_PROFILE_SYNC:-/usr/bin/nix-profile-sync}"
 
 clean_nix_portable_build_home() {
     local emptyroot="${NP_LOCATION}/.nix-portable/emptyroot"
@@ -15,6 +16,19 @@ clean_nix_portable_build_home() {
     fi
 
     rm -rf -- "${build_home}"
+}
+
+should_sync_nix_profile() {
+    [[ "${1:-}" == "profile" ]] || return 1
+
+    case "${2:-}" in
+        install | remove | rollback | upgrade | wipe-history)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
 }
 
 if [[ ! -x "${payload}" ]]; then
@@ -62,5 +76,22 @@ unset NIX_PATH
 unset NIX_SSL_CERT_FILE
 unset LD_PRELOAD
 unset LD_AUDIT
+
+if should_sync_nix_profile "$@"; then
+    set +e
+    "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"
+    status=$?
+    set -e
+
+    if [[ "${status}" -eq 0 ]]; then
+        if [[ -x "${profile_sync}" ]]; then
+            "${profile_sync}" || printf 'nix: warning: failed to sync nix profile shims\n' >&2
+        else
+            printf 'nix: warning: nix profile shim sync helper is not executable: %s\n' "${profile_sync}" >&2
+        fi
+    fi
+
+    exit "${status}"
+fi
 
 exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"
