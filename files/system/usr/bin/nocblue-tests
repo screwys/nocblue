@@ -331,7 +331,6 @@ grep -qx 'clean_nix_portable_build_home' /usr/bin/nix
 grep -qx 'profile_sync="${NOCBLUE_NIX_PROFILE_SYNC:-/usr/bin/nix-profile-sync}"' /usr/bin/nix
 grep -qx 'should_sync_nix_profile() {' /usr/bin/nix
 grep -qx '            "${profile_sync}" || printf '\''nix: warning: failed to sync nix profile shims\\n'\'' >&2' /usr/bin/nix
-grep -Fqx 'exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"' /usr/bin/nix
 (
     nix_wrapper_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_wrapper_probe}"' EXIT
@@ -378,6 +377,25 @@ SH
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
+    cat >"${nix_wrapper_probe}/payload-children" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+children=""
+IFS= read -r children <"/proc/$$/task/$$/children" || true
+printf 'process-substitution-children=<%s>\n' "${children}"
+if [[ -n "${children}" ]]; then
+    exit 45
+fi
+SH
+    chmod 0755 "${nix_wrapper_probe}/payload-children"
+    nix_wrapper_process_substitution_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            LD_PRELOAD= \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload-children" \
+            /usr/bin/nix --version > >(cat)
+    )"
+    grep -Fxq 'process-substitution-children=<>' <<<"${nix_wrapper_process_substitution_output}"
     cat >"${nix_wrapper_probe}/profile-sync" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail

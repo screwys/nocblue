@@ -94,4 +94,8 @@ if should_sync_nix_profile "$@"; then
     exit "${status}"
 fi
 
-exec "${payload}" nix --option post-build-hook "${post_build_hook}" "$@"
+# Keep this shell as the parent process. Callers such as retry helpers may use
+# Bash process substitutions for logging; execing into PRoot can leave those
+# helper processes parented under PRoot after Nix exits.
+"${payload}" nix --option post-build-hook "${post_build_hook}" "$@"
+exit "$?"
