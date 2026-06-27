@@ -56,7 +56,7 @@ apps_dir = Path(sys.argv[1])
 state_file = Path(sys.argv[2])
 steam_dirs = [Path(sys.argv[3])]
 lutris_dirs = [Path(value) for value in sys.argv[4:]]
-managed_marker = "X-Nocblue-Managed=game-shortcut"
+managed_marker = "X-nocblue-Managed=game-shortcut"
 
 
 def desktop_files(directory: Path) -> list[Path]:
@@ -174,8 +174,8 @@ def sync_steam_shortcut(src: Path) -> Path | None:
             "Terminal": "false",
             "Categories": desktop_value(lines, "Categories").strip() or "Game;",
             "X-Flatpak": "com.valvesoftware.Steam",
-            "X-Nocblue-Managed": "game-shortcut",
-            "X-Nocblue-Source": "steam-flatpak",
+            "X-nocblue-Managed": "game-shortcut",
+            "X-nocblue-Source": "steam-flatpak",
         },
     )
     return dest if write_managed_desktop(dest, lines) else None
@@ -211,8 +211,8 @@ def sync_lutris_shortcut(src: Path) -> Path | None:
             "Terminal": "false",
             "Categories": desktop_value(lines, "Categories").strip() or "Game;",
             "X-Flatpak": "net.lutris.Lutris",
-            "X-Nocblue-Managed": "game-shortcut",
-            "X-Nocblue-Source": "lutris-flatpak",
+            "X-nocblue-Managed": "game-shortcut",
+            "X-nocblue-Source": "lutris-flatpak",
         },
     )
     return dest if write_managed_desktop(dest, lines) else None

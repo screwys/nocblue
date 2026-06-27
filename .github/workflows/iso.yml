@@ -49,7 +49,7 @@ jobs:
           grep -q -- 'install_image="ghcr.io/screwys/nocblue:latest"' iso_files/configure_iso_anaconda.sh
           grep -q -- 'ostreecontainer --url=${install_image} --transport=containers-storage' iso_files/configure_iso_anaconda.sh
           grep -q -- "set_os_release_key \"\${os_release}\" NAME '\"nocblue\"'" iso_files/configure_iso_anaconda.sh
-          grep -q -- "set_os_release_key \"\${os_release}\" PRETTY_NAME '\"Nocblue\"'" iso_files/configure_iso_anaconda.sh
+          grep -q -- "set_os_release_key \"\${os_release}\" PRETTY_NAME '\"nocblue\"'" iso_files/configure_iso_anaconda.sh
           grep -q -- "set_os_release_key \"\${os_release}\" VARIANT_ID 'nocblue'" iso_files/configure_iso_anaconda.sh
           grep -q -- 'config.set("Main", "Product", "nocblue")' iso_files/configure_iso_anaconda.sh
           grep -q -- 'Name=Install nocblue' iso_files/configure_iso_anaconda.sh

@@ -47,14 +47,14 @@ set_os_release_key() {
 for os_release in /usr/lib/os-release /usr/etc/os-release /etc/os-release; do
     [[ -f "${os_release}" && ! -L "${os_release}" ]] || continue
     set_os_release_key "${os_release}" NAME '"nocblue"'
-    set_os_release_key "${os_release}" PRETTY_NAME '"Nocblue"'
+    set_os_release_key "${os_release}" PRETTY_NAME '"nocblue"'
     set_os_release_key "${os_release}" CPE_NAME '"cpe:/o:nocblue:nocblue:44"'
     set_os_release_key "${os_release}" DEFAULT_HOSTNAME '"desktop"'
     set_os_release_key "${os_release}" HOME_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" DOCUMENTATION_URL '"https://github.com/screwys/nocblue"'
     set_os_release_key "${os_release}" SUPPORT_URL '"https://github.com/screwys/nocblue/issues"'
     set_os_release_key "${os_release}" BUG_REPORT_URL '"https://github.com/screwys/nocblue/issues"'
-    set_os_release_key "${os_release}" VARIANT '"Nocblue"'
+    set_os_release_key "${os_release}" VARIANT '"nocblue"'
     set_os_release_key "${os_release}" VARIANT_ID 'nocblue'
     set_os_release_key "${os_release}" IMAGE_ID '"nocblue"'
 done

@@ -28,7 +28,7 @@
       "type": "command",
       "key": "  ",
       "keyColor": "green",
-      "text": "printf 'Nocblue 44'"
+      "text": "printf 'nocblue 44'"
     },
     {
       "type": "command",
