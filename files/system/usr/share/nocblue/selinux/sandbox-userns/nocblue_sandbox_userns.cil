@@ -11,6 +11,11 @@
 (type nocblue_firefox_t)
 (typeattribute nocblue_browser_wayland_clipboard_peer)
 
+; Codex already applies its own sandbox and approval policy. Keep this wrapper
+; domain labeled for audit and userns enablement, but do not make SELinux a
+; second incomplete deny layer for normal Codex sandbox work.
+(typepermissive nocblue_codex_bwrap_t)
+
 (roletype unconfined_r nocblue_browser_no_preload_t)
 (roletype unconfined_r nocblue_portal_bwrap_t)
 (roletype unconfined_r nocblue_codex_bwrap_t)
