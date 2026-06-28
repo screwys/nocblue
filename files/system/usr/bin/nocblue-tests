@@ -437,7 +437,9 @@ SH
     ! grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_list_output}"
 )
 grep -Fq 'exec "${payload}" debug sh -c' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -qx '    profile_bin="${HOME}/.nix-profile/bin/${command_name}"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
+grep -qx '    profile_dir="${HOME}/.nix-profile/bin"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
+grep -qx '    profile_bin="${profile_dir}/${command_name}"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
+grep -qx '    PATH="${profile_dir}${PATH:+:${PATH}}"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
 grep -qx '    unset LD_PRELOAD LD_AUDIT' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
 grep -Fq 'post-build-hook = ${post_build_hook}' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
 (
@@ -450,6 +452,7 @@ grep -Fq 'post-build-hook = ${post_build_hook}' /usr/libexec/nocblue/nix-portabl
 #!/usr/bin/env bash
 set -euo pipefail
 printf 'tool-argv=%s\n' "$*"
+printf 'profile-command=%s\n' "$(command -v probe-tool)"
 printf 'NIX_CONFIG=%s\n' "${NIX_CONFIG-}"
 for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
     if [[ -v "${name}" ]]; then
@@ -501,6 +504,7 @@ SH
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_profile_exec_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_profile_exec_output}"
     grep -Fxq 'tool-argv=one two words' <<<"${nix_profile_exec_output}"
+    grep -Fxq "profile-command=${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool" <<<"${nix_profile_exec_output}"
     grep -Fxq 'NIX_CONFIG=post-build-hook = /usr/libexec/nocblue/nix-portable/clean-build-home' <<<"${nix_profile_exec_output}"
     grep -Fxq 'profile-env-clean' <<<"${nix_profile_exec_output}"
     ! grep -Eq 'cannot be preloaded|cannot be loaded as audit' <<<"${nix_profile_exec_output}"
