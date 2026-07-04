@@ -18,7 +18,7 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature nocblue-codex xdg-open nix; do
+for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -667,14 +667,11 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-setup.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
-test -f /etc/profile.d/nocblue-codex-bwrap.sh
-test -f /etc/fish/conf.d/nocblue-codex-bwrap.fish
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
 test -x /usr/bin/nocblue-sync-sddm-wallpaper
 test -x /usr/bin/nocblue-sync-sandbox-userns-selinux
 test -x /usr/bin/nocblue-sync-browser-userns-selinux
-test -x /usr/bin/nocblue-codex
 test -x /usr/bin/nocblue-openrazer-plugdev
 test -x /usr/bin/nocblue-setup-flatpaks
 test -x /usr/bin/nocblue-setup-android-sdk
@@ -689,12 +686,9 @@ bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
-bash -n /usr/bin/nocblue-codex
-bash -n /etc/profile.d/nocblue-codex-bwrap.sh
 bash -n /usr/libexec/nocblue/nix-portable/nix-wrapper
 bash -n /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
 bash -n /usr/bin/nix-profile-sync
-fish -n /etc/fish/conf.d/nocblue-codex-bwrap.fish
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk
@@ -730,27 +724,26 @@ grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-sa
 grep -Fxq 'exec /usr/bin/nocblue-sync-sandbox-userns-selinux "$@"' /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
+test ! -e /usr/bin/nocblue-codex
+test ! -e /etc/profile.d/nocblue-codex-bwrap.sh
+test ! -e /etc/fish/conf.d/nocblue-codex-bwrap.fish
+test ! -e /usr/libexec/nocblue/codex-bwrap
+test ! -e /usr/libexec/nocblue/codex-bwrap-path
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'optional nocblue_sandbox_deny_alg_socket' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'optional nocblue_sandbox_trivalent_script_domain' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t nocblue_codex_bwrap_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t nocblue_portal_bwrap_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_portal_bwrap_t unconfined_t (dir (getattr search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_portal_bwrap_t unconfined_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typepermissive nocblue_codex_bwrap_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (cap_userns (dac_override dac_read_search net_admin))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t nocblue_codex_bwrap_t (netlink_route_socket (bind create nlmsg_write read write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t proc_t (filesystem (mount remount))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock mounton open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (file (append create execute execute_no_trans getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (lnk_file (create getattr read rename setattr unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+if grep -q 'nocblue_codex' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil; then
+    printf 'unexpected Codex sandbox SELinux policy remains\n' >&2
+    exit 1
+fi
 ! grep -q 'nocblue_portal_bwrap_t unconfined_t (file (read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 ! grep -q 'nocblue_portal_bwrap_t user_home_t (file .*write' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 command -v sesearch >/dev/null
@@ -759,27 +752,10 @@ semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
 ! semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
 matchpathcon -V \
     /usr/bin/nocblue-browser-no-preload \
-    /usr/bin/nocblue-portal-bwrap \
-    /usr/libexec/nocblue/codex-bwrap-path/bwrap \
-    /usr/libexec/nocblue/codex-bwrap/bwrap
+    /usr/bin/nocblue-portal-bwrap
 sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
     | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
     | grep -Fq ioctl
-sesearch -A -s nocblue_codex_bwrap_t -t nocblue_codex_bwrap_exec_t -c file -p ioctl \
-    | grep -F 'allow nocblue_codex_bwrap_t nocblue_codex_bwrap_exec_t:file' \
-    | grep -Fq ioctl
-sesearch -A -s nocblue_codex_bwrap_t -t unconfined_t -c file -p read \
-    | grep -Fxq 'allow nocblue_codex_bwrap_t unconfined_t:file read;'
-sesearch -A -s nocblue_codex_bwrap_t -t user_home_t -c dir -p read \
-    | grep -F 'allow nocblue_codex_bwrap_t user_home_t:dir' \
-    | grep -Fq read
-sesearch -A -s nocblue_codex_bwrap_t -t user_home_t -c dir -p mounton \
-    | grep -F 'allow nocblue_codex_bwrap_t user_home_t:dir' \
-    | grep -Fq mounton
-sesearch -A -s nocblue_codex_bwrap_t -t user_home_t -c file -p write \
-    | grep -F 'allow nocblue_codex_bwrap_t user_home_t:file' \
-    | grep -Fq write
-seinfo --permissive nocblue_codex_bwrap_t | grep -Fq nocblue_codex_bwrap_t
 if seinfo --permissive nocblue_portal_bwrap_t | grep -Fq nocblue_portal_bwrap_t; then
     printf 'unexpected permissive portal bwrap domain\n' >&2
     exit 1
@@ -803,7 +779,6 @@ sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c dir -p search \
 for userns_domain in \
     nocblue_browser_no_preload_t \
     nocblue_portal_bwrap_t \
-    nocblue_codex_bwrap_t \
     brave_origin_t \
     helium_t \
     nocblue_firefox_t; do
@@ -823,14 +798,7 @@ for denied_userns_domain in unconfined_t mozilla_t staff_t user_t xdm_t; do
 done
 grep -q 'nocblue_portal_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_portal_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t shell_exec_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t bin_t (file (getattr open read execute execute_no_trans map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typepermissive nocblue_codex_bwrap_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (dir (add_name create getattr ioctl link lock mounton open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (file (append create execute execute_no_trans getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_codex_bwrap_t user_home_t (lnk_file (create getattr read rename setattr unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q '/usr/bin/nocblue-portal-bwrap' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap" file (system_u object_r nocblue_codex_bwrap_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
@@ -898,7 +866,6 @@ grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/
 ! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 bash -n /usr/bin/nocblue-browser-no-preload
 bash -n /usr/bin/nocblue-portal-bwrap
-bash -n /usr/libexec/nocblue/codex-bwrap/bwrap
 bash -n /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
 grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
@@ -928,115 +895,9 @@ done
 grep -q 'allowed_caller' /usr/bin/nocblue-portal-bwrap
 grep -q '/usr/libexec/xdg-desktop-portal-validate-icon' /usr/bin/nocblue-portal-bwrap
 grep -q 'refuses unsupported caller' /usr/bin/nocblue-portal-bwrap
-grep -q 'allowed_caller' /usr/libexec/nocblue/codex-bwrap/bwrap
-! grep -Fq 'readlink -f "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -Fq '/usr/bin/readlink "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap/bwrap
-test -x /usr/libexec/nocblue/codex-bwrap-path/bwrap
-grep -q '/usr/libexec/nocblue/codex-bwrap-path' /usr/bin/nocblue-codex
-grep -q '/usr/libexec/nocblue/codex-bwrap/bwrap' /usr/libexec/nocblue/codex-bwrap-path/bwrap
-grep -q '/usr/bin/bwrap' /usr/libexec/nocblue/codex-bwrap-path/bwrap
-grep -Fq '/usr/bin/readlink "/proc/${PPID}/exe"' /usr/libexec/nocblue/codex-bwrap-path/bwrap
-grep -q 'type -P -a codex' /usr/bin/nocblue-codex
-grep -q 'command /usr/bin/nocblue-codex' /etc/profile.d/nocblue-codex-bwrap.sh
-grep -q 'command /usr/bin/nocblue-codex' /etc/fish/conf.d/nocblue-codex-bwrap.fish
-grep -q 'allowed_codex_bwrap' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'allowed_codex_true_preflight' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'allowed_namespace_warning_probe' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'has_root_writable_bind' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'codex-linux-sandbox' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q -- '--sandbox-policy-cwd' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q -- '--apply-seccomp-then-exec' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'Caskroom/codex' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'refuses unsupported caller' /usr/libexec/nocblue/codex-bwrap/bwrap
-grep -q 'refuses unsupported argv' /usr/libexec/nocblue/codex-bwrap/bwrap
-/usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--perms'
-/usr/libexec/nocblue/codex-bwrap/bwrap --help | grep -q -- '--argv0'
-/usr/libexec/nocblue/codex-bwrap-path/bwrap --version | grep -q '^bubblewrap '
-codex_probe_dir="$(mktemp -d)"
-trap 'rm -rf "${codex_probe_dir}"' EXIT
-cat >"${codex_probe_dir}/codex" <<'EOF'
-#!/usr/bin/env bash
-case ":${PATH}:" in
-    *:/usr/libexec/nocblue/codex-bwrap-path:*) ;;
-    *)
-        printf 'codex bwrap router path was not injected\n' >&2
-        exit 1
-        ;;
-esac
-case ":${PATH}:" in
-    *:/usr/libexec/nocblue/codex-bwrap:*)
-        printf 'codex bwrap shim path leaked into child PATH\n' >&2
-        exit 1
-        ;;
-esac
-EOF
-chmod 0755 "${codex_probe_dir}/codex"
-PATH="${codex_probe_dir}:/usr/bin:/usr/sbin" /usr/bin/nocblue-codex --probe
-rm -rf "${codex_probe_dir}"
-trap - EXIT
-! bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --unshare-user --unshare-net --ro-bind / / true'
-bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --new-session --die-with-parent --ro-bind / / --dev /dev --unshare-user --unshare-pid --proc /proc -- /usr/bin/true'
-for codex_root_bind in --bind --bind-try --dev-bind --dev-bind-try; do
-    ! bash -c 'source /usr/libexec/nocblue/codex-bwrap/bwrap; allowed_codex_bwrap --new-session --die-with-parent "$1" / / --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl --sandbox-policy-cwd /tmp --permission-profile "{}" --apply-seccomp-then-exec -- /usr/bin/true' _ "${codex_root_bind}"
-done
 grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/libexec/nocblue/xdg-desktop-portal-validate-icon
 ! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
 ! /usr/bin/nocblue-portal-bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null 2>&1
-codex_bwrap_reject="$({ /usr/libexec/nocblue/codex-bwrap/bwrap --unshare-user --uid 0 --gid 0 --ro-bind / / /usr/bin/true >/dev/null; } 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_reject}" | grep -q 'refuses unsupported caller'
-codex_bwrap_spoof_reject="$({
-    /usr/libexec/nocblue/codex-bwrap/bwrap \
-        --new-session --die-with-parent --ro-bind / / --dev /dev \
-        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
-        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
-        --sandbox-policy-cwd /tmp \
-        --permission-profile '{"type":"disabled"}' \
-        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
-} 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_spoof_reject}" | grep -q 'refuses unsupported caller'
-codex_bwrap_root_bind_reject="$({
-    /usr/libexec/nocblue/codex-bwrap/bwrap \
-        --new-session --die-with-parent --bind / / \
-        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
-        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
-        --sandbox-policy-cwd /tmp \
-        --permission-profile '{}' \
-        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
-} 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_root_bind_reject}" | grep -q 'refuses unsupported caller'
-codex_bwrap_root_bind_try_reject="$({
-    /usr/libexec/nocblue/codex-bwrap/bwrap \
-        --new-session --die-with-parent --bind-try / / \
-        --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
-        /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
-        --sandbox-policy-cwd /tmp \
-        --permission-profile '{}' \
-        --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
-} 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_root_bind_try_reject}" | grep -q 'refuses unsupported caller'
-codex_bwrap_bare_true_reject="$({
-    /usr/libexec/nocblue/codex-bwrap/bwrap \
-        --unshare-user --unshare-net --ro-bind / / true >/dev/null
-} 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_bare_true_reject}" | grep -q 'refuses unsupported caller'
-codex_bwrap_readlink_shadow_reject="$({
-    readlink_probe_dir="$(mktemp -d)"
-    trap 'rm -rf "${readlink_probe_dir}"' EXIT
-    cat >"${readlink_probe_dir}/readlink" <<'EOF'
-#!/usr/bin/env bash
-printf '/home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl\n'
-EOF
-    chmod 0755 "${readlink_probe_dir}/readlink"
-    PATH="${readlink_probe_dir}:/usr/bin:/usr/sbin" \
-        /usr/libexec/nocblue/codex-bwrap/bwrap \
-            --new-session --die-with-parent --ro-bind / / --dev /dev \
-            --unshare-user --unshare-pid --argv0 codex-linux-sandbox -- \
-            /home/linuxbrew/.linuxbrew/Caskroom/codex/0.0.0/codex-x86_64-unknown-linux-musl \
-            --sandbox-policy-cwd /tmp \
-            --permission-profile '{}' \
-            --apply-seccomp-then-exec -- /usr/bin/true >/dev/null
-} 2>&1 || true)"
-printf '%s\n' "${codex_bwrap_readlink_shadow_reject}" | grep -q 'refuses unsupported caller'
 ! test -e /usr/bin/nocblue-layer-openrazer
 grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
