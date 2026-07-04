@@ -4,7 +4,6 @@ set -euo pipefail
 cil=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 module=nocblue_sandbox_userns
 legacy_modules=(nocblue_browser_userns)
-legacy_module_prefixes=(nocblue_codex_)
 target_priority=300
 stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256
 
@@ -26,11 +25,6 @@ module_priorities() {
     module_priorities_for "${module}"
 }
 
-modules_for_prefix() {
-    local prefix=$1
-    semodule -lfull 2>/dev/null | awk -v prefix="${prefix}" 'index($2, prefix) == 1 {print $1, $2}'
-}
-
 module_loaded_at_target() {
     module_priorities | grep -qx "${target_priority}"
 }
@@ -44,18 +38,6 @@ legacy_modules_loaded() {
 
     for legacy_module in "${legacy_modules[@]}"; do
         if module_priorities_for "${legacy_module}" | grep -q .; then
-            return 0
-        fi
-    done
-
-    return 1
-}
-
-legacy_module_prefixes_loaded() {
-    local prefix
-
-    for prefix in "${legacy_module_prefixes[@]}"; do
-        if modules_for_prefix "${prefix}" | grep -q .; then
             return 0
         fi
     done
@@ -87,7 +69,6 @@ remove_module_priorities() {
 remove_stale_modules() {
     local priority
     local legacy_module
-    local prefix
 
     while read -r priority; do
         [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
@@ -96,13 +77,6 @@ remove_stale_modules() {
 
     for legacy_module in "${legacy_modules[@]}"; do
         remove_module_priorities "${legacy_module}"
-    done
-
-    for prefix in "${legacy_module_prefixes[@]}"; do
-        while read -r priority legacy_module; do
-            [[ -n "${priority}" && -n "${legacy_module}" ]] || continue
-            semodule -X "${priority}" -r "${legacy_module}"
-        done < <(modules_for_prefix "${prefix}")
     done
 }
 
@@ -113,7 +87,6 @@ if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
         && module_loaded_at_target \
         && ! module_has_stale_priority \
         && ! legacy_modules_loaded \
-        && ! legacy_module_prefixes_loaded \
         && critical_labels_match; then
         exit 0
     fi
@@ -121,8 +94,7 @@ fi
 
 # Old live fixes can leave a higher-priority copy that shadows the image policy.
 # The pre-rename module declares the same types, so remove it before installing
-# the neutral module name. One-off Codex live-debug modules can also depend on
-# removed Codex types, so purge them before rebuilding policy.
+# the neutral module name.
 remove_stale_modules
 semodule -X "${target_priority}" -i "${cil}"
 
