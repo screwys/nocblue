@@ -43,6 +43,12 @@
       "format": "{rpm} (rpm), {flatpak-all} (flatpak), {brew-all} (brew)"
     },
     {
+      "type": "command",
+      "key": "├ ",
+      "keyColor": "green",
+      "text": "if command -v nix >/dev/null 2>&1; then count=$(env -u LD_PRELOAD NO_COLOR=1 nix profile list 2>/dev/null | awk 'BEGIN{count=0} /^Name:[[:space:]]/{count++} END{print count}'); else count=0; fi; printf '%s (nix)' \"${count:-0}\""
+    },
+    {
       "type": "uptime",
       "key": "└󰅐 ",
       "keyColor": "green"
