@@ -18,31 +18,14 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri qs fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign sddm sddm-greeter-qt6 openrazer-daemon polychromatic-controller polychromatic-cli nocblue-sync-sddm-wallpaper nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor greetd fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign openrazer-daemon polychromatic-controller polychromatic-cli nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
     }
 done
 
-if [[ -d /etc/xdg/quickshell/noctalia-shell || -d /usr/share/quickshell/noctalia-shell || -d /usr/share/noctalia-shell ]]; then
-    :
-else
-    printf 'missing noctalia-shell runtime\n' >&2
-    exit 1
-fi
-
-for package in noctalia-qs; do
-    while IFS= read -r capability; do
-        [[ -n "${capability}" ]] || continue
-        rpm -q --whatprovides "${capability}" >/dev/null || {
-            printf 'missing provider for %s requirement: %s\n' "${package}" "${capability}" >&2
-            exit 1
-        }
-    done < <(rpm -q --requires "${package}" | grep 'Qt_.*_PRIVATE_API' || true)
-done
-
-rpm -q noctalia-shell gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet sddm sddm-x11 xorg-x11-server-Xorg qt6-qt5compat qt6-qtsvg kf6-kitemmodels zram-generator wlsunset >/dev/null
+rpm -q noctalia-git noctalia-greeter greetd gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq yt-dlp direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer polychromatic openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi network-manager-applet kf6-kitemmodels zram-generator wlsunset >/dev/null
 test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
@@ -242,12 +225,7 @@ assert pywalfox_librewolf_lib64 == pywalfox
 assert pywalfox_librewolf_lib == pywalfox
 assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]
 assert pywalfox["path"] == "/usr/libexec/pywalfox-native-messaging-host"
-pywalfox_template = json.loads(Path("/etc/xdg/quickshell/noctalia-shell/Assets/Templates/pywalfox.json").read_text(encoding="utf-8"))
-assert all(pywalfox_template["colors"][f"color{i}"] for i in range(16))
-assert pywalfox_template["colors"]["color1"] == "{{colors.error.default.hex}}"
-assert pywalfox_template["colors"]["color15"] == "{{colors.on_surface.default.hex}}"
 PY
-grep -q 'PALETTE_FILE="${PALETTE_FILE:-${HOME}/.cache/noctalia/starship-palette.toml}"' /etc/xdg/quickshell/noctalia-shell/Scripts/bash/template-apply.sh
 grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
 grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
@@ -267,6 +245,7 @@ grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 test -x /usr/bin/nocblue-resolve-cursor-theme
 grep -q 'nocblue-resolve-cursor-theme' /etc/xdg/fastfetch/config.jsonc
 grep -q 'nix profile list' /etc/xdg/fastfetch/config.jsonc
+grep -q "Noctalia v%s" /etc/xdg/fastfetch/config.jsonc
 grep -q '^PRETTY_NAME="nocblue 44"$' /usr/lib/os-release
 grep -q '^VARIANT="nocblue"$' /usr/lib/os-release
 grep -q '^VARIANT_ID=nocblue$' /usr/lib/os-release
@@ -604,7 +583,9 @@ done
 test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
 test -L /etc/systemd/user/timers.target.wants/nix-portable-gc.timer
 test -L /etc/systemd/system/display-manager.service
-test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/sddm.service"
+test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/greetd.service"
+test -L /etc/systemd/user/niri.service.wants/noctalia.service
+test "$(readlink /etc/systemd/user/niri.service.wants/noctalia.service)" = "/usr/lib/systemd/user/noctalia.service"
 test -L /etc/systemd/system/rpm-ostree-countme.timer
 test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
 for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; do
@@ -668,9 +649,19 @@ test -f /usr/lib/systemd/user/nocblue-flatpak-setup.timer
 test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
 test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
+test -f /usr/lib/systemd/user/noctalia.service
+grep -qx 'PartOf=niri.service' /usr/lib/systemd/user/noctalia.service
+grep -qx 'After=niri.service' /usr/lib/systemd/user/noctalia.service
+grep -qx 'ExecStart=/usr/bin/noctalia' /usr/lib/systemd/user/noctalia.service
+grep -qx 'WantedBy=niri.service' /usr/lib/systemd/user/noctalia.service
+test -f /etc/greetd/config.toml
+grep -qx 'command = "/usr/bin/noctalia-greeter-session"' /etc/greetd/config.toml
+grep -qx 'user = "greetd"' /etc/greetd/config.toml
+test -f /usr/share/noctalia/assets/templates/builtin.toml
+test -f /usr/share/doc/noctalia-greeter/README.md
+test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
-test -x /usr/bin/nocblue-sync-sddm-wallpaper
 test -x /usr/bin/nocblue-sync-sandbox-userns-selinux
 test -x /usr/bin/nocblue-sync-browser-userns-selinux
 test -x /usr/bin/nocblue-openrazer-plugdev
@@ -684,7 +675,6 @@ bash -n /usr/bin/nocblue-apply-user-defaults
 bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
-bash -n /usr/bin/nocblue-sync-sddm-wallpaper
 bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/libexec/nocblue/nix-portable/nix-wrapper
@@ -904,8 +894,6 @@ grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openr
 grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 grep -q 'nocblue-openrazer-plugdev USER' /usr/bin/nocblue-openrazer-plugdev
 grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
-test -f /usr/share/sddm/themes/noctalia/theme.conf
-grep -qx '0b80d9a76f9bb7c871b0ceeb308b57e0b6e6f15a' /usr/share/sddm/themes/noctalia/nocblue-source-commit
 test -f /etc/sysctl.d/61-ptrace-scope.conf
 grep -qx 'kernel.yama.ptrace_scope = 1' /etc/sysctl.d/61-ptrace-scope.conf
 grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
@@ -968,25 +956,15 @@ grep -q 'xdg-config/MangoHud:ro' /usr/bin/nocblue-apply-user-defaults
 ! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.TextEditor'
 grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
-grep -q 'normalize_noctalia_browser_app_ids' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_noctalia_sddm_integration' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_noctalia_pywalfox' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_noctalia_night_light_manual_default' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_niri_browser_bridge' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_browser_environment' /usr/bin/nocblue-apply-user-defaults
 grep -q 'systemctl --user set-environment BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
 grep -q 'dbus-update-activation-environment --systemd BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
 grep -q 'io.github.alyraffauf.Switchyard' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=LD_PRELOAD' /usr/bin/nocblue-apply-user-defaults
-grep -q 'seed_noctalia_plugins' /usr/bin/nocblue-apply-user-defaults
-grep -q 'noctalia-plugins.seeded' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
-grep -q 'templates\\.nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
-grep -q '.config/mozilla/native-messaging-hosts/pywalfox.json' /usr/bin/nocblue-apply-user-defaults
-grep -q '/usr/libexec/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
-! grep -q '.local/bin/pywalfox-native-messaging-host' /usr/bin/nocblue-apply-user-defaults
 grep -q 'user-defaults.v25.done' /usr/bin/nocblue-apply-user-defaults
 grep -q 'user-defaults.v25.done' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'systemctl --user enable app-com.mitchellh.ghostty.service' /usr/bin/nocblue-apply-user-defaults
@@ -1013,20 +991,6 @@ grep -q 'custom_css:true' /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/bin/nocblue-apply-adwsteamgtk
 ! grep -q 'matugen.css' /usr/bin/nocblue-apply-adwsteamgtk
 grep -q 'repair_steam_prefix_links' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '\[templates.zed-native\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '/etc/xdg/quickshell/noctalia-shell/Assets/Templates/zed.json' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '\[templates.nvim\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '.cache/noctalia-nvim.lua' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '\[templates.sddm\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '/var/lib/nocblue/sddm/theme.conf' /usr/share/nocblue/defaults/noctalia/user-templates.toml
-grep -q '"id": "starship"' /usr/share/nocblue/defaults/noctalia/settings.json
-grep -q 'ensure_noctalia_starship_integration' /usr/bin/nocblue-apply-user-defaults
-grep -q 'PALETTE_FILE="${HOME}/.cache/noctalia/starship-palette.toml"' /usr/bin/nocblue-apply-user-defaults
-grep -q '"${apply_script}" starship' /usr/bin/nocblue-apply-user-defaults
-test -f /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
-grep -q -- '--adw-window-bg-rgb' /usr/share/nocblue/defaults/noctalia/templates/adwsteamgtk.css
-! grep -q 'Material-Theme' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
 test -x /usr/bin/nocblue-fix-flatpak-icons
 test -x /usr/bin/nocblue-hardened-malloc-run
@@ -1182,37 +1146,17 @@ test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
 ! grep -q '^ConditionPathExists=.*session-defaults.done' /usr/lib/systemd/system/nocblue-session-defaults.service
-grep -q 'seed_sddm_state' /usr/bin/nocblue-set-default-session
 grep -Fq '${session_id}.desktop' /usr/bin/nocblue-set-default-session
-grep -q 'sddm_state_file=' /usr/bin/nocblue-set-default-session
-test -f /etc/sddm.conf.d/10-nocblue-theme.conf
-grep -q '^Current=noctalia$' /etc/sddm.conf.d/10-nocblue-theme.conf
-test -f /etc/sddm.conf.d/20-nocblue-display.conf
-grep -q '^DisplayServer=x11$' /etc/sddm.conf.d/20-nocblue-display.conf
-grep -q '^GreeterEnvironment=XCURSOR_THEME=Adwaita,XCURSOR_SIZE=24$' /etc/sddm.conf.d/20-nocblue-display.conf
-grep -q '^InputMethod=$' /etc/sddm.conf.d/20-nocblue-display.conf
-grep -q '^CursorTheme=Adwaita$' /etc/sddm.conf.d/20-nocblue-display.conf
-grep -q '^CursorSize=24$' /etc/sddm.conf.d/20-nocblue-display.conf
-test -d /usr/share/sddm/themes/noctalia
-test -f /usr/share/sddm/themes/noctalia/Main.qml
-test -f /usr/share/sddm/themes/noctalia/metadata.desktop
-test -f /usr/share/sddm/themes/noctalia/theme.default.conf
-test -f /usr/share/sddm/themes/noctalia/theme.template.conf
-test -L /usr/share/sddm/themes/noctalia/theme.conf
-test "$(readlink /usr/share/sddm/themes/noctalia/theme.conf)" = "/var/lib/nocblue/sddm/theme.conf"
-grep -q '^background=file:///var/lib/nocblue/sddm/background.png$' /usr/share/sddm/themes/noctalia/theme.default.conf
-grep -q '^background=file:///var/lib/nocblue/sddm/background.png$' /usr/share/sddm/themes/noctalia/theme.template.conf
-grep -RIn 'import QtGraphicalEffects' /usr/share/sddm/themes/noctalia && exit 1
-grep -RIn 'import Qt5Compat.GraphicalEffects' /usr/share/sddm/themes/noctalia
-test -f /var/lib/nocblue/sddm/theme.conf
-test -f /var/lib/nocblue/sddm/background.png
-test -f /usr/lib/tmpfiles.d/nocblue-sddm.conf
-grep -q '^C /var/lib/nocblue/sddm/theme.conf 0666 root root - /usr/share/sddm/themes/noctalia/theme.default.conf$' /usr/lib/tmpfiles.d/nocblue-sddm.conf
-grep -q '^C /var/lib/nocblue/sddm/background.png 0666 root root - /usr/share/backgrounds/nocblue/green-eyes.png$' /usr/lib/tmpfiles.d/nocblue-sddm.conf
+grep -q 'current_dmrc_session' /usr/bin/nocblue-set-default-session
+grep -q 'set_user_session' /usr/bin/nocblue-set-default-session
+grep -q '^command = "/usr/bin/noctalia-greeter-session"$' /etc/greetd/config.toml
+grep -q '^user = "greetd"$' /etc/greetd/config.toml
+test -x /usr/bin/noctalia-greeter-apply-appearance
+test -x /usr/bin/noctalia-greeter-print-greetd-config
+test -x /usr/bin/noctalia-greeter-session
+test -x /usr/bin/noctalia-greeter-compositor
+test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
 test -f /usr/share/backgrounds/nocblue/green-eyes.png
-test -f /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
-grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/settings.json
-grep -q '/usr/share/backgrounds/nocblue/green-eyes.png' /usr/share/nocblue/defaults/noctalia/cache/wallpapers.json
 test -f /usr/share/nocblue/defaults/gtk-3.0/settings.ini
 test -f /usr/share/nocblue/defaults/gtk-4.0/settings.ini
 grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
@@ -1258,8 +1202,6 @@ grep -q '"dark": "Noctalia Dark"' /usr/share/nocblue/defaults/zed/settings.json
 test -f /usr/share/nocblue/defaults/nvim/init.lua
 test -f /usr/share/nocblue/defaults/nvim/lua/plugins/noctalia.lua
 grep -q 'noctalia-nvim.lua' /usr/share/nocblue/defaults/nvim/colors/noctalia.lua
-test -f /usr/share/nocblue/defaults/noctalia/templates/nvim.lua
-grep -q '\[templates.nvim\]' /usr/share/nocblue/defaults/noctalia/user-templates.toml
 grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
@@ -1275,64 +1217,6 @@ from pathlib import Path
 
 for path in Path("/usr/share/nocblue/defaults/nautilus").glob("*.py"):
     compile(path.read_text(encoding="utf-8"), str(path), "exec")
-
-settings = json.loads(Path("/usr/share/nocblue/defaults/noctalia/settings.json").read_text(encoding="utf-8"))
-assert settings["colorSchemes"]["predefinedScheme"] == "Catppuccin Mocha Red"
-assert settings["hooks"]["enabled"] is True
-assert settings["hooks"]["wallpaperChange"] == "nocblue-sync-sddm-wallpaper"
-assert {"enabled": True, "id": "sddm"} in settings["templates"]["activeTemplates"]
-assert settings["templates"]["enableUserTheming"] is True
-assert settings["nightLight"]["autoSchedule"] is False
-assert "firefox" not in settings["appLauncher"]["pinnedApps"]
-assert "firefox" not in settings["dock"]["pinnedApps"]
-assert "torbrowser" not in settings["appLauncher"]["pinnedApps"]
-assert "torbrowser" not in settings["dock"]["pinnedApps"]
-assert "org.mozilla.firefox" in settings["appLauncher"]["pinnedApps"]
-assert "org.mozilla.firefox" in settings["dock"]["pinnedApps"]
-assert "com.brave.Origin.beta" in settings["appLauncher"]["pinnedApps"]
-assert "helium" in settings["appLauncher"]["pinnedApps"]
-bar = settings["bar"]
-assert bar["monitors"] == []
-assert bar["screenOverrides"] == []
-assert [item["id"] for item in bar["widgets"]["left"]] == [
-    "Launcher",
-    "Clock",
-    "plugin:timer",
-    "plugin:weather-indicator",
-    "NotificationHistory",
-    "Volume",
-    "plugin:todo",
-    "plugin:clipper",
-    "plugin:noctalia-calculator",
-    "Network",
-]
-assert [item["id"] for item in bar["widgets"]["right"]] == [
-    "MediaMini",
-    "Tray",
-    "SystemMonitor",
-]
-assert next(item for item in bar["widgets"]["right"] if item["id"] == "SystemMonitor")["diskPath"] == "/var/home"
-assert settings["controlCenter"]["diskPath"] == "/var/home"
-assert all(item["id"] != "VPN" for section in bar["widgets"].values() for item in section)
-plugins = json.loads(Path("/usr/share/nocblue/defaults/noctalia/plugins.json").read_text(encoding="utf-8"))
-assert plugins["states"]["weather-indicator"]["enabled"] is True
-for plugin in [
-    "clipper",
-    "file-search",
-    "kaomoji-provider",
-    "niri-animation-picker",
-    "niri-overview-launcher",
-    "noctalia-calculator",
-    "notes-scratchpad",
-    "polkit-agent",
-    "pomodoro",
-    "screen-recorder",
-    "screen-toolkit",
-    "timer",
-    "todo",
-    "weather-indicator",
-]:
-    assert Path(f"/usr/share/nocblue/defaults/noctalia/plugins/{plugin}/manifest.json").is_file()
 PY
 
 test -f /etc/firewalld/services/kdeconnect.xml

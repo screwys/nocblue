@@ -16,10 +16,8 @@ dnf_cmd="$(command -v dnf5 || command -v dnf)"
 
 mkdir -p \
     /etc/anaconda/conf.d \
-    /etc/skel/.cache/noctalia \
     /etc/skel/.config/autostart \
     /etc/skel/.config/niri \
-    /etc/skel/.config/noctalia \
     /usr/lib64/firefox/distribution \
     /usr/share/anaconda/post-scripts \
     /usr/share/glib-2.0/schemas \
@@ -200,73 +198,6 @@ if id liveuser >/dev/null 2>&1; then
 fi
 EOF
 chmod 0755 /var/lib/livesys/livesys-session-extra.d/10-nocblue-live-user
-
-if [[ -d /usr/share/nocblue/defaults/noctalia ]]; then
-    cp -a /usr/share/nocblue/defaults/noctalia/. /etc/skel/.config/noctalia/
-    python3 - <<'PY'
-import json
-from pathlib import Path
-
-path = Path("/etc/skel/.config/noctalia/settings.json")
-if path.exists():
-    data = json.loads(path.read_text(encoding="utf-8"))
-    data.setdefault("general", {})["showChangelogOnStartup"] = False
-    data.setdefault("general", {})["telemetryEnabled"] = False
-
-    def remove_widget(widgets, widget_id):
-        for section in ("left", "center", "right"):
-            widgets[section] = [
-                item for item in widgets.get(section, [])
-                if item.get("id") != widget_id
-            ]
-
-    def add_after(widgets, target_id, widget):
-        left = widgets.setdefault("left", [])
-        widget_id = widget["id"]
-        if any(item.get("id") == widget_id for item in left):
-            return
-        for index, item in enumerate(left):
-            if item.get("id") == target_id:
-                left.insert(index + 1, widget)
-                return
-        left.append(widget)
-
-    bar = data.setdefault("bar", {})
-    widgets = bar.setdefault("widgets", {})
-    remove_widget(widgets, "VPN")
-    add_after(widgets, "plugin:noctalia-calculator", {"id": "Network"})
-    for override in bar.get("screenOverrides", []):
-        override_widgets = override.get("widgets")
-        if isinstance(override_widgets, dict):
-            remove_widget(override_widgets, "VPN")
-
-    path.write_text(json.dumps(data, indent=4, ensure_ascii=False) + "\n", encoding="utf-8")
-PY
-    chmod -R a+rX /etc/skel/.config/noctalia
-fi
-
-cat >/etc/skel/.cache/noctalia/shell-state.json <<'EOF'
-{
-  "display": {},
-  "notificationsState": {
-    "lastSeenTs": 0
-  },
-  "changelogState": {
-    "lastSeenVersion": "v4.0.2"
-  },
-  "colorSchemesList": {
-    "schemes": [],
-    "timestamp": 0
-  },
-  "ui": {
-    "settingsSidebarExpanded": true
-  },
-  "telemetry": {
-    "instanceId": ""
-  },
-  "launcherUsage": {}
-}
-EOF
 
 install -D -m 0644 /etc/xdg/niri/config.kdl /etc/skel/.config/niri/config.kdl
 

@@ -153,16 +153,15 @@ window-rule {
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "DISPLAY" "XDG_CURRENT_DESKTOP" "XDG_SESSION_TYPE" "NIRI_SOCKET"
 spawn-at-startup "nocblue-refresh-portals"
 spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets"
-spawn-at-startup "qs" "-c" "noctalia-shell"
 spawn-at-startup "sh" "-lc" "sleep 4; command -v xembedsniproxy >/dev/null 2>&1 && exec xembedsniproxy"
 
 binds {
     Mod+Shift+Escape { show-hotkey-overlay; }
 
     Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }
-    Mod+Ctrl+Return hotkey-overlay-title="Open App Launcher: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
+    Mod+Ctrl+Return hotkey-overlay-title="Open App Launcher: Noctalia" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }
-    Mod+Alt+L hotkey-overlay-title="Lock Screen: Noctalia" { spawn-sh "qs -c noctalia-shell ipc call lockScreen lock"; }
+    Mod+Alt+L hotkey-overlay-title="Lock Screen: Noctalia" { spawn "noctalia" "msg" "session" "lock"; }
     Mod+E hotkey-overlay-title="File Manager: Nautilus" { spawn "nautilus"; }
 
     Mod+Q { close-window; }
@@ -238,22 +237,20 @@ binds {
     Mod+O repeat=false { toggle-overview; }
 
     Mod+Shift+S hotkey-overlay-title="Screenshot Area" { spawn "sh" "-c" "grim -g \"$(slurp)\" - | wl-copy"; }
-    XF86Tools hotkey-overlay-title="M1: Launcher" { spawn-sh "qs -c noctalia-shell ipc call launcher toggle"; }
+    XF86Tools hotkey-overlay-title="M1: Launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
     XF86Launch5 hotkey-overlay-title="M2: OCR Japanese" { spawn "/usr/bin/nocblue-ocr-japanese"; }
-    XF86Launch6 hotkey-overlay-title="M3: Record Toggle" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit recordToggle"; }
     XF86Launch7 hotkey-overlay-title="M4: Mission Center" { spawn "flatpak" "run" "io.missioncenter.MissionCenter"; }
     XF86Launch8 hotkey-overlay-title="M5: Open Terminal" { spawn "/usr/bin/ghostty" "+new-window"; }
-    XF86Launch9 hotkey-overlay-title="M6: Session Menu" { spawn-sh "qs -c noctalia-shell ipc call sessionMenu toggle"; }
-    Print hotkey-overlay-title="Screenshot Region" { spawn-sh "qs -c noctalia-shell ipc call plugin:screen-toolkit annotate"; }
+    XF86Launch9 hotkey-overlay-title="M6: Session Menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
 
-    XF86AudioRaiseVolume allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume increase"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume decrease"; }
-    XF86AudioMute allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteOutput"; }
-    XF86AudioMicMute allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call volume muteInput"; }
-    XF86AudioPlay allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media playPause"; }
-    XF86AudioPrev allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media previous"; }
-    XF86AudioNext allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media next"; }
-    XF86AudioStop allow-when-locked=true { spawn-sh "qs -c noctalia-shell ipc call media stop"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-up"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "noctalia" "msg" "volume-down"; }
+    XF86AudioMute allow-when-locked=true { spawn "noctalia" "msg" "volume-mute"; }
+    XF86AudioMicMute allow-when-locked=true { spawn "noctalia" "msg" "mic-mute"; }
+    XF86AudioPlay allow-when-locked=true { spawn "noctalia" "msg" "media" "toggle"; }
+    XF86AudioPrev allow-when-locked=true { spawn "noctalia" "msg" "media" "previous"; }
+    XF86AudioNext allow-when-locked=true { spawn "noctalia" "msg" "media" "next"; }
+    XF86AudioStop allow-when-locked=true { spawn "noctalia" "msg" "media" "stop"; }
 }
 
 hotkey-overlay {

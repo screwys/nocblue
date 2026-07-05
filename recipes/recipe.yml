@@ -15,14 +15,11 @@ labels:
   org.opencontainers.image.source: https://github.com/screwys/nocblue
 
 modules:
-  - type: script
-    scripts:
-      - reconcile-recipe-dependencies.sh
-
   - type: dnf
     repos:
       files:
         - niri.repo
+        - noctalia-v5.repo
         - terra.repo
         - ublue-akmods.repo
         - brave-browser-beta.repo
@@ -36,10 +33,10 @@ modules:
         # Desktop/session stack.
         - niri
         - xwayland-satellite
+        - noctalia-git
+        - noctalia-greeter
+        - greetd
         - ghostty
-        - sddm
-        - sddm-x11
-        - xorg-x11-server-Xorg
         - qt6ct
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
@@ -240,9 +237,7 @@ modules:
     scripts:
       - install-candy-icons.sh
       - configure-nocblue-branding.sh
-      - stage-noctalia-plugins.sh
       - install-pywalfox.sh
-      - patch-noctalia-starship-template.sh
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
@@ -252,8 +247,6 @@ modules:
       - install-nix-portable.sh
       - install-nix-portable-proot.sh
       - install-nix-launcher.sh
-      - install-noctalia-sddm-theme.sh
-      - configure-sddm.sh
       - configure-anticheat-support.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
@@ -270,7 +263,7 @@ modules:
         - input-remapper.service
         - firewalld.service
         - me.proton.vpn.split_tunneling.service
-        - sddm.service
+        - greetd.service
       disabled:
         - gdm.service
       masked:
@@ -289,6 +282,7 @@ modules:
         - nocblue-icon-theme-sync.timer
         - nix-portable-gc.timer
         - nocblue-flatpak-icon-fixes.service
+        - noctalia.service
       masked:
         - security-update-notification.path
         - security-update-notification.service

@@ -72,13 +72,7 @@ jobs:
           grep -q -- 'hidden_spokes =' iso_files/configure_iso_anaconda.sh
           grep -q -- 'hidden_webui_pages =' iso_files/configure_iso_anaconda.sh
           grep -q -- 'can_change_users = True' iso_files/configure_iso_anaconda.sh
-          grep -q -- 'add_after(widgets, "plugin:noctalia-calculator", {"id": "Network"})' iso_files/configure_iso_anaconda.sh
-          grep -q -- 'remove_widget(widgets, "VPN")' iso_files/configure_iso_anaconda.sh
-          grep -q -- '/etc/skel/.config/noctalia' iso_files/configure_iso_anaconda.sh
-          grep -q -- '/etc/skel/.cache/noctalia/shell-state.json' iso_files/configure_iso_anaconda.sh
-          grep -q -- '"showChangelogOnStartup"] = False' iso_files/configure_iso_anaconda.sh
-          grep -q -- '"telemetryEnabled"] = False' iso_files/configure_iso_anaconda.sh
-          grep -q -- '"lastSeenVersion": "v4.0.2"' iso_files/configure_iso_anaconda.sh
+          grep -q -- 'install -D -m 0644 /etc/xdg/niri/config.kdl /etc/skel/.config/niri/config.kdl' iso_files/configure_iso_anaconda.sh
           grep -q -- 'open-maximized true' iso_files/configure_iso_anaconda.sh
           forbidden_type='types: bootc''-installer'
           forbidden_payload='--installer''-payload-ref='

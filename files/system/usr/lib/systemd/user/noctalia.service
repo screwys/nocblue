@@ -1,0 +1,13 @@
+[Unit]
+Description=Noctalia shell
+PartOf=niri.service
+After=niri.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/noctalia
+Restart=on-failure
+RestartSec=2s
+
+[Install]
+WantedBy=niri.service

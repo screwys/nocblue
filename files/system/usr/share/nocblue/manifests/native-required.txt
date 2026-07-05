@@ -1,7 +1,9 @@
 # Core session and desktop
 niri
 xwayland-satellite
-noctalia-shell
+noctalia-git
+noctalia-greeter
+greetd
 ghostty
 fish
 fastfetch
@@ -59,11 +61,6 @@ loupe
 showtime
 xdg-desktop-portal-gnome
 xdg-desktop-portal-gtk
-sddm
-sddm-x11
-xorg-x11-server-Xorg
-qt6-qt5compat
-qt6-qtsvg
 qt6ct
 fcitx5
 fcitx5-mozc

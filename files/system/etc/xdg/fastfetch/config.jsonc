@@ -61,9 +61,15 @@
     },
     {
       "type": "command",
+      "key": "├ ",
+      "keyColor": "blue",
+      "text": "version=$(rpm -q --qf '%{VERSION}' noctalia-git 2>/dev/null || true); if [ -n \"$version\" ]; then printf 'Noctalia v%s' \"$version\"; else printf 'Noctalia'; fi"
+    },
+    {
+      "type": "command",
       "key": "├󰉼 ",
       "keyColor": "blue",
-      "text": "python3 -c \"import json,os; p=os.path.expanduser('~/.config/noctalia/settings.json'); print(json.load(open(p)).get('colorSchemes', {}).get('predefinedScheme', 'default') if os.path.exists(p) else 'default')\""
+      "text": "noctalia msg color-scheme-get 2>/dev/null || printf 'default'"
     },
     {
       "type": "icons",

@@ -18,8 +18,6 @@ fi
 templates_dir="$(root_path /etc/accountsservice/user-templates)"
 users_dir="$(root_path /var/lib/AccountsService/users)"
 state_dir="$(root_path /var/lib/nocblue)"
-sddm_state_dir="$(root_path /var/lib/sddm)"
-sddm_state_file="${sddm_state_dir}/state.conf"
 state_file="${state_dir}/session-defaults.done"
 passwd_file="$(root_path /etc/passwd)"
 
@@ -223,88 +221,6 @@ set_dmrc_session() {
     rm -f "${tmp}"
 }
 
-current_sddm_session() {
-    local file="$1"
-    [[ -f "${file}" ]] || return 0
-
-    awk -F= '
-        /^\[Last\][[:space:]]*$/ { in_last=1; next }
-        /^\[/ { in_last=0 }
-        in_last && $1 == "Session" { print $2; exit }
-    ' "${file}"
-}
-
-set_sddm_session() {
-    local tmp
-
-    tmp="$(mktemp)"
-    if [[ -f "${sddm_state_file}" ]]; then
-        awk -v session="${session_desktop_path}" '
-            function emit_session() {
-                if (!wrote_session) {
-                    print "Session=" session
-                    wrote_session=1
-                }
-            }
-
-            /^\[Last\][[:space:]]*$/ {
-                if (in_last) {
-                    emit_session()
-                }
-                in_last=1
-                saw_last=1
-                print
-                next
-            }
-
-            /^\[/ {
-                if (in_last) {
-                    emit_session()
-                }
-                in_last=0
-                print
-                next
-            }
-
-            in_last && /^Session=/ {
-                next
-            }
-
-            {
-                print
-            }
-
-            END {
-                if (!saw_last) {
-                    print ""
-                    print "[Last]"
-                    print "Session=" session
-                } else if (in_last) {
-                    emit_session()
-                }
-            }
-        ' "${sddm_state_file}" > "${tmp}"
-    else
-        {
-            printf '[Last]\n'
-            printf 'Session=%s\n' "${session_desktop_path}"
-        } > "${tmp}"
-    fi
-
-    install -D -m 0644 "${tmp}" "${sddm_state_file}"
-    rm -f "${tmp}"
-}
-
-seed_sddm_state() {
-    local current
-
-    current="$(current_sddm_session "${sddm_state_file}")"
-    if is_defaultable_session "${current}"; then
-        install -d -m 0755 "${sddm_state_dir}"
-        set_sddm_session
-    fi
-}
-
 seed_user_dmrc() {
     local uid="$1"
     local gid="$2"
@@ -341,5 +257,4 @@ if [[ -f "${passwd_file}" ]]; then
     done < "${passwd_file}"
 fi
 
-seed_sddm_state
 touch "${state_file}"

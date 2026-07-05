@@ -36,8 +36,13 @@ jobs:
           grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/recipe.yml
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
-          grep -q 'reconcile-recipe-dependencies.sh' recipes/recipe.yml
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
+          grep -q 'noctalia-v5.repo' recipes/recipe.yml
+          grep -q '^[[:space:]]*- noctalia-git$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- noctalia-greeter$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- greetd$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- greetd.service$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- noctalia.service$' recipes/recipe.yml
           ! grep -q 'configure-hardened-branding.sh' recipes/recipe.yml
           grep -q 'type: containerfile' recipes/recipe.yml
           grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
@@ -46,12 +51,8 @@ jobs:
           ! grep -q 'type: akmods' recipes/recipe.yml
           ! grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
           test ! -e files/scripts/build-openrazer-akmod.sh
-          grep -q 'noctalia-shell' files/scripts/reconcile-recipe-dependencies.sh
-          ! grep -q 'plasma-workspace' files/scripts/reconcile-recipe-dependencies.sh
           grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml
-          ! grep -Eq '^[[:space:]]*- (noctalia-shell|qt6-qt5compat|qt6-qtsvg|plasma-workspace)$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
-          ! grep -Eq 'qt6-(qt5compat|qtsvg)-[0-9]' recipes/recipe.yml
           ! grep -Eq 'plasma-workspace-[0-9]' recipes/recipe.yml
           grep -q 'restore_preload' files/scripts/install-pywalfox.sh
           grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
