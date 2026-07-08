@@ -1,11 +1,9 @@
 [Unit]
 Description=Apply nocblue user defaults
 Before=graphical-session-pre.target
+ConditionUser=!@system
 ConditionPathExists=!%h/.local/state/nocblue/user-defaults.v25.done
 
 [Service]
 Type=oneshot
 ExecStart=/usr/bin/nocblue-apply-user-defaults
-
-[Install]
-WantedBy=default.target

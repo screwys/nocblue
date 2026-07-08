@@ -69,7 +69,7 @@
       "type": "command",
       "key": "├󰉼 ",
       "keyColor": "blue",
-      "text": "noctalia msg color-scheme-get 2>/dev/null || printf 'default'"
+      "text": "scheme=$(noctalia msg color-scheme-get 2>/dev/null || true); scheme=${scheme#* }; printf '%s' \"${scheme:-default}\""
     },
     {
       "type": "icons",

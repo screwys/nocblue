@@ -121,7 +121,6 @@ modules:
         - nm-connection-editor
         - NetworkManager-tui
         - NetworkManager-wifi
-        - network-manager-applet
         - bubblewrap
         - xdg-dbus-proxy
 
@@ -226,7 +225,6 @@ modules:
       packages:
         - openrazer-daemon
         - python3-openrazer
-        - polychromatic
 
   - type: files
     files:
@@ -276,7 +274,6 @@ modules:
         - secureblue-flatpak-setup.timer
         - flatpak-user-update.timer
         - nocblue-flatpak-setup.timer
-        - nocblue-user-defaults.service
         - nocblue-adwsteamgtk.timer
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer

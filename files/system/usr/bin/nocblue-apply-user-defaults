@@ -91,10 +91,6 @@ ensure_ghostty_user_service() {
     fi
 }
 
-legacy_noctalia_css() {
-    grep -q 'Fallback until Noctalia renders generated GTK CSS for this user' "$1"
-}
-
 legacy_zed_settings() {
     python3 - "$1" <<'PY'
 import json
@@ -182,14 +178,21 @@ except Exception:
 if not isinstance(data, dict):
     data = {}
 
-wanted = {
-    "mode": "system",
-    "light": "Noctalia Light",
-    "dark": "Noctalia Dark",
-}
+stale_themes = (
+    {
+        "mode": "system",
+        "light": "Noctalia Light",
+        "dark": "Noctalia Dark",
+    },
+    {
+        "mode": "system",
+        "light": "One Light",
+        "dark": "Noctalia",
+    },
+)
 
-if data.get("theme") != wanted:
-    data["theme"] = wanted
+if data.get("theme") in stale_themes:
+    data.pop("theme", None)
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 PY
 }
@@ -554,7 +557,6 @@ ensure_niri_ghostty_launcher
 ensure_niri_browser_bridge
 copy_if_missing "${defaults_dir}/xdg/mimeapps.list" "${HOME}/.config/mimeapps.list"
 copy_if_missing_or_legacy "${defaults_dir}/zed/settings.json" "${HOME}/.config/zed/settings.json" legacy_zed_settings
-copy_if_missing "${defaults_dir}/zed/themes/noctalia.json" "${HOME}/.config/zed/themes/noctalia.json"
 ensure_zed_settings
 if [[ -d "${defaults_dir}/nvim" ]]; then
     while IFS= read -r nvim_default; do
@@ -565,15 +567,12 @@ fi
 copy_if_missing_or_legacy "${defaults_dir}/ghostty/config" "${HOME}/.config/ghostty/config" legacy_ghostty_config
 ensure_ghostty_keep_warm
 ensure_ghostty_user_service
-copy_if_missing "${defaults_dir}/ghostty/themes/noctalia" "${HOME}/.config/ghostty/themes/noctalia"
 copy_if_missing "${defaults_dir}/btop/btop.conf" "${HOME}/.config/btop/btop.conf"
 copy_if_missing "${defaults_dir}/MangoHud/MangoHud.conf" "${HOME}/.config/MangoHud/MangoHud.conf"
 copy_if_missing "${defaults_dir}/fish/config.fish" "${HOME}/.config/fish/config.fish"
 copy_if_missing "${defaults_dir}/gtk-3.0/gtk.css" "${HOME}/.config/gtk-3.0/gtk.css"
-copy_if_missing_or_legacy "${defaults_dir}/gtk-3.0/noctalia.css" "${HOME}/.config/gtk-3.0/noctalia.css" legacy_noctalia_css
 copy_if_missing "${defaults_dir}/gtk-3.0/settings.ini" "${HOME}/.config/gtk-3.0/settings.ini"
 copy_if_missing "${defaults_dir}/gtk-4.0/gtk.css" "${HOME}/.config/gtk-4.0/gtk.css"
-copy_if_missing_or_legacy "${defaults_dir}/gtk-4.0/noctalia.css" "${HOME}/.config/gtk-4.0/noctalia.css" legacy_noctalia_css
 copy_if_missing "${defaults_dir}/gtk-4.0/settings.ini" "${HOME}/.config/gtk-4.0/settings.ini"
 ensure_gtk_settings
 copy_if_missing "${defaults_dir}/qt6ct/qt6ct.conf" "${HOME}/.config/qt6ct/qt6ct.conf"

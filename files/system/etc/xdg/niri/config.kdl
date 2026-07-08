@@ -6,13 +6,12 @@ screenshot-path null
 
 environment {
     XCURSOR_SIZE "24"
-    XCURSOR_THEME "default"
+    XCURSOR_THEME "Acheron"
     PYTHON_KEYRING_BACKEND "keyring.backends.SecretService.Keyring"
     BROWSER "/usr/bin/xdg-open"
     EDITOR "nvim"
     VISUAL "nvim"
     TERMINAL "/usr/bin/ghostty"
-    QS_ICON_THEME "candy-icons"
     SHELL "/bin/fish"
     PYTHONPATH "/usr/lib/python3.14/site-packages"
     ELECTRON_OZONE_PLATFORM_HINT "auto"
@@ -48,7 +47,7 @@ input {
 }
 
 cursor {
-    xcursor-theme "default"
+    xcursor-theme "Acheron"
     xcursor-size 24
 }
 

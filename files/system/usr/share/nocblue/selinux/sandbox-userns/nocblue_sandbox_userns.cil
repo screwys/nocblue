@@ -184,6 +184,12 @@
 (allow nocblue_firefox_t var_lib_t (dir (watch)))
 (allow nocblue_firefox_t var_lib_t (file (map)))
 
+(optional nocblue_firefox_radicale_client
+    (allow nocblue_firefox_t radicale_port_t (tcp_socket (name_connect)))
+)
+
+(filecon "/var/lib/noctalia-greeter" dir (system_u object_r xdm_var_lib_t ((s0)(s0))))
+(filecon "/var/lib/noctalia-greeter/.*" any (system_u object_r xdm_var_lib_t ((s0)(s0))))
 (filecon "/usr/bin/nocblue-browser-no-preload" file (system_u object_r nocblue_browser_no_preload_exec_t ((s0)(s0))))
 (filecon "/usr/bin/nocblue-portal-bwrap" file (system_u object_r nocblue_portal_bwrap_exec_t ((s0)(s0))))
 (filecon "/opt/brave[.]com/brave-origin-beta/brave" file (system_u object_r brave_origin_exec_t ((s0)(s0))))

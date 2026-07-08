@@ -42,7 +42,7 @@ require("lazy").setup {
     lazy = false,
     version = false,
   },
-  install = { colorscheme = { "noctalia", "habamax" } },
+  install = { colorscheme = { "habamax" } },
   checker = {
     enabled = true,
     notify = false,

@@ -12,6 +12,7 @@ if [[ "${NOCBLUE_SELINUX_SYNC_FORCE:-}" != "1" ]] && ! selinuxenabled; then
 fi
 
 critical_label_paths=(
+    /var/lib/noctalia-greeter
     /usr/bin/nocblue-browser-no-preload
     /usr/bin/nocblue-portal-bwrap
 )
@@ -100,6 +101,7 @@ semodule -X "${target_priority}" -i "${cil}"
 
 label_failed=0
 for path in \
+    /var/lib/noctalia-greeter \
     /usr/bin/nocblue-browser-no-preload \
     /usr/bin/nocblue-portal-bwrap \
     /opt/brave.com/brave-origin-beta \

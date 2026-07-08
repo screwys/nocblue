@@ -1,0 +1,29 @@
+[plugins]
+enabled = [
+    "noctalia/notes",
+    "noctalia/screen_recorder",
+    "noctalia/kaomoji",
+    "noctalia/wallhaven",
+]
+
+    [[plugins.source]]
+    auto_update = false
+    kind = "git"
+    location = "https://github.com/noctalia-dev/official-plugins"
+    name = "official"
+
+    [[plugins.source]]
+    auto_update = false
+    kind = "git"
+    location = "https://github.com/noctalia-dev/community-plugins"
+    name = "community"
+
+[shell]
+polkit_agent = true
+
+    [shell.greeter_sync]
+    auto_sync = false
+
+[wallpaper]
+directory = "~/Pictures"
+fill_mode = "crop"
