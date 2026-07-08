@@ -24,7 +24,6 @@ wget2-wget
 unzip
 7zip
 yq
-yt-dlp
 direnv
 neovim
 socat

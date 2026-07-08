@@ -63,7 +63,6 @@ modules:
         - unzip
         - 7zip
         - yq
-        - yt-dlp
         - direnv
         - neovim
         - socat
