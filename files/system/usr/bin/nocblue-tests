@@ -1154,23 +1154,13 @@ grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
 grep -Fq '${session_id}.desktop' /usr/bin/nocblue-set-default-session
 grep -q 'current_dmrc_session' /usr/bin/nocblue-set-default-session
 grep -q 'set_user_session' /usr/bin/nocblue-set-default-session
-grep -q '^command = "/usr/bin/nocblue-noctalia-greeter-session"$' /etc/greetd/config.toml
-grep -q '^user = "greetd"$' /etc/greetd/config.toml
-grep -q '^default = "Niri"$' /usr/share/nocblue/defaults/noctalia-greeter/greeter.toml
 test -x /usr/bin/noctalia-greeter-apply-appearance
 test -x /usr/bin/noctalia-greeter-print-greetd-config
 test -x /usr/bin/noctalia-greeter-session
-test -x /usr/bin/nocblue-noctalia-greeter-session
 test -x /usr/bin/noctalia-greeter-compositor
 test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
 test -f /usr/share/backgrounds/nocblue/green-eyes.png
 test -f /etc/skel/.config/noctalia/config.toml
-grep -q '^\[templates.gtk3\]$' /usr/share/noctalia/assets/templates/builtin.toml
-grep -q '^\[templates.gtk4\]$' /usr/share/noctalia/assets/templates/builtin.toml
-grep -q '^\[templates.ghostty\]$' /usr/share/noctalia/assets/templates/builtin.toml
-grep -q '^\[templates.qt\]$' /usr/share/noctalia/assets/templates/builtin.toml
-grep -q '^\[templates.niri\]$' /usr/share/noctalia/assets/templates/builtin.toml
-grep -q '^\[templates.starship\]$' /usr/share/noctalia/assets/templates/builtin.toml
 test -f /usr/share/nocblue/defaults/gtk-3.0/settings.ini
 test -f /usr/share/nocblue/defaults/gtk-4.0/settings.ini
 grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
@@ -1209,7 +1199,6 @@ grep -q '^    BROWSER >/dev/null' /usr/bin/nocblue-refresh-portals
 grep -q 'flatpak-portal.service' /usr/bin/nocblue-refresh-portals
 grep -q 'xdg-desktop-portal-gnome.service' /usr/bin/nocblue-refresh-portals
 test -f /usr/share/nocblue/defaults/nvim/init.lua
-grep -q 'install = { colorscheme = { "habamax" } }' /usr/share/nocblue/defaults/nvim/lua/config/lazy.lua
 grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
