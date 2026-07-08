@@ -9,6 +9,7 @@ repo_gpgcheck=0
 enabled=1
 enabled_metadata=1
 countme=0
+excludepkgs=noctalia-git
 
 [terra-extras]
 name=Terra $releasever (Extras)
