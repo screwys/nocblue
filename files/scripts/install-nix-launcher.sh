@@ -41,6 +41,10 @@ func cleanEnv(env []string) []string {
 			continue
 		case len(entry) >= len("LD_AUDIT=") && entry[:len("LD_AUDIT=")] == "LD_AUDIT=":
 			continue
+		case len(entry) >= len("BASH_ENV=") && entry[:len("BASH_ENV=")] == "BASH_ENV=":
+			continue
+		case len(entry) >= len("SHELLOPTS=") && entry[:len("SHELLOPTS=")] == "SHELLOPTS=":
+			continue
 		default:
 			cleaned = append(cleaned, entry)
 		}

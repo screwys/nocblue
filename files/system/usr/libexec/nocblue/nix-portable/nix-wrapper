@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+unset BASH_ENV LD_PRELOAD LD_AUDIT
 
 payload="${NOCBLUE_NIX_PORTABLE_PAYLOAD:-/usr/libexec/nocblue/nix-portable/nix-portable}"
 proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/proot}"
@@ -67,6 +68,7 @@ fi
 export NP_LOCATION="${NP_LOCATION:-${HOME}}"
 export NP_RUNTIME=proot
 export NP_PROOT="${proot_payload}"
+export NOCBLUE_NIX_PORTABLE=1
 clean_nix_portable_build_home
 
 unset NIX_REMOTE
@@ -74,8 +76,6 @@ unset NIX_PROFILES
 unset NIX_USER_CONF_FILES
 unset NIX_PATH
 unset NIX_SSL_CERT_FILE
-unset LD_PRELOAD
-unset LD_AUDIT
 
 if should_sync_nix_profile "$@"; then
     set +e

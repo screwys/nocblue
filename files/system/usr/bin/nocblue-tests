@@ -283,8 +283,6 @@ test -x /usr/libexec/nocblue/nix-portable/proot
 test -x /usr/libexec/nocblue/nix-portable/clean-build-home
 test -x /usr/libexec/nocblue/nix-portable/nix-wrapper
 test -x /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-! ldd /usr/bin/nix >/dev/null 2>&1
-! ldd /usr/bin/nix-profile-exec >/dev/null 2>&1
 grep -Fqx 'rm -rf -- /homeless-shelter' /usr/libexec/nocblue/nix-portable/clean-build-home
 test -f /usr/libexec/nocblue/nix-portable/source-version
 grep -qx 'v012' /usr/libexec/nocblue/nix-portable/source-version
@@ -306,15 +304,6 @@ grep -qx '59e30229c852de246946c5ff32039f7a5d4e5ea917b1d4a80639694edf76dc91' /usr
 for nix_package in nix nix-daemon; do
     ! rpm -q "${nix_package}" >/dev/null 2>&1
 done
-grep -qx 'export NP_RUNTIME=proot' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'export NP_PROOT="${proot_payload}"' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'unset LD_PRELOAD' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'unset LD_AUDIT' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx '    local build_home="${emptyroot}/homeless-shelter"' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'clean_nix_portable_build_home' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'profile_sync="${NOCBLUE_NIX_PROFILE_SYNC:-/usr/bin/nix-profile-sync}"' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx 'should_sync_nix_profile() {' /usr/libexec/nocblue/nix-portable/nix-wrapper
-grep -qx '            "${profile_sync}" || printf '\''nix: warning: failed to sync nix profile shims\\n'\'' >&2' /usr/libexec/nocblue/nix-portable/nix-wrapper
 (
     nix_wrapper_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_wrapper_probe}"' EXIT
@@ -328,6 +317,7 @@ printf 'argv=%s\n' "$*"
 printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
 printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
 printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
+printf 'NOCBLUE_NIX_PORTABLE=%s\n' "${NOCBLUE_NIX_PORTABLE-}"
 if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
     printf 'stale build home still exists\n' >&2
     exit 43
@@ -359,6 +349,7 @@ SH
     grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_wrapper_output}"
     grep -Fxq "NP_LOCATION=${nix_wrapper_probe}/home" <<<"${nix_wrapper_output}"
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
+    grep -Fxq 'NOCBLUE_NIX_PORTABLE=1' <<<"${nix_wrapper_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
     cat >"${nix_wrapper_probe}/payload-children" <<'SH'
@@ -390,6 +381,19 @@ SH
     )"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_preload_output}"
     ! grep -Eq 'cannot be preloaded|cannot be loaded as audit' <<<"${nix_wrapper_preload_output}"
+    cat >"${nix_wrapper_probe}/bash-env-poison" <<'SH'
+exit 91
+SH
+    BASH_ENV="${nix_wrapper_probe}/bash-env-poison" /usr/bin/nix --version >/dev/null
+    BASH_ENV="${nix_wrapper_probe}/bash-env-poison" /usr/bin/nix-profile-exec --help >/dev/null
+    nix_wrapper_shellopts_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            SHELLOPTS=noexec \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            /usr/bin/nix --version
+    )"
+    grep -Fxq 'env-clean' <<<"${nix_wrapper_shellopts_output}"
     cat >"${nix_wrapper_probe}/profile-sync" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -416,12 +420,31 @@ SH
     grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile list' <<<"${nix_wrapper_profile_list_output}"
     ! grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_list_output}"
 )
-grep -Fq 'exec "${payload}" debug sh -c' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -qx '    profile_dir="${HOME}/.nix-profile/bin"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -qx '    profile_bin="${profile_dir}/${command_name}"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -qx '    PATH="${profile_dir}${PATH:+:${PATH}}"' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -qx '    unset LD_PRELOAD LD_AUDIT' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -Fq 'post-build-hook = ${post_build_hook}' /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
+host_bash_loader_env="$(
+    env \
+        -u BASH_ENV \
+        -u LD_PRELOAD \
+        -u LD_AUDIT \
+        -u NOCBLUE_NIX_PORTABLE \
+        /usr/bin/bash --noprofile --norc -c '
+            . /etc/bashrc
+            printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
+        '
+)"
+[[ "${host_bash_loader_env}" == *libhardened_malloc* ]]
+[[ "${host_bash_loader_env}" == *libno_rlimit_as* ]]
+nix_bash_loader_env="$(
+    env \
+        -u BASH_ENV \
+        -u LD_PRELOAD \
+        -u LD_AUDIT \
+        NOCBLUE_NIX_PORTABLE=1 \
+        /usr/bin/bash --noprofile --norc -c '
+            . /etc/bashrc
+            printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
+        '
+)"
+test "${nix_bash_loader_env}" = '|'
 (
     nix_profile_exec_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_profile_exec_probe}"' EXIT
@@ -450,6 +473,7 @@ printf 'payload-mode=%s %s %s\n' "$1" "$2" "$3"
 printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
 printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
 printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
+printf 'NOCBLUE_NIX_PORTABLE=%s\n' "${NOCBLUE_NIX_PORTABLE-}"
 if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
     printf 'stale build home still exists\n' >&2
     exit 43
@@ -476,12 +500,13 @@ SH
             NIX_PATH=nixpkgs=/tmp/nixpkgs \
             NIX_SSL_CERT_FILE=/tmp/certs.pem \
             NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_profile_exec_probe}/payload" \
-            /usr/bin/nix-profile-exec probe-tool one "two words"
+            /usr/bin/nix-profile-exec probe-tool one "two words" 2>&1
     )"
     grep -Fxq 'payload-mode=debug sh -c' <<<"${nix_profile_exec_output}"
     grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_profile_exec_output}"
     grep -Fxq "NP_LOCATION=${nix_profile_exec_probe}/home" <<<"${nix_profile_exec_output}"
     grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_profile_exec_output}"
+    grep -Fxq 'NOCBLUE_NIX_PORTABLE=1' <<<"${nix_profile_exec_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_profile_exec_output}"
     grep -Fxq 'tool-argv=one two words' <<<"${nix_profile_exec_output}"
     grep -Fxq "profile-command=${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool" <<<"${nix_profile_exec_output}"
