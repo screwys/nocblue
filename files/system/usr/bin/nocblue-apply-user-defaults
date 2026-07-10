@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v25.done"
+version_stamp="${state_dir}/user-defaults.v26.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -546,6 +546,10 @@ config["start_app_minimized"] = False
 path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
 }
+
+if [[ -x /usr/bin/nix-profile-sync ]]; then
+    /usr/bin/nix-profile-sync >/dev/null 2>&1 || true
+fi
 
 stage_user_icon_theme
 ensure_browser_environment

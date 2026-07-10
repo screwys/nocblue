@@ -46,7 +46,7 @@
       "type": "command",
       "key": "├ ",
       "keyColor": "green",
-      "text": "if command -v nix >/dev/null 2>&1; then count=$(env -u LD_PRELOAD NO_COLOR=1 nix profile list 2>/dev/null | awk 'BEGIN{count=0} /^Name:[[:space:]]/{count++} END{print count}'); else count=0; fi; printf '%s (nix)' \"${count:-0}\""
+      "text": "count=0; count_file=\"${XDG_STATE_HOME:-$HOME/.local/state}/nocblue/nix-profile-count\"; if IFS= read -r cached_count 2>/dev/null < \"$count_file\"; then case \"$cached_count\" in ''|*[!0-9]*) ;; *) count=$cached_count ;; esac; fi; printf '%s (nix)' \"$count\""
     },
     {
       "type": "uptime",

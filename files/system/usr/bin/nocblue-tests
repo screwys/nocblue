@@ -244,7 +244,6 @@ grep -q "nocblue 44" /etc/xdg/fastfetch/config.jsonc
 grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
 test -x /usr/bin/nocblue-resolve-cursor-theme
 grep -q 'nocblue-resolve-cursor-theme' /etc/xdg/fastfetch/config.jsonc
-grep -q 'nix profile list' /etc/xdg/fastfetch/config.jsonc
 grep -q "Noctalia v%s" /etc/xdg/fastfetch/config.jsonc
 grep -q '^PRETTY_NAME="nocblue 44"$' /usr/lib/os-release
 grep -q '^VARIANT="nocblue"$' /usr/lib/os-release
@@ -529,6 +528,10 @@ grep -qx '        printf '\''nix-profile-sync: skipping %s; would shadow %s\\n'\
     nix_profile_sync_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_profile_sync_probe}"' EXIT
     mkdir -p "${nix_profile_sync_probe}/host-bin" "${nix_profile_sync_probe}/shims" "${nix_profile_sync_probe}/state/nocblue"
+    mkdir -p "${nix_profile_sync_probe}/state/nix/profiles" "${nix_profile_sync_probe}/home/.nix-portable/nix/store/probe-profile"
+    ln -s profile-1-link "${nix_profile_sync_probe}/state/nix/profiles/profile"
+    ln -s /nix/store/probe-profile "${nix_profile_sync_probe}/state/nix/profiles/profile-1-link"
+    printf '{"elements":{"one":{},"two":{}}}\n' >"${nix_profile_sync_probe}/home/.nix-portable/nix/store/probe-profile/manifest.json"
     cat >"${nix_profile_sync_probe}/profile-exec" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -568,6 +571,7 @@ SH
     test ! -e "${nix_profile_sync_probe}/shims/python"
     test ! -e "${nix_profile_sync_probe}/shims/stale-tool"
     grep -Fxq 'nixpkgs-review' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
+    grep -Fxq '2' "${nix_profile_sync_probe}/state/nocblue/nix-profile-count"
     ! grep -Fxq 'python' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
     grep -Fxq "nix-profile-sync: skipping python; would shadow ${nix_profile_sync_probe}/host-bin/python" <<<"${nix_profile_sync_output}"
     grep -Fxq 'nix-profile-sync: skipping invalid command name: bad/name' <<<"${nix_profile_sync_output}"
@@ -995,8 +999,9 @@ grep -q -- '--unset-env=LD_PRELOAD' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v25.done' /usr/bin/nocblue-apply-user-defaults
-grep -q 'user-defaults.v25.done' /usr/lib/systemd/user/nocblue-user-defaults.service
+user_defaults_stamp="$(sed -n 's|^version_stamp="${state_dir}/\(user-defaults\.v[0-9][0-9]*\.done\)"$|\1|p' /usr/bin/nocblue-apply-user-defaults)"
+test -n "${user_defaults_stamp}"
+grep -Fqx "ConditionPathExists=!%h/.local/state/nocblue/${user_defaults_stamp}" /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q '^ConditionUser=!@system$' /usr/lib/systemd/user/nocblue-user-defaults.service
 grep -q 'systemctl --user enable app-com.mitchellh.ghostty.service' /usr/bin/nocblue-apply-user-defaults
 grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
