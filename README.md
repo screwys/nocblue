@@ -1,5 +1,7 @@
 # nocblue
 
+<img width="2563" height="1438" alt="image" src="https://github.com/user-attachments/assets/490c9258-9308-4639-a076-aa15160f7dd2" />
+
 `nocblue` is a **beyond opinionated** Fedora Silverblue bootc image for personal use, powered by [Universal Blue](https://github.com/ublue-os) and based on [secureblue](https://github.com/secureblue/secureblue). It has both gaming and development packages. It ships with [niri](https://github.com/niri-wm/niri), [Noctalia v5](https://github.com/noctalia-dev/noctalia), nix, the official Noctalia Greeter on greetd, 6 natively installed browsers with preinstalled extensions/disabled telemetry, ~40 flatpak packages, native Ghostty, OpenRazer and Proton VPN.
 
 User namescapes are enabled per browser, allowing them to use their own sandboxing, while keeping broad user namespaces disabled, respecting secureblue default. 
