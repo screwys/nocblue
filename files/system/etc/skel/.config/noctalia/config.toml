@@ -24,6 +24,9 @@ polkit_agent = true
     [shell.greeter_sync]
     auto_sync = false
 
+[theme.templates]
+builtin_ids = ["niri"]
+
 [wallpaper]
 directory = "~/Pictures"
 fill_mode = "crop"
