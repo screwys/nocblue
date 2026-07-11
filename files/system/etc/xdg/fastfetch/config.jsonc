@@ -46,7 +46,7 @@
       "type": "command",
       "key": "├ ",
       "keyColor": "green",
-      "text": "count=0; count_file=\"${XDG_STATE_HOME:-$HOME/.local/state}/nocblue/nix-profile-count\"; if IFS= read -r cached_count 2>/dev/null < \"$count_file\"; then case \"$cached_count\" in ''|*[!0-9]*) ;; *) count=$cached_count ;; esac; fi; printf '%s (nix)' \"$count\""
+      "text": "profile_dir=\"${XDG_STATE_HOME:-$HOME/.local/state}/nix/profiles\"; generation=$(readlink \"$profile_dir/profile\" 2>/dev/null || true); store_path=$(readlink \"$profile_dir/$generation\" 2>/dev/null || true); count=0; case \"$store_path\" in /nix/store/*-profile) manifest=\"${NP_LOCATION:-$HOME}/.nix-portable${store_path}/manifest.json\"; if [ -r \"$manifest\" ]; then count=$(jq -er '.elements | if type == \"object\" then length else error(\"invalid profile manifest\") end' \"$manifest\" 2>/dev/null || printf '0'); fi ;; esac; printf '%s (nix)' \"$count\""
     },
     {
       "type": "uptime",
