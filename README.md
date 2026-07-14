@@ -29,3 +29,7 @@ For testing in GNOME Boxes, you need to set OS as Silverblue. After machine is s
 ## commands
 
 `njust image trust REPO_URL` handles necessary steps to set up a docker container
+
+## disclaimer
+
+This image uses the Fedora Silverblue logo in the boot menu, fastfetch, and `start-here`, but is not affiliated with the Fedora Project.

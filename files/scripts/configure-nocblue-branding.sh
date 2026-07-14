@@ -24,6 +24,30 @@ done
 
 rm -f "${os_release_sed}"
 
+branding_dir=/usr/share/nocblue/branding
+
+install -D -m 0644 \
+    "${branding_dir}/silverblue-plymouth-watermark.png" \
+    /usr/share/plymouth/themes/spinner/watermark.png
+
+rm -f \
+    /usr/share/icons/hicolor/scalable/apps/start-here.svg \
+    /usr/share/icons/hicolor/scalable/apps/start-here_classic.svg \
+    /usr/share/icons/hicolor/scalable/places/start-here.svg
+
+for size in 16 22 24 32 36 48 96 256; do
+    for context in apps places; do
+        icon_dir="/usr/share/icons/hicolor/${size}x${size}/${context}"
+        install -d -m 0755 "${icon_dir}"
+        magick "${branding_dir}/silverblue-start-here.png" \
+            -filter Lanczos \
+            -resize "${size}x${size}" \
+            "${icon_dir}/start-here.png"
+    done
+done
+
+rm -rf /usr/share/backgrounds/secureblue
+
 printf 'desktop\n' >/etc/hostname
 if [[ -f /etc/machine-info ]]; then
     if grep -q '^PRETTY_HOSTNAME=' /etc/machine-info; then
