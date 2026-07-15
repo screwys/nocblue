@@ -76,6 +76,10 @@ modules:
         - golang
         - rust
         - cargo
+        - rpmdevtools
+        - copr-cli
+        - rpmlint
+        - rust2rpm
         - gcc
         - gcc-c++
         - make
@@ -222,7 +226,7 @@ modules:
     snippets:
       - >-
         RUN --mount=type=bind,from=ghcr.io/ublue-os/akmods:main-44,src=/rpms,dst=/tmp/rpms,ro
-        rpm-ostree install /tmp/rpms/common/*openrazer*.rpm /tmp/rpms/kmods/*openrazer*.rpm &&
+        dnf install -y /tmp/rpms/common/*openrazer*.rpm /tmp/rpms/kmods/*openrazer*.rpm &&
         rpm -q openrazer-kmod-common kmod-openrazer
 
   # Userspace only. Keep this after the signed ublue akmods RPMs so
