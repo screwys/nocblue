@@ -278,8 +278,6 @@ modules:
         - firewalld.service
         - me.proton.vpn.split_tunneling.service
         - greetd.service
-      disabled:
-        - gdm.service
       masked:
         - geoclue.service
         - sshd.service
