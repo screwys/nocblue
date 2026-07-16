@@ -26,9 +26,14 @@ rm -f "${os_release_sed}"
 
 branding_dir=/usr/share/nocblue/branding
 
+dnf -y swap --allowerasing secureblue-logos fedora-logos
+
 install -D -m 0644 \
     "${branding_dir}/silverblue-plymouth-watermark.png" \
     /usr/share/plymouth/themes/spinner/watermark.png
+install -D -m 0644 \
+    "${branding_dir}/silverblue-plymouth-watermark.png" \
+    /usr/share/pixmaps/system-logo-white.png
 
 rm -f \
     /usr/share/icons/hicolor/scalable/apps/start-here.svg \

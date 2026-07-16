@@ -126,7 +126,6 @@ modules:
         - fcitx5-gtk
         - fcitx5-qt
         - adwaita-cursor-theme
-        - fedora-logos
         - google-noto-sans-cjk-fonts
         - firewalld
         - flatpak
@@ -205,7 +204,6 @@ modules:
     remove:
       auto-remove: false
       packages:
-        - secureblue-logos
         - ptyxis
         - gnome-terminal
         - gnome-terminal-nautilus
