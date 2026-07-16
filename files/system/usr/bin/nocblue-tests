@@ -18,14 +18,14 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder wl-screenrec wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
     }
 done
 
-rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-classic-session gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset >/dev/null
+rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset >/dev/null
 test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
@@ -61,7 +61,7 @@ python3 - <<'PY'
 import mako.template
 PY
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
-for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx lxqt-policykit torbrowser-launcher temurin-17-jdk; do
+for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
@@ -1172,7 +1172,8 @@ grep -qx 'Environment=XDP_VALIDATE_ICON=/usr/libexec/nocblue/xdg-desktop-portal-
 ! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop
 ! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/mullvad-browser/start-mullvad-browser' /usr/share/applications/mullvad-browser.desktop
 test -f /usr/share/wayland-sessions/gnome.desktop
-test -f /usr/share/wayland-sessions/gnome-classic.desktop
+test ! -e /usr/share/wayland-sessions/gnome-classic.desktop
+test -f /usr/share/applications/org.gnome.Settings.desktop
 test -f /usr/share/wayland-sessions/niri.desktop
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
 grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
