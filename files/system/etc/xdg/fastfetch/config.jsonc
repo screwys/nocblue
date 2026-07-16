@@ -4,7 +4,9 @@
     "type": "auto",
     "source": "Fedora-Silverblue",
     "padding": {
-      "top": 5
+      "top": 5,
+      "left": 2,
+      "right": 4
     }
   },
   "display": {
