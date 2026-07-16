@@ -296,6 +296,9 @@ modules:
         - security-update-notification.path
         - security-update-notification.service
 
+  # Plymouth reads its assets from initramfs before the root filesystem is mounted.
+  - type: initramfs
+
   # Keep the selectable Silverblue fallback sessions even though greetd starts Niri by default.
   - type: containerfile
     snippets:
@@ -304,5 +307,13 @@ modules:
         test -f /usr/share/wayland-sessions/gnome.desktop &&
         test -f /usr/share/wayland-sessions/gnome-classic.desktop &&
         test -f /usr/share/wayland-sessions/niri.desktop
+      - >-
+        RUN expected="$(sha256sum /usr/share/plymouth/themes/spinner/watermark.png | cut -d' ' -f1)" &&
+        for kernel_dir in /usr/lib/modules/*/; do
+        image="${kernel_dir}initramfs.img";
+        test -f "${image}" || exit 1;
+        actual="$(lsinitrd -f /usr/share/plymouth/themes/spinner/watermark.png "${image}" | sha256sum | cut -d' ' -f1)";
+        test "${actual}" = "${expected}" || exit 1;
+        done
 
   - type: signing
