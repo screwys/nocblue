@@ -296,4 +296,13 @@ modules:
         - security-update-notification.path
         - security-update-notification.service
 
+  # Keep the selectable Silverblue fallback sessions even though greetd starts Niri by default.
+  - type: containerfile
+    snippets:
+      - >-
+        RUN rpm -q secureblue-logos gdm gnome-shell gnome-session-wayland-session gnome-classic-session &&
+        test -f /usr/share/wayland-sessions/gnome.desktop &&
+        test -f /usr/share/wayland-sessions/gnome-classic.desktop &&
+        test -f /usr/share/wayland-sessions/niri.desktop
+
   - type: signing
