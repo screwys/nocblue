@@ -138,22 +138,7 @@ modules:
         - bubblewrap
         - xdg-dbus-proxy
 
-        # Installer and boot helpers. Keep these until the ISO story is decided.
-        - shim-x64
-        - grub2-efi-x64-cdboot
-        - grub2-tools
-        - anaconda
-        - anaconda-core
-        - anaconda-dracut
-        - anaconda-install-env-deps
-        - dracut-config-generic
-        - dracut-network
-        - net-tools
-        - squashfs-tools
-        - lorax-templates-generic
-        - biosdevname
-        - prefixdevname
-        - python3-mako
+        # System and boot tools.
         - pipx
         - mokutil
         - kmod
@@ -297,9 +282,6 @@ modules:
         - security-update-notification.path
         - security-update-notification.service
 
-  # Plymouth reads its assets from initramfs before the root filesystem is mounted.
-  - type: initramfs
-
   # Keep normal GNOME as a complete fallback even though greetd starts Niri by default.
   - type: containerfile
     snippets:
@@ -310,18 +292,5 @@ modules:
         test ! -e /usr/share/wayland-sessions/gnome-classic.desktop &&
         test -f /usr/share/applications/org.gnome.Settings.desktop &&
         test -f /usr/share/wayland-sessions/niri.desktop
-      - >-
-        RUN expected_watermark="$(sha256sum /usr/share/plymouth/themes/spinner/watermark.png | cut -d' ' -f1)" &&
-        expected_preload="$(sha256sum /usr/lib64/libno_rlimit_as.so | cut -d' ' -f1)" &&
-        for kernel_dir in /usr/lib/modules/*/; do
-        image="${kernel_dir}initramfs.img";
-        test -f "${image}" || exit 1;
-        actual_watermark="$(lsinitrd -f /usr/share/plymouth/themes/spinner/watermark.png "${image}" | sha256sum | cut -d' ' -f1)";
-        actual_preload="$(lsinitrd -f /usr/lib64/libno_rlimit_as.so "${image}" | sha256sum | cut -d' ' -f1)";
-        test "${actual_watermark}" = "${expected_watermark}" || exit 1;
-        test "${actual_preload}" = "${expected_preload}" || exit 1;
-        lsinitrd "${image}" | grep -Eq 'usr/lib64/(glibc-hwcaps/[^/]+/)?libhardened_malloc\.so$' || exit 1;
-        lsinitrd "${image}" | grep -Eq 'etc/ld\.so\.cache$' || exit 1;
-        done
 
   - type: signing

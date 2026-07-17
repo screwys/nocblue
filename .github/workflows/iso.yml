@@ -37,7 +37,8 @@ jobs:
         run: |
           set -euo pipefail
           test -f iso_files/configure_iso_anaconda.sh
-          grep -q -- "uses: ublue-os/titanoboa@main" .github/workflows/iso.yml
+          grep -q -- "uses: RoyalOughtness/titanoboa@3d19fdfa8bff13542c0bb92620ed7826f1bbe82c" .github/workflows/iso.yml
+          ! grep -q -- "titanoboa@main" .github/workflows/iso.yml
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
           grep -q -- "hook-pre-initramfs:" .github/workflows/iso.yml
@@ -87,7 +88,7 @@ jobs:
 
       - name: build live iso
         id: build
-        uses: ublue-os/titanoboa@main
+        uses: RoyalOughtness/titanoboa@3d19fdfa8bff13542c0bb92620ed7826f1bbe82c # main
         with:
           image-ref: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}
           container-image: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}

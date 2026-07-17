@@ -4,16 +4,6 @@ set -euo pipefail
 fedora_version="$(rpm -E %fedora)"
 test "${fedora_version}" = "44"
 
-require_matching_file() {
-    local root="$1"
-    local pattern="$2"
-
-    if ! find "${root}" -path "${pattern}" -type f -print -quit | grep -q .; then
-        printf 'missing expected file matching %s under %s\n' "${pattern}" "${root}" >&2
-        exit 1
-    fi
-}
-
 rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
@@ -38,28 +28,6 @@ for module_path in "${openrazer_modules[@]}"; do
     fi
 done
 rpm -q pipx >/dev/null
-rpm -q shim-x64 grub2-efi-x64-cdboot grub2-tools >/dev/null
-rpm -q anaconda anaconda-core anaconda-dracut anaconda-install-env-deps dracut-config-generic dracut-network net-tools squashfs-tools lorax-templates-generic biosdevname prefixdevname python3-mako >/dev/null
-require_matching_file /usr/lib/efi/shim '*/EFI/fedora/shimx64.efi'
-require_matching_file /usr/lib/efi/shim '*/EFI/fedora/mmx64.efi'
-require_matching_file /usr/lib/efi/grub2 '*/EFI/fedora/gcdx64.efi'
-test -f /usr/share/grub/unicode.pf2
-test -x /usr/libexec/anaconda/run-anaconda
-test -f /usr/share/lorax/templates.d/99-generic/runtime-postinstall.tmpl
-test -d /mnt
-test ! -L /mnt
-test -d /var/mnt
-test ! -L /var/mnt
-test -d /var/tmp
-test ! -L /var/tmp
-test "$(stat -c %a /var/tmp)" = "1777"
-test -f /usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
-grep -qx 'tmpdir="/tmp"' /usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
-test -f /usr/lib/tmpfiles.d/nocblue-installer.conf
-grep -qx 'd /var/tmp 1777 root root -' /usr/lib/tmpfiles.d/nocblue-installer.conf
-python3 - <<'PY'
-import mako.template
-PY
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
 for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {

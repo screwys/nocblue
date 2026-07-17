@@ -27,10 +27,7 @@ rm -f "${os_release_sed}"
 branding_dir=/usr/share/nocblue/branding
 
 install -D -m 0644 \
-    "${branding_dir}/silverblue-plymouth-watermark.png" \
-    /usr/share/plymouth/themes/spinner/watermark.png
-install -D -m 0644 \
-    "${branding_dir}/silverblue-plymouth-watermark.png" \
+    "${branding_dir}/silverblue-system-logo-white.png" \
     /usr/share/pixmaps/system-logo-white.png
 
 rm -f \

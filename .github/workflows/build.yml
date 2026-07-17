@@ -37,6 +37,11 @@ jobs:
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'image-version: 44' recipes/recipe.yml
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
+          ! grep -q 'type: initramfs' recipes/recipe.yml
+          ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files
+          test ! -e files/system/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+          test ! -e files/system/usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
+          test ! -e files/system/usr/lib/tmpfiles.d/nocblue-installer.conf
           grep -q 'noctalia-v5.repo' recipes/recipe.yml
           grep -q '^[[:space:]]*- noctalia-git$' recipes/recipe.yml
           grep -q '^[[:space:]]*- noctalia-greeter$' recipes/recipe.yml
@@ -54,6 +59,7 @@ jobs:
           grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
           ! grep -Eq 'plasma-workspace-[0-9]' recipes/recipe.yml
+          ! grep -Eq '^[[:space:]]*- (anaconda|anaconda-core|anaconda-dracut|anaconda-install-env-deps|dracut-config-generic|dracut-network|net-tools|squashfs-tools|lorax-templates-generic|biosdevname|prefixdevname|python3-mako)$' recipes/recipe.yml
           grep -q 'restore_preload' files/scripts/install-pywalfox.sh
           grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
           grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh

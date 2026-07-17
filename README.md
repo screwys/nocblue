@@ -32,4 +32,4 @@ For testing in GNOME Boxes, you need to set OS as Silverblue. After machine is s
 
 ## disclaimer
 
-This image uses the Fedora Silverblue logo in the boot menu, fastfetch, and `start-here`, but is not affiliated with the Fedora Project.
+This image uses the Fedora Silverblue logo in fastfetch and desktop artwork, but is not affiliated with the Fedora Project. The pre-boot splash is inherited unchanged from secureblue.
