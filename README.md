@@ -25,11 +25,3 @@ sudo systemctl reboot
 ```
 
 For testing in GNOME Boxes, you need to set OS as Silverblue. After machine is set up, you need to enable 3D Accelaration & restart it.
-
-## commands
-
-`njust image trust REPO_URL` handles necessary steps to set up a docker container
-
-## disclaimer
-
-This image uses the Fedora Silverblue logo in fastfetch and desktop artwork, but is not affiliated with the Fedora Project. The pre-boot splash is inherited unchanged from secureblue.
