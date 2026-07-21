@@ -9,6 +9,9 @@ set -euo pipefail
 readonly STATE_FILE=/usr/lib/nocblue/fedora-openrazer-kernel-release
 readonly FEDORA_RELEASE="$(rpm -E '%fedora')"
 readonly ARCH="$(rpm -E '%_arch')"
+readonly ROOT_HARDENED_CONF=/usr/lib/systemd/system.conf.d/40-hardened_malloc.conf
+readonly ROOT_HARDENED_MASK=/etc/systemd/system.conf.d/40-hardened_malloc.conf
+readonly DRACUT_MASK_MODULE=/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
 
 fatal() {
     printf 'fedora-openrazer validation failed: %s\n' "$*" >&2
@@ -72,6 +75,15 @@ vmlinuz="/usr/lib/modules/${kver}/vmlinuz"
 [[ -s "${vmlinuz}" ]] || fatal "missing ${vmlinuz}"
 sbverify --list "${vmlinuz}" >/dev/null
 
+# The real root must retain Secureblue's allocator hardening. The /etc mask is
+# generated inside the initramfs by the dracut module and must never leak here.
+[[ -f "${ROOT_HARDENED_CONF}" ]] || fatal "missing ${ROOT_HARDENED_CONF}"
+grep -Fq 'LD_PRELOAD=libhardened_malloc.so libno_rlimit_as.so' \
+    "${ROOT_HARDENED_CONF}" || fatal 'real-root hardened malloc configuration is unexpected'
+[[ ! -e "${ROOT_HARDENED_MASK}" && ! -L "${ROOT_HARDENED_MASK}" ]] || \
+    fatal "initramfs-only hardened malloc mask leaked into the real root"
+[[ -x "${DRACUT_MASK_MODULE}" ]] || fatal "missing ${DRACUT_MASK_MODULE}"
+
 initramfs="/usr/lib/modules/${kver}/initramfs.img"
 [[ -s "${initramfs}" ]] || fatal "missing ${initramfs}"
 
@@ -79,40 +91,30 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "${tmpdir}"' EXIT
 
 listing="${tmpdir}/listing"
+modules="${tmpdir}/modules"
 lsinitrd "${initramfs}" > "${listing}"
+lsinitrd -m "${initramfs}" > "${modules}"
 
-grep -Fq 'libhardened_malloc.so' "${listing}" || \
-    fatal 'libhardened_malloc.so is absent from initramfs'
-grep -Fq 'usr/lib64/libno_rlimit_as.so' "${listing}" || \
-    fatal 'libno_rlimit_as.so is absent from initramfs'
-grep -Fq 'etc/ld.so.cache' "${listing}" || \
-    fatal '/etc/ld.so.cache is absent from initramfs'
-grep -Fq 'usr/lib/systemd/system.conf.d/40-hardened_malloc.conf' "${listing}" || \
-    fatal '40-hardened_malloc.conf is absent from initramfs'
+grep -Eq '^[[:space:]]*nocblue-initrd-no-preload([[:space:]]|$)' "${modules}" || \
+    fatal 'nocblue-initrd-no-preload dracut module is absent from initramfs'
 grep -Fq 'systemd-cryptsetup' "${listing}" || \
     fatal 'systemd-cryptsetup is absent from initramfs'
 grep -Fq 'tpm2-tss' "${listing}" || \
     fatal 'tpm2-tss is absent from initramfs'
 
-embedded_no_rlimit="${tmpdir}/libno_rlimit_as.so"
-lsinitrd -f /usr/lib64/libno_rlimit_as.so "${initramfs}" > "${embedded_no_rlimit}"
-[[ -s "${embedded_no_rlimit}" ]] || fatal 'embedded libno_rlimit_as.so is empty'
-cmp -s "${embedded_no_rlimit}" /usr/lib64/libno_rlimit_as.so || \
-    fatal 'embedded libno_rlimit_as.so differs from the final root filesystem'
+# Unpack the image so symlink semantics can be checked directly. A same-named
+# /etc drop-in pointing to /dev/null masks the vendor /usr drop-in in systemd.
+unpack_dir="${tmpdir}/unpack"
+mkdir -p "${unpack_dir}"
+(
+    cd "${unpack_dir}"
+    lsinitrd --unpack "${initramfs}" >/dev/null
+)
 
-embedded_cache="${tmpdir}/ld.so.cache"
-lsinitrd -f /etc/ld.so.cache "${initramfs}" > "${embedded_cache}"
-[[ -s "${embedded_cache}" ]] || fatal 'embedded ld.so.cache is empty'
-ldconfig -p -C "${embedded_cache}" | grep -Fq 'libno_rlimit_as.so' || \
-    fatal 'embedded loader cache cannot resolve libno_rlimit_as.so'
-ldconfig -p -C "${embedded_cache}" | grep -Fq 'libhardened_malloc.so' || \
-    fatal 'embedded loader cache cannot resolve libhardened_malloc.so'
+initrd_mask="${unpack_dir}/etc/systemd/system.conf.d/40-hardened_malloc.conf"
+[[ -L "${initrd_mask}" ]] || \
+    fatal 'initramfs does not mask 40-hardened_malloc.conf'
+[[ "$(readlink "${initrd_mask}")" == /dev/null ]] || \
+    fatal "initramfs hardened malloc mask points to $(readlink "${initrd_mask}"), expected /dev/null"
 
-embedded_systemd_conf="${tmpdir}/40-hardened_malloc.conf"
-lsinitrd -f /usr/lib/systemd/system.conf.d/40-hardened_malloc.conf \
-    "${initramfs}" > "${embedded_systemd_conf}"
-grep -Fq 'LD_PRELOAD=libhardened_malloc.so libno_rlimit_as.so' \
-    "${embedded_systemd_conf}" || \
-    fatal 'embedded systemd preload configuration is unexpected'
-
-printf 'Validated Fedora kernel, signed OpenRazer modules, and initramfs: %s\n' "${kver}"
+printf 'Validated Fedora kernel, signed OpenRazer modules, and preload-free initramfs: %s\n' "${kver}"

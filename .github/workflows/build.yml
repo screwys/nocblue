@@ -26,6 +26,7 @@ jobs:
       - name: shell syntax
         run: |
           find files/scripts files/system/usr/bin files/compat/usr/libexec \
+            files/compat/usr/lib/dracut/modules.d \
             -type f -print0 | xargs -0 -r bash -n
 
       - name: repository shape
@@ -68,11 +69,17 @@ jobs:
 
           test -x files/compat/usr/libexec/nocblue/install-fedora-openrazer-compat.sh
           test -x files/compat/usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
-          test -f files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
-          grep -q '/usr/lib64/libno_rlimit_as.so' \
-            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
-          grep -q '/etc/ld.so.cache' \
-            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+          test ! -e files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+          test -f files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-initrd-no-preload.conf
+          grep -q 'add_dracutmodules+=" nocblue-initrd-no-preload "' \
+            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-initrd-no-preload.conf
+          test -x files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
+          grep -q 'echo systemd' \
+            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
+          grep -q 'ln -sfn /dev/null' \
+            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
+          grep -q '40-hardened_malloc.conf' \
+            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
 
           ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files
           test ! -e files/system/usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
