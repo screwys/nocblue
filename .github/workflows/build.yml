@@ -44,7 +44,17 @@ jobs:
           grep -q 'src=/rpms' recipes/compat.yml
           grep -q 'type: initramfs' recipes/compat.yml
           grep -q 'validate-fedora-openrazer-compat.sh' recipes/compat.yml
-          grep -q '^[[:space:]]*- "kernel\*"$' recipes/compat.yml
+          # A blanket kernel* exclusion also blocks kernel-headers, which is
+          # required by glibc-devel and many development packages.
+          ! grep -RIn '^[[:space:]]*- "kernel\*"$' recipes
+          for recipe in recipes/compat.yml recipes/recipe.yml; do
+            grep -q '^[[:space:]]*- kernel$' "${recipe}"
+            grep -q '^[[:space:]]*- kernel-core$' "${recipe}"
+            grep -q '^[[:space:]]*- kernel-modules$' "${recipe}"
+            grep -q '^[[:space:]]*- kernel-modules-core$' "${recipe}"
+            grep -q '^[[:space:]]*- kernel-modules-extra$' "${recipe}"
+            grep -q '^[[:space:]]*- "kernel-uki\*"$' "${recipe}"
+          done
 
           grep -q 'name: nocblue$' recipes/recipe.yml
           grep -q 'base-image: ghcr.io/screwys/nocblue-fedora-openrazer' recipes/recipe.yml
@@ -55,7 +65,6 @@ jobs:
           ! grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
           ! grep -q 'ublue-akmods.repo' recipes/recipe.yml
           ! grep -q 'openrazer.repo' recipes/recipe.yml
-          grep -q '^[[:space:]]*- "kernel\*"$' recipes/recipe.yml
 
           test -x files/compat/usr/libexec/nocblue/install-fedora-openrazer-compat.sh
           test -x files/compat/usr/libexec/nocblue/validate-fedora-openrazer-compat.sh

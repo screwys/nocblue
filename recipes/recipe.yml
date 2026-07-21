@@ -29,7 +29,14 @@ modules:
       install-weak-deps: false
       allow-erasing: true
       exclude:
-        - "kernel*"
+        # Protect only the boot/runtime kernel ABI. Development and userspace
+        # packages still need kernel-headers, kernel-devel, and kernel-tools.
+        - kernel
+        - kernel-core
+        - kernel-modules
+        - kernel-modules-core
+        - kernel-modules-extra
+        - "kernel-uki*"
       packages:
         # Desktop/session stack.
         - niri
@@ -202,7 +209,14 @@ modules:
       install-weak-deps: false
       skip-unavailable: true
       exclude:
-        - "kernel*"
+        # Protect only the boot/runtime kernel ABI. Development and userspace
+        # packages still need kernel-headers, kernel-devel, and kernel-tools.
+        - kernel
+        - kernel-core
+        - kernel-modules
+        - kernel-modules-core
+        - kernel-modules-extra
+        - "kernel-uki*"
       packages:
         - adw-gtk3-theme
         - umu-launcher
