@@ -297,23 +297,23 @@ PY
 }
 
 ensure_niri_browser_bridge() {
-    local config="${HOME}/.config/niri/config.kdl"
-    [[ -f "${config}" ]] || return 0
+    local config_dir="${HOME}/.config/niri"
+    [[ -d "${config_dir}" ]] || return 0
 
-    python3 - "${config}" <<'PY'
+    python3 - "${config_dir}" <<'PY'
 from pathlib import Path
 import re
 import sys
 
-path = Path(sys.argv[1])
-text = path.read_text(encoding="utf-8")
-new_text = re.sub(
-    r'(?m)^(\s*)BROWSER "flatpak run io\.github\.alyraffauf\.Switchyard"$',
-    r'\1BROWSER "/usr/bin/xdg-open"',
-    text,
-)
-if new_text != text:
-    path.write_text(new_text, encoding="utf-8")
+for path in Path(sys.argv[1]).rglob("*.kdl"):
+    text = path.read_text(encoding="utf-8")
+    new_text = re.sub(
+        r'(?m)^(\s*)BROWSER "flatpak run io\.github\.alyraffauf\.Switchyard"$',
+        r'\1BROWSER "/usr/bin/xdg-open"',
+        text,
+    )
+    if new_text != text:
+        path.write_text(new_text, encoding="utf-8")
 PY
 }
 

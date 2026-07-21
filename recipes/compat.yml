@@ -1,0 +1,77 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
+#
+# Thin compatibility base: retain Secureblue userspace and policy while pairing
+# Fedora's kernel with the matching, pre-signed Universal Blue OpenRazer kmod.
+name: nocblue-fedora-openrazer
+description: Secureblue Silverblue userspace with Fedora's kernel, matching signed OpenRazer modules, and validated initramfs.
+
+base-image: ghcr.io/secureblue/silverblue-main-hardened
+image-version: 44
+platforms:
+  - linux/amd64
+
+labels:
+  org.opencontainers.image.source: https://github.com/screwys/nocblue
+  io.nocblue.kernel-policy: fedora-main-with-matching-ublue-openrazer
+
+modules:
+  # Keep the early-userspace prerequisites explicit even if Secureblue already
+  # ships them. Excluding kernel packages prevents this preparatory transaction
+  # from selecting Secureblue's custom kernel again.
+  - type: dnf
+    install:
+      install-weak-deps: false
+      exclude:
+        - "kernel*"
+      packages:
+        - no_rlimit_as
+        - dracut
+        - kmod
+        - mokutil
+        - sbsigntools
+
+  - type: files
+    files:
+      - source: compat
+        destination: /
+
+  # /kernel-rpms and /rpms are produced together by the same akmods image.
+  # Installing both payloads from one image makes the kernel/kmod ABI pairing
+  # deterministic instead of asking DNF to find a compatible kernel elsewhere.
+  - type: containerfile
+    snippets:
+      - >-
+        RUN --mount=type=bind,from=ghcr.io/ublue-os/akmods:main-44,src=/kernel-rpms,dst=/tmp/kernel-rpms,ro
+        --mount=type=bind,from=ghcr.io/ublue-os/akmods:main-44,src=/rpms,dst=/tmp/akmods-rpms,ro
+        /usr/libexec/nocblue/install-fedora-openrazer-compat.sh
+
+  # Userspace is independent from the kernel ABI. The kernel exclusion is an
+  # invariant: this transaction may not undo the exact kernel pair above.
+  - type: dnf
+    repos:
+      cleanup: true
+      files:
+        - openrazer.repo
+    install:
+      install-weak-deps: false
+      exclude:
+        - "kernel*"
+      packages:
+        - openrazer-daemon
+        - python3-openrazer
+
+  - type: containerfile
+    snippets:
+      - >-
+        RUN ldconfig &&
+        KVER="$(cat /usr/lib/nocblue/fedora-openrazer-kernel-release)" &&
+        depmod -a "${KVER}"
+
+  - type: initramfs
+
+  - type: containerfile
+    snippets:
+      - RUN /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
+
+  - type: signing

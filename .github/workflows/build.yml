@@ -25,21 +25,47 @@ jobs:
 
       - name: shell syntax
         run: |
-          find files/scripts files/system/usr/bin -type f -print0 | xargs -0 -r bash -n
+          find files/scripts files/system/usr/bin files/compat/usr/libexec \
+            -type f -print0 | xargs -0 -r bash -n
 
       - name: repository shape
         run: |
           test -f recipes/recipe.yml
+          test -f recipes/compat.yml
           test ! -e recipes/nocblue-hardened.yml
           test ! -e Containerfile
           test ! -d build_files
-          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/recipe.yml
+
+          grep -q 'name: nocblue-fedora-openrazer$' recipes/compat.yml
+          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/compat.yml
+          grep -q 'image-version: 44' recipes/compat.yml
+          grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/compat.yml
+          grep -q 'src=/kernel-rpms' recipes/compat.yml
+          grep -q 'src=/rpms' recipes/compat.yml
+          grep -q 'type: initramfs' recipes/compat.yml
+          grep -q 'validate-fedora-openrazer-compat.sh' recipes/compat.yml
+          grep -q '^[[:space:]]*- "kernel\*"$' recipes/compat.yml
+
           grep -q 'name: nocblue$' recipes/recipe.yml
-          grep -q 'image-version: 44' recipes/recipe.yml
+          grep -q 'base-image: ghcr.io/screwys/nocblue-fedora-openrazer' recipes/recipe.yml
+          grep -q 'image-version: latest' recipes/recipe.yml
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
-          ! grep -q 'type: initramfs' recipes/recipe.yml
+          grep -q 'type: initramfs' recipes/recipe.yml
+          grep -q 'validate-fedora-openrazer-compat.sh' recipes/recipe.yml
+          ! grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
+          ! grep -q 'ublue-akmods.repo' recipes/recipe.yml
+          ! grep -q 'openrazer.repo' recipes/recipe.yml
+          grep -q '^[[:space:]]*- "kernel\*"$' recipes/recipe.yml
+
+          test -x files/compat/usr/libexec/nocblue/install-fedora-openrazer-compat.sh
+          test -x files/compat/usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
+          test -f files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+          grep -q '/usr/lib64/libno_rlimit_as.so' \
+            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+          grep -q '/etc/ld.so.cache' \
+            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
+
           ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files
-          test ! -e files/system/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
           test ! -e files/system/usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
           test ! -e files/system/usr/lib/tmpfiles.d/nocblue-installer.conf
           grep -q 'noctalia-v5.repo' recipes/recipe.yml
@@ -49,13 +75,8 @@ jobs:
           grep -q '^[[:space:]]*- greetd.service$' recipes/recipe.yml
           grep -q '^[[:space:]]*- noctalia.service$' recipes/recipe.yml
           ! grep -q 'configure-hardened-branding.sh' recipes/recipe.yml
-          grep -q 'type: containerfile' recipes/recipe.yml
-          grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
-          grep -q '/tmp/rpms/common/\*openrazer\*\.rpm' recipes/recipe.yml
-          grep -q '/tmp/rpms/kmods/\*openrazer\*\.rpm' recipes/recipe.yml
-          ! grep -q 'type: akmods' recipes/recipe.yml
-          ! grep -q 'build-openrazer-akmod.sh' recipes/recipe.yml
-          test ! -e files/scripts/build-openrazer-akmod.sh
+          ! grep -RIn 'type: akmods' recipes
+          ! grep -RIn 'build-openrazer-akmod.sh' recipes files
           grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
           ! grep -Eq 'plasma-workspace-[0-9]' recipes/recipe.yml
@@ -73,9 +94,33 @@ jobs:
           ! grep -RInE '(/home/[[:alnum:]_.-]+/(\.config|Development|Server|Downloads|Documents|Pictures|Videos)|/mnt/[[:alnum:]_.-]+|wallpaperengine|workshop)' \
             recipes files manifests README.md
 
-  bluebuild:
-    name: build image
+  compatibility:
+    name: build Fedora/OpenRazer compatibility base
     needs: static
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: build compatibility image
+        uses: blue-build/github-action@v1.11.1
+        with:
+          recipe: compat.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+          maximize_build_space: true
+          use_cache: false
+          rechunk: false
+          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+
+  bluebuild:
+    name: build nocblue image
+    needs: compatibility
+    # A pull request fully builds the compatibility base. The downstream image
+    # starts building after merge, once that base has been published as latest.
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -88,8 +133,7 @@ jobs:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
           maximize_build_space: true
           use_cache: false
           rechunk: false
-          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+          push: true

@@ -1,13 +1,13 @@
 ---
 # yaml-language-server: $schema=https://schema.blue-build.org/recipe-v1.json
 #
-# This is the only nocblue image. It starts from secureblue and layers nocblue
-# desktop ergonomics without re-running nocblue's borrowed hardening modules.
+# This is the final nocblue desktop image. Its compatibility base retains
+# Secureblue userspace while providing Fedora kernel/OpenRazer ABI pairing.
 name: nocblue
-description: Personal Fedora 44 bootc image with nocblue desktop defaults on a secureblue Silverblue base.
+description: Personal Fedora 44 bootc image with nocblue desktop defaults on the validated Fedora/OpenRazer compatibility base.
 
-base-image: ghcr.io/secureblue/silverblue-main-hardened
-image-version: 44
+base-image: ghcr.io/screwys/nocblue-fedora-openrazer
+image-version: latest
 platforms:
   - linux/amd64
 
@@ -21,7 +21,6 @@ modules:
         - niri.repo
         - noctalia-v5.repo
         - terra.repo
-        - ublue-akmods.repo
         - brave-browser-beta.repo
         - helium.repo
         - mullvad.repo
@@ -29,6 +28,8 @@ modules:
     install:
       install-weak-deps: false
       allow-erasing: true
+      exclude:
+        - "kernel*"
       packages:
         # Desktop/session stack.
         - niri
@@ -200,31 +201,13 @@ modules:
     install:
       install-weak-deps: false
       skip-unavailable: true
+      exclude:
+        - "kernel*"
       packages:
         - adw-gtk3-theme
         - umu-launcher
         - scx-scheds
         - scx-tools
-
-  - type: containerfile
-    snippets:
-      - >-
-        RUN --mount=type=bind,from=ghcr.io/ublue-os/akmods:main-44,src=/rpms,dst=/tmp/rpms,ro
-        dnf install -y /tmp/rpms/common/*openrazer*.rpm /tmp/rpms/kmods/*openrazer*.rpm &&
-        rpm -q openrazer-kmod-common kmod-openrazer
-
-  # Userspace only. Keep this after the signed ublue akmods RPMs so
-  # openrazer-kmod-common satisfies the daemon dependency without pulling the
-  # OBS DKMS package.
-  - type: dnf
-    repos:
-      files:
-        - openrazer.repo
-    install:
-      install-weak-deps: false
-      packages:
-        - openrazer-daemon
-        - python3-openrazer
 
   - type: files
     files:
@@ -281,6 +264,19 @@ modules:
       masked:
         - security-update-notification.path
         - security-update-notification.service
+
+  # Nocblue may update preload libraries after inheriting the compatibility
+  # base, so regenerate and revalidate the final initramfs as the last mutable
+  # boot-related operation.
+  - type: containerfile
+    snippets:
+      - RUN ldconfig
+
+  - type: initramfs
+
+  - type: containerfile
+    snippets:
+      - RUN /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
 
   # Keep normal GNOME as a complete fallback even though greetd starts Niri by default.
   - type: containerfile
