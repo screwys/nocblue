@@ -19,6 +19,19 @@ clean_nix_portable_build_home() {
     rm -rf -- "${build_home}"
 }
 
+verify_nix_portable_store() {
+    local store_db="${NP_LOCATION}/.nix-portable/nix/var/nix/db/db.sqlite"
+
+    [[ -f "${store_db}" ]] || return 0
+
+    if NP_GIT=/usr/bin/true "${payload}" nix-store --verify >/dev/null 2>&1; then
+        return 0
+    fi
+
+    printf 'nix: repairing an inconsistent nix-portable store before continuing\n' >&2
+    NP_GIT=/usr/bin/true "${payload}" nix-store --verify --repair
+}
+
 should_sync_nix_profile() {
     [[ "${1:-}" == "profile" ]] || return 1
 
@@ -76,6 +89,8 @@ unset NIX_PROFILES
 unset NIX_USER_CONF_FILES
 unset NIX_PATH
 unset NIX_SSL_CERT_FILE
+
+verify_nix_portable_store
 
 if should_sync_nix_profile "$@"; then
     set +e

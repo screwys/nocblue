@@ -386,6 +386,35 @@ SH
     )"
     grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile list' <<<"${nix_wrapper_profile_list_output}"
     ! grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_list_output}"
+    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/nix/var/nix/db"
+    : >"${nix_wrapper_probe}/home/.nix-portable/nix/var/nix/db/db.sqlite"
+    cat >"${nix_wrapper_probe}/repair-payload" <<'SH'
+#!/usr/bin/env bash
+set -euo pipefail
+case "${1:-} ${2:-} ${3:-}" in
+    'nix-store --verify ')
+        exit 1
+        ;;
+    'nix-store --verify --repair')
+        printf 'repair-complete\n'
+        : >"${NP_LOCATION}/repair-complete"
+        ;;
+    *)
+        test -f "${NP_LOCATION}/repair-complete"
+        printf 'command-after-repair=%s\n' "$*"
+        ;;
+esac
+SH
+    chmod 0755 "${nix_wrapper_probe}/repair-payload"
+    nix_wrapper_repair_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/repair-payload" \
+            /usr/bin/nix --version 2>&1
+    )"
+    grep -Fxq 'nix: repairing an inconsistent nix-portable store before continuing' <<<"${nix_wrapper_repair_output}"
+    grep -Fxq 'repair-complete' <<<"${nix_wrapper_repair_output}"
+    grep -Fxq 'command-after-repair=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' <<<"${nix_wrapper_repair_output}"
 )
 host_bash_loader_env="$(
     env \
