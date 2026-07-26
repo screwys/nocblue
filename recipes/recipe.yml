@@ -242,6 +242,7 @@ modules:
       - install-nix-portable.sh
       - install-nix-portable-proot.sh
       - install-nix-launcher.sh
+      - install-uv-launchers.sh
       - configure-anticheat-support.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
