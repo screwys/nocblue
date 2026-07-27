@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v25.done"
+version_stamp="${state_dir}/user-defaults.v26.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -589,6 +589,10 @@ done
 if [[ "${nautilus_extensions_changed}" -eq 1 ]]; then
     rm -rf "${HOME}/.local/share/nautilus-python/extensions/__pycache__"
     pkill -x nautilus >/dev/null 2>&1 || true
+fi
+
+if [[ -x /usr/bin/nix-profile-sync ]]; then
+    /usr/bin/nix-profile-sync >/dev/null 2>&1 || true
 fi
 
 if command -v gsettings >/dev/null 2>&1; then

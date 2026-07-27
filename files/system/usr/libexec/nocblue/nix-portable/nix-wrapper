@@ -36,7 +36,7 @@ should_sync_nix_profile() {
     [[ "${1:-}" == "profile" ]] || return 1
 
     case "${2:-}" in
-        install | remove | rollback | upgrade | wipe-history)
+        add | install | remove | rollback | upgrade | wipe-history)
             return 0
             ;;
         *)

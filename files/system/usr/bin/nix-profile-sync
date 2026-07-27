@@ -41,8 +41,32 @@ shim_dir="${NOCBLUE_NIX_PROFILE_SHIM_DIR:-${HOME}/.local/bin}"
 state_home="${XDG_STATE_HOME:-${HOME}/.local/state}"
 state_dir="${NOCBLUE_NIX_PROFILE_STATE_DIR:-${state_home}/nocblue}"
 manifest="${NOCBLUE_NIX_PROFILE_SHIM_MANIFEST:-${state_dir}/nix-profile-shims}"
+profile_count="${NOCBLUE_NIX_PROFILE_COUNT:-${state_dir}/nix-profile-count}"
 
 mkdir -p "${shim_dir}" "${state_dir}"
+
+refresh_profile_count() {
+    local profile_dir="${state_home}/nix/profiles"
+    local generation store_path profile_manifest count=0 tmp
+
+    generation="$(readlink "${profile_dir}/profile" 2>/dev/null || true)"
+    store_path="$(readlink "${profile_dir}/${generation}" 2>/dev/null || true)"
+
+    case "${store_path}" in
+        /nix/store/*-profile)
+            profile_manifest="${NP_LOCATION:-${HOME}}/.nix-portable${store_path}/manifest.json"
+            if [[ -r "${profile_manifest}" ]]; then
+                count="$(jq -er '.elements | if type == "object" then length else error("invalid profile manifest") end' "${profile_manifest}" 2>/dev/null || printf '0')"
+            fi
+            ;;
+    esac
+
+    tmp="$(mktemp "${profile_count}.tmp.XXXXXX")"
+    printf '%s\n' "${count}" >"${tmp}"
+    mv -f -- "${tmp}" "${profile_count}"
+}
+
+refresh_profile_count
 
 path_without_shim_dir() {
     local entry output=""
