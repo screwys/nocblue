@@ -239,10 +239,10 @@ test -f /usr/share/applications/org.mozilla.firefox.desktop
 test -f /usr/share/applications/mullvad-browser.desktop
 test -f /usr/lib/systemd/system/brew-setup.service
 for brew_service in brew-update.service brew-upgrade.service; do
-    brew_dropin="/usr/lib/systemd/system/${brew_service}.d/50-nocblue-brew-proxy.conf"
-    test -f "${brew_dropin}"
-    grep -qx 'ConditionPathIsSymbolicLink=' "${brew_dropin}"
-    grep -qx 'ConditionFileIsExecutable=/home/linuxbrew/.linuxbrew/bin/brew' "${brew_dropin}"
+    brew_unit="/usr/lib/systemd/system/${brew_service}"
+    test "$(rpm -qf --qf '%{NAME}\n' "${brew_unit}")" = homebrew
+    grep -qx 'User=linuxbrew' "${brew_unit}"
+    test -L "/etc/systemd/system/timers.target.wants/${brew_service%.service}.timer"
 done
 test -x /usr/bin/nix
 test -x /usr/bin/nix-profile-exec

@@ -247,10 +247,6 @@ modules:
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
-  - type: brew
-    nofile-limits: true
-    brew-analytics: false
-
   - type: systemd
     system:
       enabled:
