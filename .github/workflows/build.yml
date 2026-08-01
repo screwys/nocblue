@@ -120,7 +120,7 @@ jobs:
       id-token: write
     steps:
       - name: build compatibility image
-        uses: blue-build/github-action@v1.11.1
+        uses: blue-build/github-action@v1.12.0
         with:
           recipe: compat.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
@@ -144,7 +144,7 @@ jobs:
       id-token: write
     steps:
       - name: build custom image
-        uses: blue-build/github-action@v1.11.1
+        uses: blue-build/github-action@v1.12.0
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
