@@ -257,6 +257,7 @@ modules:
         - me.proton.vpn.split_tunneling.service
         - greetd.service
       masked:
+        - rpm-ostree-countme.timer
         - geoclue.service
         - sshd.service
         - sshd.socket
