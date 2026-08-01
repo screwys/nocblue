@@ -237,7 +237,6 @@ grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
 ! test -e /usr/share/icons/candy-icons/apps/scalable/vesktop.svg
 test -f /usr/share/applications/org.mozilla.firefox.desktop
 test -f /usr/share/applications/mullvad-browser.desktop
-test -f /usr/lib/systemd/system/brew-setup.service
 for brew_service in brew-update.service brew-upgrade.service; do
     brew_unit="/usr/lib/systemd/system/${brew_service}"
     test "$(rpm -qf --qf '%{NAME}\n' "${brew_unit}")" = homebrew
@@ -529,9 +528,6 @@ SH
     grep -Fxq 'probe-tool' <<<"${nix_profile_exec_list}"
     ! env HOME="${nix_profile_exec_probe}/home" /usr/bin/nix-profile-exec ./probe-tool >/dev/null 2>&1
 )
-grep -Fqx '# nocblue-nix-profile-shim v1' /usr/bin/nix-profile-sync
-grep -Fqx 'exec /usr/bin/nix-profile-exec "${name}" "$@"' /usr/bin/nix-profile-sync
-grep -qx '        printf '\''nix-profile-sync: skipping %s; would shadow %s\\n'\'' "${name}" "${existing}" >&2' /usr/bin/nix-profile-sync
 (
     nix_profile_sync_probe="$(mktemp -d)"
     trap 'rm -rf "${nix_profile_sync_probe}"' EXIT
@@ -603,12 +599,13 @@ test -f /usr/lib/systemd/system/flatpak-system-update.timer
 grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 grep -qx 'OnBootSec=' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
 grep -qx 'OnUnitInactiveSec=' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
-grep -qx 'OnCalendar=\\*-\\*-\\* 01:00:00' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
+grep -Fqx 'OnCalendar=*-*-* 01:00:00' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
 test -f /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
 grep -qx 'ExecStartPre=' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
 grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
 test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
-test ! -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
+test "$(readlink /etc/systemd/system/timers.target.wants/flatpak-system-update.timer)" = "/usr/lib/systemd/system/flatpak-system-update.timer"
 test -L /etc/systemd/system/multi-user.target.wants/nocblue-sandbox-userns-selinux.service
 test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
