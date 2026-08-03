@@ -84,6 +84,7 @@ modules:
         - golang
         - rust
         - cargo
+        - clang
         - rpmdevtools
         - copr-cli
         - rpmlint
@@ -98,6 +99,9 @@ modules:
         - openssl-devel
         - dbus-devel
         - libepoxy-devel
+        - libdrm-devel
+        - freeglut-devel
+        - ffmpeg-devel
         - mpv-devel
         - clang-tools-extra
         - sdbus-cpp-devel
@@ -162,6 +166,7 @@ modules:
         - grim
         - slurp
         - wf-recorder
+        - swappy
         - cliphist
         - wlsunset
         - wl-mirror
@@ -233,6 +238,7 @@ modules:
       - install-candy-icons.sh
       - configure-nocblue-branding.sh
       - install-pywalfox.sh
+      - install-wl-screenrec.sh
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
