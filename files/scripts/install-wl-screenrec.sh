@@ -2,7 +2,9 @@
 set -euo pipefail
 
 wl_screenrec_version="0.2.0"
-wl_screenrec_revision="719619426e1f5a5680ed1d05565366a1c28223f5"
+# The v0.2.0 tag predates upstream's FFmpeg 8.1 dependency update. Pin the
+# current upstream revision that builds against Fedora 44's headers.
+wl_screenrec_revision="09252908c6304f0b71a5af9ddddf587559fbc471"
 build_dir="$(mktemp -d /tmp/nocblue-wl-screenrec-build-XXXXXX)"
 
 cleanup() {
