@@ -238,7 +238,6 @@ modules:
       - install-candy-icons.sh
       - configure-nocblue-branding.sh
       - install-pywalfox.sh
-      - install-wl-screenrec.sh
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
