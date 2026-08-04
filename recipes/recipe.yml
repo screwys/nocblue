@@ -101,7 +101,7 @@ modules:
         - libepoxy-devel
         - libdrm-devel
         - freeglut-devel
-        - ffmpeg-free-devel
+        - ffmpeg-devel
         - mpv-devel
         - clang-tools-extra
         - sdbus-cpp-devel
