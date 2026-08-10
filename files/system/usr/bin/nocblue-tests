@@ -607,7 +607,8 @@ test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
 test -f /usr/lib/systemd/system/flatpak-system-update.service
 test -f /usr/lib/systemd/system/flatpak-system-update.timer
 grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
-grep -qx 'OnBootSec=' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
+grep -qx 'OnBootSec=1h' /usr/lib/systemd/system/rpm-ostreed-automatic.timer
+! grep -q '^OnBootSec=' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
 grep -qx 'OnUnitInactiveSec=' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
 grep -Fqx 'OnCalendar=*-*-* 01:00:00' /etc/systemd/system/rpm-ostreed-automatic.timer.d/override.conf
 test -f /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
