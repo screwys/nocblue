@@ -22,9 +22,12 @@ modules:
         - noctalia-v5.repo
         - terra.repo
         - brave-browser-beta.repo
+        - chatgpt.repo
         - helium.repo
         - mullvad.repo
         - librewolf.repo
+      keys:
+        - RPM-GPG-KEY-chatgpt.asc
     install:
       install-weak-deps: false
       allow-erasing: true
@@ -199,6 +202,7 @@ modules:
         - mullvad-browser
         - zed
         - libappindicator-gtk3
+        - chatgpt
     remove:
       auto-remove: false
       packages:
