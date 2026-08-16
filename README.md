@@ -8,7 +8,7 @@ User namescapes are enabled per browser, allowing them to use their own sandboxi
 
 Nix is available with nix-portable, and lives in `/usr/bin/` so all plain nix commands work from terminal. Store is at `~/.nix-portable/nix/store/`, and it is cleaned weekly with a systemd timer. Profile-installed Nix commands are intentionally not added to PATH; after `nix profile` mutations, nocblue syncs safe command shims into `~/.local/bin` and skips anything that would shadow an existing host command, for example python. Skipped profile commands can still be run with `nix-profile-exec <command>`.
 
-Steam has GTK theme; Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't useGNOME before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window, and they also only mount the current folder read-only for extra hardening, which even disables basics like cropping.
+Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't useGNOME before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window, and they also only mount the current folder read-only for extra hardening, which even disables basics like cropping.
 
 For installation, you need to be on Fedora Silverblue/Universal Blue base (Bazzite/Aurora/Bluefin...) and run:
 
