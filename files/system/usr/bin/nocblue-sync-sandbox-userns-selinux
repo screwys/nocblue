@@ -15,6 +15,9 @@ critical_label_paths=(
     /var/lib/noctalia-greeter
     /usr/bin/nocblue-browser-no-preload
     /usr/bin/nocblue-portal-bwrap
+    /usr/lib/chatgpt/ChatGPT
+    /usr/lib/chatgpt/browser_crashpad_handler
+    /usr/lib/chatgpt/resources/codex
 )
 
 module_priorities_for() {
@@ -104,6 +107,7 @@ for path in \
     /var/lib/noctalia-greeter \
     /usr/bin/nocblue-browser-no-preload \
     /usr/bin/nocblue-portal-bwrap \
+    /usr/lib/chatgpt \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \
     /opt/helium \

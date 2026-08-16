@@ -245,6 +245,7 @@ modules:
       - install-browser-policies.sh
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
+      - configure-chatgpt.sh
       - configure-sandbox-userns-selinux.sh
       - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh

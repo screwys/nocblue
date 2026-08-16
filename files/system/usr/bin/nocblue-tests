@@ -8,14 +8,14 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder swappy wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder swappy wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
     }
 done
 
-rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime swappy input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset >/dev/null
+rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime swappy input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset chatgpt >/dev/null
 if rpm -q ffmpeg-free-devel >/dev/null 2>&1; then
     printf 'restricted ffmpeg-free-devel must not replace the full FFmpeg provider\n' >&2
     exit 1
@@ -731,6 +731,7 @@ bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
+bash -n /usr/libexec/nocblue/chatgpt
 bash -n /usr/libexec/nocblue/nix-portable/nix-wrapper
 bash -n /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
 bash -n /usr/bin/nix-profile-sync
@@ -774,6 +775,25 @@ test ! -e /etc/profile.d/nocblue-codex-bwrap.sh
 test ! -e /etc/fish/conf.d/nocblue-codex-bwrap.fish
 test ! -e /usr/libexec/nocblue/codex-bwrap
 test ! -e /usr/libexec/nocblue/codex-bwrap-path
+test -x /usr/libexec/nocblue/chatgpt
+test "$(readlink /usr/bin/chatgpt)" = ../libexec/nocblue/chatgpt
+grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
+grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex "$@"' /usr/libexec/nocblue/chatgpt
+! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
+for chatgpt_label_path in \
+    /usr/lib/chatgpt/ChatGPT \
+    /usr/lib/chatgpt/browser_crashpad_handler \
+    /usr/lib/chatgpt/resources/codex; do
+    grep -Fq "${chatgpt_label_path}" /usr/bin/nocblue-sync-sandbox-userns-selinux
+done
+grep -q 'nocblue_chatgpt_t nocblue_chatgpt_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'typetransition unconfined_t nocblue_chatgpt_exec_t process nocblue_chatgpt_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'typetransition nocblue_chatgpt_t nocblue_chatgpt_agent_exec_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q 'typetransition nocblue_chatgpt_t shell_exec_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/chatgpt/ChatGPT" file (system_u object_r nocblue_chatgpt_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/chatgpt/browser_crashpad_handler" file (system_u object_r nocblue_chatgpt_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+grep -q '/usr/lib/chatgpt/resources/codex" file (system_u object_r nocblue_chatgpt_agent_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! grep -q 'typepermissive nocblue_chatgpt_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'optional nocblue_sandbox_deny_alg_socket' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'deny_alg_socket (nocblue_browser_no_preload_t nocblue_portal_bwrap_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
@@ -797,7 +817,22 @@ semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
 ! semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
 matchpathcon -V \
     /usr/bin/nocblue-browser-no-preload \
-    /usr/bin/nocblue-portal-bwrap
+    /usr/bin/nocblue-portal-bwrap \
+    /usr/lib/chatgpt/ChatGPT \
+    /usr/lib/chatgpt/browser_crashpad_handler \
+    /usr/lib/chatgpt/resources/codex
+sesearch -T -s unconfined_t -t nocblue_chatgpt_exec_t -c process \
+    | grep -Fxq 'type_transition unconfined_t nocblue_chatgpt_exec_t:process nocblue_chatgpt_t;'
+sesearch -T -s nocblue_chatgpt_t -t nocblue_chatgpt_agent_exec_t -c process \
+    | grep -Fxq 'type_transition nocblue_chatgpt_t nocblue_chatgpt_agent_exec_t:process unconfined_t;'
+sesearch -T -s nocblue_chatgpt_t -t shell_exec_t -c process \
+    | grep -Fxq 'type_transition nocblue_chatgpt_t shell_exec_t:process unconfined_t;'
+sesearch -A -s nocblue_chatgpt_t -t nocblue_chatgpt_t -c user_namespace -p create \
+    | grep -Fxq 'allow nocblue_chatgpt_t nocblue_chatgpt_t:user_namespace create;'
+if seinfo --permissive nocblue_chatgpt_t | grep -Fq nocblue_chatgpt_t; then
+    printf 'unexpected permissive ChatGPT domain\n' >&2
+    exit 1
+fi
 sesearch -A -s nocblue_portal_bwrap_t -t nocblue_portal_bwrap_exec_t -c file -p ioctl \
     | grep -F 'allow nocblue_portal_bwrap_t nocblue_portal_bwrap_exec_t:file' \
     | grep -Fq ioctl
@@ -824,6 +859,7 @@ sesearch -A -s nocblue_portal_bwrap_t -t unconfined_t -c dir -p search \
 for userns_domain in \
     nocblue_browser_no_preload_t \
     nocblue_portal_bwrap_t \
+    nocblue_chatgpt_t \
     brave_origin_t \
     helium_t \
     nocblue_firefox_t; do

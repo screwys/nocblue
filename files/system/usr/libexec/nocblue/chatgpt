@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+unset LD_PRELOAD
+exec /usr/lib/chatgpt/codex-launcher --class=Codex "$@"
