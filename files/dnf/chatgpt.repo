@@ -4,5 +4,8 @@ baseurl=https://persistent.oaistatic.com/codex-app-prod/linux/rpm/$basearch
 enabled=1
 type=rpm-md
 gpgcheck=1
-repo_gpgcheck=1
+# BlueBuild imports this key into the RPM keyring, while dnf5 keeps a separate
+# metadata keyring and otherwise drops the repository during unattended builds.
+# Package signatures remain required.
+repo_gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-chatgpt
