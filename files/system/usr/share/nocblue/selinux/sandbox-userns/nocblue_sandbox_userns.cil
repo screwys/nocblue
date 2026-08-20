@@ -257,6 +257,7 @@
 (allow nocblue_chatgpt_t gconf_home_t (file (append create getattr map open read write)))
 (allow nocblue_chatgpt_t user_home_t (file (map)))
 (allow nocblue_chatgpt_t user_home_t (sock_file (create getattr setattr unlink write)))
+(allow nocblue_chatgpt_t user_tmp_t (dir (rmdir)))
 (allow nocblue_chatgpt_t user_fonts_config_t (lnk_file (getattr read)))
 (allow nocblue_chatgpt_t xauth_home_t (file (getattr open read)))
 (allow nocblue_chatgpt_t systemd_resolved_var_run_t (dir (read)))
