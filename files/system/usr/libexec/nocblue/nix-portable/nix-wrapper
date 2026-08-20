@@ -7,6 +7,69 @@ proot_payload="${NOCBLUE_NIX_PORTABLE_PROOT:-/usr/libexec/nocblue/nix-portable/p
 post_build_hook="${NOCBLUE_NIX_PORTABLE_POST_BUILD_HOOK:-/usr/libexec/nocblue/nix-portable/clean-build-home}"
 profile_sync="${NOCBLUE_NIX_PROFILE_SYNC:-/usr/bin/nix-profile-sync}"
 
+reject_raw_git_worktree_flake() {
+    [[ "${NOCBLUE_NIX_ALLOW_RAW_GIT_FLAKE:-0}" != "1" ]] || return 0
+
+    local argument git_root="" raw_path=""
+    for argument in "$@"; do
+        if [[ "${argument}" == *builtins.getFlake* \
+            && "${argument}" == *toString* ]]; then
+            git_root="$(git -C "${PWD}" rev-parse --show-toplevel 2>/dev/null || true)"
+            break
+        fi
+        case "${argument}" in
+            path:*)
+                raw_path="${argument#path:}"
+                raw_path="${raw_path%%[\?#]*}"
+                if [[ "${raw_path}" != /* ]]; then
+                    raw_path="${PWD}/${raw_path}"
+                fi
+                git_root="$(git -C "${raw_path}" rev-parse --show-toplevel 2>/dev/null || true)"
+                break
+                ;;
+        esac
+    done
+
+    [[ -n "${git_root}" ]] || return 0
+
+    cat >&2 <<MSG
+nix: refusing to import the Git worktree as a raw path: ${git_root}
+Raw flake paths include ignored and untracked build content in the Nix store.
+Use a git+file://${git_root} flake reference instead.
+Set NOCBLUE_NIX_ALLOW_RAW_GIT_FLAKE=1 only when the complete directory is intentionally the input.
+MSG
+    exit 2
+}
+
+ensure_nix_store_headroom() {
+    local store_path="${NP_LOCATION}/.nix-portable/nix/store"
+    local filesystem_kib available_kib target_bytes
+
+    [[ -d "${store_path}" ]] || return 0
+    if [[ "${1:-}" == "store" && "${2:-}" == "gc" ]]; then
+        return 0
+    fi
+
+    read -r filesystem_kib available_kib < <(
+        df -Pk "${store_path}" | awk 'NR == 2 { print $2, $4 }'
+    )
+    [[ "${filesystem_kib}" =~ ^[0-9]+$ && "${available_kib}" =~ ^[0-9]+$ ]] || return 0
+
+    target_bytes=$((filesystem_kib * 1024 / 5))
+    if (( target_bytes < 8 * 1024 * 1024 * 1024 )); then
+        target_bytes=$((8 * 1024 * 1024 * 1024))
+    elif (( target_bytes > 128 * 1024 * 1024 * 1024 )); then
+        target_bytes=$((128 * 1024 * 1024 * 1024))
+    fi
+
+    if (( available_kib * 1024 >= target_bytes )); then
+        return 0
+    fi
+
+    printf 'nix: free space is below the safety floor; collecting unreachable store paths\n' >&2
+    NP_GIT=/usr/bin/true "${payload}" nix store gc
+}
+
 clean_nix_portable_build_home() {
     local emptyroot="${NP_LOCATION}/.nix-portable/emptyroot"
     local build_home="${emptyroot}/homeless-shelter"
@@ -90,7 +153,9 @@ unset NIX_USER_CONF_FILES
 unset NIX_PATH
 unset NIX_SSL_CERT_FILE
 
+reject_raw_git_worktree_flake "$@"
 verify_nix_portable_store
+ensure_nix_store_headroom "$@"
 
 if should_sync_nix_profile "$@"; then
     set +e

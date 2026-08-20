@@ -330,6 +330,52 @@ SH
     grep -Fxq 'NOCBLUE_NIX_PORTABLE=1' <<<"${nix_wrapper_output}"
     grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
     grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
+    mkdir -p "${nix_wrapper_probe}/repo"
+    git -C "${nix_wrapper_probe}/repo" init --quiet
+    if nix_wrapper_raw_flake_output="$(
+        cd "${nix_wrapper_probe}/repo"
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            /usr/bin/nix eval --impure --expr '(builtins.getFlake (toString ./.)).description' \
+            2>&1
+    )"; then
+        echo 'The Nix wrapper accepted a raw Git worktree flake.' >&2
+        exit 1
+    fi
+    grep -Fq 'refusing to import the Git worktree as a raw path' <<<"${nix_wrapper_raw_flake_output}"
+    grep -Fq "Use a git+file://${nix_wrapper_probe}/repo flake reference instead." \
+        <<<"${nix_wrapper_raw_flake_output}"
+    ! grep -Fq 'argv=' <<<"${nix_wrapper_raw_flake_output}"
+    nix_wrapper_allowed_raw_flake_output="$(
+        cd "${nix_wrapper_probe}/repo"
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            NOCBLUE_NIX_ALLOW_RAW_GIT_FLAKE=1 \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            /usr/bin/nix eval --impure --expr '(builtins.getFlake (toString ./.)).description'
+    )"
+    grep -Fq 'argv=nix --option post-build-hook' <<<"${nix_wrapper_allowed_raw_flake_output}"
+    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/nix/store"
+    mkdir -p "${nix_wrapper_probe}/low-space-bin"
+    cat >"${nix_wrapper_probe}/low-space-bin/df" <<'SH'
+#!/usr/bin/env bash
+printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\n'
+printf 'probe 10000000 9999999 1 100%% /probe\n'
+SH
+    chmod 0755 "${nix_wrapper_probe}/low-space-bin/df"
+    nix_wrapper_low_space_output="$(
+        env \
+            HOME="${nix_wrapper_probe}/home" \
+            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
+            PATH="${nix_wrapper_probe}/low-space-bin:/usr/bin:/usr/sbin" \
+            /usr/bin/nix --version 2>&1
+    )"
+    grep -Fxq 'nix: free space is below the safety floor; collecting unreachable store paths' \
+        <<<"${nix_wrapper_low_space_output}"
+    grep -Fxq 'argv=nix store gc' <<<"${nix_wrapper_low_space_output}"
+    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' \
+        <<<"${nix_wrapper_low_space_output}"
     cat >"${nix_wrapper_probe}/payload-children" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
