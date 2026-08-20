@@ -272,6 +272,7 @@
 
 (allow nocblue_chatgpt_t shell_exec_t (file (getattr open read execute map)))
 (typetransition nocblue_chatgpt_t shell_exec_t process unconfined_t)
+(typetransition nocblue_chatgpt_t bin_t process unconfined_t)
 
 (filecon "/var/lib/noctalia-greeter" dir (system_u object_r xdm_var_lib_t ((s0)(s0))))
 (filecon "/var/lib/noctalia-greeter/.*" any (system_u object_r xdm_var_lib_t ((s0)(s0))))

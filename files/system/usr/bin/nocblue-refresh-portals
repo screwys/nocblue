@@ -3,6 +3,8 @@ set -euo pipefail
 
 # niri can autostart portals before the user manager has the display
 # environment. Refresh it, then restart portals so GNOME exposes FileChooser.
+systemctl --user unset-environment GDK_BACKEND
+unset GDK_BACKEND
 sleep "${NOCBLUE_PORTAL_REFRESH_DELAY:-2}"
 export BROWSER=/usr/bin/xdg-open
 
