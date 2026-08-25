@@ -16,6 +16,7 @@ for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-gree
 done
 
 rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime swappy input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset chatgpt >/dev/null
+python3 -c 'import proton.vpn.platform.local_agent'
 if rpm -q ffmpeg-free-devel >/dev/null 2>&1; then
     printf 'restricted ffmpeg-free-devel must not replace the full FFmpeg provider\n' >&2
     exit 1

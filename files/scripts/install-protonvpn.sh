@@ -10,7 +10,12 @@ dnf -y install "/tmp/${proton_release}"
 
 # The daemon package tries to start systemd services in scriptlets during image
 # builds. Install it without scriptlets; the recipe enables the daemon unit.
-dnf -y install --setopt=install_weak_deps=False --setopt=tsflags=noscripts proton-vpn-gnome-desktop
+dnf -y install \
+    --disablerepo=terra \
+    --disablerepo=terra-extras \
+    --setopt=install_weak_deps=False \
+    --setopt=tsflags=noscripts \
+    proton-vpn-gnome-desktop
 
 # The package currently ships two equivalent launchers. Keep the application ID
 # used by Noctalia defaults and hide the duplicate from launchers.
