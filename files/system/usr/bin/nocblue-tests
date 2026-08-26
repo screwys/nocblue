@@ -825,7 +825,7 @@ test ! -e /usr/libexec/nocblue/codex-bwrap-path
 test -x /usr/libexec/nocblue/chatgpt
 test "$(readlink /usr/bin/chatgpt)" = ../libexec/nocblue/chatgpt
 grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
-grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex "$@"' /usr/libexec/nocblue/chatgpt
+grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
 ! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
 for chatgpt_label_path in \
     /usr/lib/chatgpt/ChatGPT \
@@ -879,6 +879,10 @@ sesearch -T -s nocblue_chatgpt_t -t bin_t -c process \
     | grep -Fxq 'type_transition nocblue_chatgpt_t bin_t:process unconfined_t;'
 sesearch -A -s nocblue_chatgpt_t -t nocblue_chatgpt_t -c user_namespace -p create \
     | grep -Fxq 'allow nocblue_chatgpt_t nocblue_chatgpt_t:user_namespace create;'
+sesearch -A -s nocblue_chatgpt_t -t unconfined_t -c unix_stream_socket -p getattr,read,write \
+    | grep -Fq 'allow nocblue_chatgpt_t unconfined_t:unix_stream_socket'
+sesearch -A -s nocblue_chatgpt_t -t unconfined_t -c system -p start,status \
+    | grep -Fq 'allow nocblue_chatgpt_t unconfined_t:system'
 if seinfo --permissive nocblue_chatgpt_t | grep -Fq nocblue_chatgpt_t; then
     printf 'unexpected permissive ChatGPT domain\n' >&2
     exit 1
