@@ -42,7 +42,7 @@ rpm -q pipx >/dev/null
 LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uv --version >/dev/null
 LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uvx --version >/dev/null
 ! rpm -q protonvpn-stable-release >/dev/null 2>&1
-for pkg in ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
+for pkg in docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     ! rpm -q "${pkg}" >/dev/null 2>&1 || {
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1

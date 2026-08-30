@@ -206,6 +206,14 @@ modules:
     remove:
       auto-remove: false
       packages:
+        # Secureblue ships Docker, but nocblue deliberately keeps Podman as
+        # the container engine and lets podman-docker own /usr/bin/docker.
+        - docker-ce
+        - docker-ce-cli
+        - docker-ce-rootless-extras
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
         - ptyxis
         - gnome-terminal
         - gnome-terminal-nautilus
