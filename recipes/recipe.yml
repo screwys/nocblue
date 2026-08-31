@@ -96,6 +96,7 @@ modules:
         - gcc-c++
         - make
         - cmake
+        - selinux-policy-devel
         - pkgconf-pkg-config
         - libtalloc-devel
         - openssl
@@ -133,6 +134,7 @@ modules:
         - polkit
         - nautilus
         - nautilus-python
+        - Thunar
         - loupe
         - showtime
         - fcitx5
@@ -254,6 +256,8 @@ modules:
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
       - configure-chatgpt.sh
+      - configure-file-manager-launchers.sh
+      - compile-file-manager-selinux.sh
       - configure-sandbox-userns-selinux.sh
       - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh

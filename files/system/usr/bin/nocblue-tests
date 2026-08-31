@@ -8,14 +8,14 @@ rpm -q kernel kernel-core kernel-modules-core >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
-for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder swappy wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder swappy wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt magick tesseract ujust njust loupe showtime thunar bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
     }
 done
 
-rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime swappy input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset chatgpt >/dev/null
+rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake selinux-policy-devel pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime Thunar tumbler swappy input-remapper openrazer-daemon python3-openrazer openrazer-kmod-common kmod-openrazer ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts radicale3 radicale3-selinux nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset chatgpt >/dev/null
 python3 -c 'import proton.vpn.platform.local_agent'
 if rpm -q ffmpeg-free-devel >/dev/null 2>&1; then
     printf 'restricted ffmpeg-free-devel must not replace the full FFmpeg provider\n' >&2
@@ -802,6 +802,8 @@ grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
 grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
 ! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
 test -f /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+test -s /usr/share/nocblue/selinux/file-managers/nautilus/nautilus.pp
+test -s /usr/share/nocblue/selinux/file-managers/thunar/thunar.pp
 ! test -e /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
 grep -qx 'module=nocblue_sandbox_userns' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -qx 'legacy_modules=(nocblue_browser_userns)' /usr/bin/nocblue-sync-sandbox-userns-selinux
@@ -809,11 +811,41 @@ grep -qx 'target_priority=300' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -q 'legacy_modules_loaded' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -Fq "semodule -X \"\${priority}\" -r \"\${remove_module}\"" /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -Fq 'remove_module_priorities "${legacy_module}"' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -Fqx "semodule -X \"\${target_priority}\" -i \"\${cil}\"" /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fq '"${file_manager_policy_root}/nautilus/nautilus.pp"' /usr/bin/nocblue-sync-sandbox-userns-selinux
+grep -Fq '"${file_manager_policy_root}/thunar/thunar.pp"' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -qx 'stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -q 'NOCBLUE_SELINUX_SYNC_FORCE' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -q 'critical_labels_match' /usr/bin/nocblue-sync-sandbox-userns-selinux
 grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-sandbox-userns-selinux
+semodule -lfull | awk '$1 == 300 && ($2 == "nautilus" || $2 == "thunar") {found[$2]=1} END {exit !(found["nautilus"] && found["thunar"])}'
+test -L /usr/bin/nautilus
+test -L /usr/bin/thunar
+test -L /usr/bin/Thunar
+test "$(readlink -f /usr/bin/nautilus)" = /usr/libexec/nocblue/file-manager-launcher
+test "$(readlink -f /usr/bin/thunar)" = /usr/libexec/nocblue/file-manager-launcher
+test "$(readlink -f /usr/bin/Thunar)" = /usr/libexec/nocblue/file-manager-launcher
+test ! -e /usr/share/dbus-1/services/org.xfce.Thunar.FileManager1.service
+test -f /usr/share/dbus-1/services/org.xfce.Thunar.service
+test -f /usr/lib/systemd/user/tumblerd.service
+matchpathcon -V /usr/libexec/nocblue/file-manager-launcher
+matchpathcon -V /usr/libexec/nocblue/file-managers/nautilus
+matchpathcon -V /usr/libexec/nocblue/file-managers/thunar
+grep -q 'unset LD_AUDIT LD_PRELOAD' /usr/libexec/nocblue/file-manager-launcher
+! grep -q 'nautilus_run(unconfined_t' /usr/share/nocblue/selinux/file-managers/nautilus/nautilus.te
+! grep -q 'thunar_run(unconfined_t' /usr/share/nocblue/selinux/file-managers/thunar/thunar.te
+grep -q 'nautilus_run(nocblue_file_manager_launcher_t' /usr/share/nocblue/selinux/file-managers/nautilus/nautilus.te
+grep -q 'thunar_run(nocblue_file_manager_launcher_t' /usr/share/nocblue/selinux/file-managers/thunar/thunar.te
+grep -q 'userns_privileged_domain (nocblue_file_manager_launcher_t nautilus_t thunar_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
+! sesearch -A -s nocblue_file_manager_launcher_t -t nocblue_file_manager_launcher_t -c user_namespace -p create | grep -q .
+! sesearch -A -s unconfined_t -t nocblue_file_manager_launcher_t -c process -p noatsecure | grep -q .
+sesearch -A -s nocblue_file_manager_launcher_t -t nautilus_t -c process -p noatsecure | grep -q '^allow '
+sesearch -A -s nocblue_file_manager_launcher_t -t thunar_t -c process -p noatsecure | grep -q '^allow '
+sesearch -T -s unconfined_t -t nocblue_file_manager_launcher_exec_t -c process | grep -q '^type_transition unconfined_t nocblue_file_manager_launcher_exec_t:process nocblue_file_manager_launcher_t;$'
+sesearch -T -s nocblue_file_manager_launcher_t -t nautilus_exec_t -c process | grep -q '^type_transition nocblue_file_manager_launcher_t nautilus_exec_t:process nautilus_t;$'
+sesearch -T -s nocblue_file_manager_launcher_t -t thunar_exec_t -c process | grep -q '^type_transition nocblue_file_manager_launcher_t thunar_exec_t:process thunar_t;$'
+sesearch -A -s nautilus_t -t nautilus_t -c user_namespace -p create | grep -q '^allow nautilus_t nautilus_t:user_namespace create;$'
+sesearch -A -s thunar_t -t thunar_t -c user_namespace -p create | grep -q '^allow thunar_t thunar_t:user_namespace create;$'
+! sesearch -A -s unconfined_t -t unconfined_t -c user_namespace -p create | grep -q .
 grep -Fxq 'exec /usr/bin/nocblue-sync-sandbox-userns-selinux "$@"' /usr/bin/nocblue-sync-browser-userns-selinux
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
 grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
@@ -1345,6 +1377,7 @@ grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.deskt
 grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
 grep -q '^text/markdown=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
+grep -q '^inode/directory=org.gnome.Nautilus.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
 ! grep -Eq '^(application/json|application/xml|text/plain|text/css|text/javascript|text/markdown|application/x-shellscript)[[:space:]]' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
 grep -q '^favorite_browser = '\''librewolf.desktop'\''$' /usr/share/nocblue/defaults/switchyard/config.toml
 test -f /usr/share/nocblue/defaults/nautilus/copy_location.py

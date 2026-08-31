@@ -3,6 +3,8 @@ set -euo pipefail
 
 cil=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 module=nocblue_sandbox_userns
+file_manager_policy_root=/usr/share/nocblue/selinux/file-managers
+file_manager_modules=(nautilus thunar)
 legacy_modules=(nocblue_browser_userns)
 target_priority=300
 stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256
@@ -15,6 +17,9 @@ critical_label_paths=(
     /var/lib/noctalia-greeter
     /usr/bin/nocblue-browser-no-preload
     /usr/bin/nocblue-portal-bwrap
+    /usr/libexec/nocblue/file-manager-launcher
+    /usr/libexec/nocblue/file-managers/nautilus
+    /usr/libexec/nocblue/file-managers/thunar
     /usr/lib/chatgpt/ChatGPT
     /usr/lib/chatgpt/browser_crashpad_handler
     /usr/lib/chatgpt/resources/codex
@@ -25,16 +30,23 @@ module_priorities_for() {
     semodule -lfull 2>/dev/null | awk -v module="${queried_module}" '$2 == module {print $1}'
 }
 
-module_priorities() {
-    module_priorities_for "${module}"
-}
-
 module_loaded_at_target() {
-    module_priorities | grep -qx "${target_priority}"
+    local required_module
+
+    for required_module in "${module}" "${file_manager_modules[@]}"; do
+        module_priorities_for "${required_module}" | grep -qx "${target_priority}" || return 1
+    done
 }
 
 module_has_stale_priority() {
-    module_priorities | grep -vx "${target_priority}" | grep -q .
+    local required_module
+
+    for required_module in "${module}" "${file_manager_modules[@]}"; do
+        if module_priorities_for "${required_module}" | grep -vx "${target_priority}" | grep -q .; then
+            return 0
+        fi
+    done
+    return 1
 }
 
 legacy_modules_loaded() {
@@ -73,18 +85,31 @@ remove_module_priorities() {
 remove_stale_modules() {
     local priority
     local legacy_module
+    local required_module
 
-    while read -r priority; do
-        [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
-        semodule -X "${priority}" -r "${module}"
-    done < <(module_priorities)
+    for required_module in "${module}" "${file_manager_modules[@]}"; do
+        while read -r priority; do
+            [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
+            semodule -X "${priority}" -r "${required_module}"
+        done < <(module_priorities_for "${required_module}")
+    done
 
     for legacy_module in "${legacy_modules[@]}"; do
         remove_module_priorities "${legacy_module}"
     done
 }
 
-read -r current_hash _ < <(sha256sum "${cil}")
+policy_artifacts=("${cil}")
+for file_manager_module in "${file_manager_modules[@]}"; do
+    policy_artifacts+=("${file_manager_policy_root}/${file_manager_module}/${file_manager_module}.pp")
+done
+for policy_artifact in "${policy_artifacts[@]}"; do
+    [[ -s "${policy_artifact}" ]] || {
+        printf 'missing SELinux policy artifact: %s\n' "${policy_artifact}" >&2
+        exit 1
+    }
+done
+current_hash="$(sha256sum "${policy_artifacts[@]}" | sha256sum | awk '{print $1}')"
 if [[ "${NOCBLUE_SELINUX_SYNC_NO_STAMP:-}" != "1" && -r "${stamp}" ]]; then
     read -r stamped_hash <"${stamp}"
     if [[ "${stamped_hash}" == "${current_hash}" ]] \
@@ -100,13 +125,19 @@ fi
 # The pre-rename module declares the same types, so remove it before installing
 # the neutral module name.
 remove_stale_modules
-semodule -X "${target_priority}" -i "${cil}"
+semodule -X "${target_priority}" -i \
+    "${file_manager_policy_root}/nautilus/nautilus.pp" \
+    "${file_manager_policy_root}/thunar/thunar.pp" \
+    "${cil}"
 
 label_failed=0
 for path in \
     /var/lib/noctalia-greeter \
     /usr/bin/nocblue-browser-no-preload \
     /usr/bin/nocblue-portal-bwrap \
+    /usr/libexec/nocblue/file-manager-launcher \
+    /usr/libexec/nocblue/file-managers/nautilus \
+    /usr/libexec/nocblue/file-managers/thunar \
     /usr/lib/chatgpt \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \

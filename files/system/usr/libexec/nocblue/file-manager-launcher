@@ -1,0 +1,22 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+case "${0##*/}" in
+    nautilus)
+        app=nautilus
+        ;;
+    Thunar|thunar)
+        app=thunar
+        ;;
+    *)
+        printf 'nocblue file-manager launcher refuses unsupported name: %s\n' "${0##*/}" >&2
+        exit 2
+        ;;
+esac
+
+# The first SELinux transition enters this trusted launcher in AT_SECURE mode.
+# Keep the loader environment explicit before entering the userns-enabled file
+# manager domain without carrying injection variables from the caller.
+unset LD_AUDIT LD_PRELOAD
+
+exec "/usr/libexec/nocblue/file-managers/${app}" "$@"
