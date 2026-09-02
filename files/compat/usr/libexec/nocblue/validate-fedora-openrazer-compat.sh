@@ -54,9 +54,12 @@ mapfile -t module_trees < <(
 
 rpm -q \
     kmod-openrazer \
+    nocblue-openrazer-kmod-dkms-compat \
     openrazer-daemon \
     python3-openrazer >/dev/null
 rpm -q --whatprovides openrazer-kmod-common >/dev/null
+rpm -q --whatprovides openrazer-kernel-modules-dkms >/dev/null
+! rpm -q openrazer-kernel-modules-dkms >/dev/null 2>&1
 
 for module_name in razerkbd razermouse razerkraken razeraccessory; do
     module_path="$(modinfo -k "${kver}" -n "${module_name}")"

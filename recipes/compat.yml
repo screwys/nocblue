@@ -36,6 +36,7 @@ modules:
         - dracut
         - kmod
         - mokutil
+        - rpm-build
         - sbsigntools
 
   - type: files
@@ -71,6 +72,7 @@ modules:
         - kernel-modules-core
         - kernel-modules-extra
         - "kernel-uki*"
+        - openrazer-kernel-modules-dkms
       packages:
         - openrazer-daemon
         - python3-openrazer

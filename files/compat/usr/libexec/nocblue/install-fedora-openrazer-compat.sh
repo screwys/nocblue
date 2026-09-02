@@ -86,6 +86,7 @@ done
 
 openrazer_common_rpm="$(find_one_rpm_providing "${AKMOD_RPM_ROOT}" openrazer-kmod-common)"
 openrazer_kmod_rpm="$(find_one_rpm "${AKMOD_RPM_ROOT}" kmod-openrazer)"
+openrazer_version="$(rpm -qp --qf '%{VERSION}' "${openrazer_common_rpm}")"
 
 artifact_kver="$(
     rpm -qp --qf '%{VERSION}-%{RELEASE}.%{ARCH}' \
@@ -120,6 +121,33 @@ dnf install -y \
     "${runtime_rpms[@]}" \
     "${openrazer_common_rpm}" \
     "${openrazer_kmod_rpm}"
+
+# OpenRazer's userspace repository requires its DKMS package by literal name,
+# while this image intentionally uses Universal Blue's matching signed kmod.
+# Record that equivalence in RPM metadata so later transactions retain the
+# signed provider instead of installing and running DKMS in the container.
+compat_build_root="$(mktemp -d)"
+cat > "${compat_build_root}/nocblue-openrazer-kmod-dkms-compat.spec" <<EOF
+Name: nocblue-openrazer-kmod-dkms-compat
+Version: ${openrazer_version}
+Release: 1.nocblue
+Summary: OpenRazer signed-kmod compatibility provider
+License: Apache-2.0
+BuildArch: noarch
+Provides: openrazer-kernel-modules-dkms = %{version}
+Requires: openrazer-kmod-common = %{version}
+
+%description
+Maps OpenRazer's userspace DKMS dependency to nocblue's matching pre-signed kmod.
+
+%files
+EOF
+rpmbuild \
+    --define "_topdir ${compat_build_root}/rpmbuild" \
+    -bb "${compat_build_root}/nocblue-openrazer-kmod-dkms-compat.spec"
+dnf install -y \
+    --disablerepo='*' \
+    "${compat_build_root}"/rpmbuild/RPMS/noarch/nocblue-openrazer-kmod-dkms-compat-*.rpm
 
 # Kernel packages are install-only packages and may coexist across versions.
 # Remove every stale runtime instance so dracut cannot build an unintended
@@ -170,6 +198,6 @@ printf '%s\n' "${artifact_kver}" > "${STATE_FILE}"
 ldconfig
 depmod -a "${artifact_kver}"
 
-rpm -q "${runtime_names[@]}" kmod-openrazer
+rpm -q "${runtime_names[@]}" kmod-openrazer nocblue-openrazer-kmod-dkms-compat
 rpm -q --whatprovides openrazer-kmod-common
 printf 'Fedora/OpenRazer compatibility pair installed: %s\n' "${artifact_kver}"
