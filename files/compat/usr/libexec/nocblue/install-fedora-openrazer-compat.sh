@@ -42,6 +42,31 @@ find_one_rpm() {
     printf '%s\n' "${matches[0]}"
 }
 
+find_one_rpm_providing() {
+    local root="$1"
+    local wanted_provide="$2"
+    local rpm_path provide
+    local -a matches=()
+
+    while IFS= read -r -d '' rpm_path; do
+        while IFS= read -r provide; do
+            if [[ "${provide}" == "${wanted_provide}" ]]; then
+                matches+=("${rpm_path}")
+                break
+            fi
+        done < <(rpm -qp --qf '[%{PROVIDENAME}\n]' "${rpm_path}")
+    done < <(find "${root}" -type f -name '*.rpm' -print0)
+
+    if (( ${#matches[@]} != 1 )); then
+        printf 'Expected one RPM providing %s below %s; found %d:\n' \
+            "${wanted_provide}" "${root}" "${#matches[@]}" >&2
+        printf '  %s\n' "${matches[@]:-<none>}" >&2
+        return 1
+    fi
+
+    printf '%s\n' "${matches[0]}"
+}
+
 [[ "${ARCH}" == x86_64 ]] || fatal "expected x86_64, got ${ARCH}"
 [[ -d "${KERNEL_RPM_ROOT}" ]] || fatal "missing ${KERNEL_RPM_ROOT}"
 [[ -d "${AKMOD_RPM_ROOT}" ]] || fatal "missing ${AKMOD_RPM_ROOT}"
@@ -59,7 +84,7 @@ for package_name in "${runtime_names[@]}"; do
     runtime_rpms+=("$(find_one_rpm "${KERNEL_RPM_ROOT}" "${package_name}")")
 done
 
-openrazer_common_rpm="$(find_one_rpm "${AKMOD_RPM_ROOT}" openrazer-kmod-common)"
+openrazer_common_rpm="$(find_one_rpm_providing "${AKMOD_RPM_ROOT}" openrazer-kmod-common)"
 openrazer_kmod_rpm="$(find_one_rpm "${AKMOD_RPM_ROOT}" kmod-openrazer)"
 
 artifact_kver="$(
@@ -145,5 +170,6 @@ printf '%s\n' "${artifact_kver}" > "${STATE_FILE}"
 ldconfig
 depmod -a "${artifact_kver}"
 
-rpm -q "${runtime_names[@]}" openrazer-kmod-common kmod-openrazer
+rpm -q "${runtime_names[@]}" kmod-openrazer
+rpm -q --whatprovides openrazer-kmod-common
 printf 'Fedora/OpenRazer compatibility pair installed: %s\n' "${artifact_kver}"

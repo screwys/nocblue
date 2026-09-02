@@ -53,10 +53,10 @@ mapfile -t module_trees < <(
     fatal "module tree is ${module_trees[0]}, expected ${kver}"
 
 rpm -q \
-    openrazer-kmod-common \
     kmod-openrazer \
     openrazer-daemon \
     python3-openrazer >/dev/null
+rpm -q --whatprovides openrazer-kmod-common >/dev/null
 
 for module_name in razerkbd razermouse razerkraken razeraccessory; do
     module_path="$(modinfo -k "${kver}" -n "${module_name}")"
