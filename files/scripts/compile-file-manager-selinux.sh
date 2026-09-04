@@ -9,7 +9,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-for module in nautilus thunar; do
+for module in nautilus; do
     module_dir="${policy_root}/${module}"
     build_dir="${workdir}/${module}"
 

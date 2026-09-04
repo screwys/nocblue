@@ -11,7 +11,7 @@ real_dir=/usr/libexec/nocblue/file-managers
 
 install -d -m 0755 "${real_dir}"
 
-for app in nautilus thunar; do
+for app in nautilus; do
     source_path="/usr/bin/${app}"
     real_path="${real_dir}/${app}"
 
@@ -23,10 +23,3 @@ for app in nautilus thunar; do
     rm -f "${source_path}"
     ln -s ../libexec/nocblue/file-manager-launcher "${source_path}"
 done
-
-test -L /usr/bin/Thunar
-test "$(readlink /usr/bin/Thunar)" = thunar
-
-# Nautilus remains the org.freedesktop.FileManager1 activation owner. Thunar
-# stays launchable explicitly without racing Nautilus for the shared D-Bus name.
-rm -f /usr/share/dbus-1/services/org.xfce.Thunar.FileManager1.service

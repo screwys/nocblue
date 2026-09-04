@@ -4,8 +4,8 @@ set -euo pipefail
 cil=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 module=nocblue_sandbox_userns
 file_manager_policy_root=/usr/share/nocblue/selinux/file-managers
-file_manager_modules=(nautilus thunar)
-legacy_modules=(nocblue_browser_userns)
+file_manager_modules=(nautilus)
+legacy_modules=(nocblue_browser_userns thunar)
 target_priority=300
 stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256
 
@@ -19,7 +19,6 @@ critical_label_paths=(
     /usr/bin/nocblue-portal-bwrap
     /usr/libexec/nocblue/file-manager-launcher
     /usr/libexec/nocblue/file-managers/nautilus
-    /usr/libexec/nocblue/file-managers/thunar
     /usr/lib/chatgpt/ChatGPT
     /usr/lib/chatgpt/browser_crashpad_handler
     /usr/lib/chatgpt/resources/codex
@@ -127,7 +126,6 @@ fi
 remove_stale_modules
 semodule -X "${target_priority}" -i \
     "${file_manager_policy_root}/nautilus/nautilus.pp" \
-    "${file_manager_policy_root}/thunar/thunar.pp" \
     "${cil}"
 
 label_failed=0
@@ -137,7 +135,6 @@ for path in \
     /usr/bin/nocblue-portal-bwrap \
     /usr/libexec/nocblue/file-manager-launcher \
     /usr/libexec/nocblue/file-managers/nautilus \
-    /usr/libexec/nocblue/file-managers/thunar \
     /usr/lib/chatgpt \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \

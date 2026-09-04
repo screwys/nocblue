@@ -83,11 +83,11 @@
 ; launcher scrubs loader injection variables, then enters the named file-manager
 ; domain without AT_SECURE so GVfs and sandboxed thumbnailing both keep working.
 (optional nocblue_file_manager_userns
-    (typeattributeset userns_privileged_domain (nocblue_file_manager_launcher_t nautilus_t thunar_t))
-    (typeattributeset userns_privileged_file_type (nocblue_file_manager_launcher_exec_t nautilus_exec_t thunar_exec_t))
+    (typeattributeset userns_privileged_domain (nocblue_file_manager_launcher_t nautilus_t))
+    (typeattributeset userns_privileged_file_type (nocblue_file_manager_launcher_exec_t nautilus_exec_t))
+    (typeattributeset nocblue_browser_wayland_clipboard_peer (nautilus_t))
     (deny nocblue_file_manager_launcher_t nocblue_file_manager_launcher_t (user_namespace (create)))
     (allow nautilus_t nautilus_t (user_namespace (create)))
-    (allow thunar_t thunar_t (user_namespace (create)))
 )
 
 (allow unconfined_t nocblue_file_manager_launcher_exec_t (file (getattr open read execute map)))
@@ -97,7 +97,6 @@
 (allow nocblue_file_manager_launcher_t shell_exec_t (file (getattr open read execute execute_no_trans map)))
 (allow nocblue_file_manager_launcher_t user_home_dir_t (dir (getattr search)))
 (allow nocblue_file_manager_launcher_t nautilus_t (process (noatsecure siginh rlimitinh)))
-(allow nocblue_file_manager_launcher_t thunar_t (process (noatsecure siginh rlimitinh)))
 (allow nocblue_file_manager_launcher_t unconfined_t (process (sigchld siginh rlimitinh noatsecure)))
 (allow nocblue_file_manager_launcher_t unconfined_t (fd (use)))
 (allow nocblue_file_manager_launcher_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))

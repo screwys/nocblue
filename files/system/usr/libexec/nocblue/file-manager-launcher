@@ -5,9 +5,6 @@ case "${0##*/}" in
     nautilus)
         app=nautilus
         ;;
-    Thunar|thunar)
-        app=thunar
-        ;;
     *)
         printf 'nocblue file-manager launcher refuses unsupported name: %s\n' "${0##*/}" >&2
         exit 2

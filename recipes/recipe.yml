@@ -134,7 +134,6 @@ modules:
         - polkit
         - nautilus
         - nautilus-python
-        - Thunar
         - loupe
         - showtime
         - fcitx5
