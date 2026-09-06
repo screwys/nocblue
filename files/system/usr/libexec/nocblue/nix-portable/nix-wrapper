@@ -41,35 +41,6 @@ MSG
     exit 2
 }
 
-ensure_nix_store_headroom() {
-    local store_path="${NP_LOCATION}/.nix-portable/nix/store"
-    local filesystem_kib available_kib target_bytes
-
-    [[ -d "${store_path}" ]] || return 0
-    if [[ "${1:-}" == "store" && "${2:-}" == "gc" ]]; then
-        return 0
-    fi
-
-    read -r filesystem_kib available_kib < <(
-        df -Pk "${store_path}" | awk 'NR == 2 { print $2, $4 }'
-    )
-    [[ "${filesystem_kib}" =~ ^[0-9]+$ && "${available_kib}" =~ ^[0-9]+$ ]] || return 0
-
-    target_bytes=$((filesystem_kib * 1024 / 5))
-    if (( target_bytes < 8 * 1024 * 1024 * 1024 )); then
-        target_bytes=$((8 * 1024 * 1024 * 1024))
-    elif (( target_bytes > 128 * 1024 * 1024 * 1024 )); then
-        target_bytes=$((128 * 1024 * 1024 * 1024))
-    fi
-
-    if (( available_kib * 1024 >= target_bytes )); then
-        return 0
-    fi
-
-    printf 'nix: free space is below the safety floor; collecting unreachable store paths\n' >&2
-    NP_GIT=/usr/bin/true "${payload}" nix store gc
-}
-
 clean_nix_portable_build_home() {
     local emptyroot="${NP_LOCATION}/.nix-portable/emptyroot"
     local build_home="${emptyroot}/homeless-shelter"
@@ -155,7 +126,6 @@ unset NIX_SSL_CERT_FILE
 
 reject_raw_git_worktree_flake "$@"
 verify_nix_portable_store
-ensure_nix_store_headroom "$@"
 
 if should_sync_nix_profile "$@"; then
     set +e

@@ -374,9 +374,7 @@ SH
             PATH="${nix_wrapper_probe}/low-space-bin:/usr/bin:/usr/sbin" \
             /usr/bin/nix --version 2>&1
     )"
-    grep -Fxq 'nix: free space is below the safety floor; collecting unreachable store paths' \
-        <<<"${nix_wrapper_low_space_output}"
-    grep -Fxq 'argv=nix store gc' <<<"${nix_wrapper_low_space_output}"
+    ! grep -Fxq 'argv=nix store gc' <<<"${nix_wrapper_low_space_output}"
     grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' \
         <<<"${nix_wrapper_low_space_output}"
     cat >"${nix_wrapper_probe}/payload-children" <<'SH'
