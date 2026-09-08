@@ -845,7 +845,7 @@ test ! -e /usr/libexec/nocblue/codex-bwrap-path
 test -x /usr/libexec/nocblue/chatgpt
 test "$(readlink /usr/bin/chatgpt)" = ../libexec/nocblue/chatgpt
 grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
-grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
+grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex --ozone-platform=wayland "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
 ! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
 for chatgpt_label_path in \
     /usr/lib/chatgpt/ChatGPT \
