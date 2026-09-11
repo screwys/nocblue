@@ -8,7 +8,7 @@ fi
 
 state_dir="${HOME}/.local/state/nocblue"
 mkdir -p "${state_dir}"
-version_stamp="${state_dir}/user-defaults.v26.done"
+version_stamp="${state_dir}/user-defaults.v27.done"
 defaults_dir="${NOCBLUE_DEFAULTS_DIR:-/usr/share/nocblue/defaults}"
 
 copy_if_missing() {
@@ -306,7 +306,10 @@ import re
 import sys
 
 for path in Path(sys.argv[1]).rglob("*.kdl"):
-    text = path.read_text(encoding="utf-8")
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        continue
     new_text = re.sub(
         r'(?m)^(\s*)BROWSER "flatpak run io\.github\.alyraffauf\.Switchyard"$',
         r'\1BROWSER "/usr/bin/xdg-open"',
@@ -323,6 +326,34 @@ ensure_browser_environment() {
     fi
     if command -v dbus-update-activation-environment >/dev/null 2>&1; then
         dbus-update-activation-environment --systemd BROWSER=/usr/bin/xdg-open >/dev/null 2>&1 || true
+    fi
+}
+
+ensure_switchyard_config() {
+    local config="${HOME}/.var/app/io.github.alyraffauf.Switchyard/config/switchyard/config.toml"
+    if [[ ! -f "${config}" ]]; then
+        copy_if_missing "${defaults_dir}/switchyard/config.toml" "${config}"
+        return 0
+    fi
+
+    python3 - "${config}" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+path = Path(sys.argv[1])
+try:
+    text = path.read_text(encoding="utf-8")
+except Exception:
+    raise SystemExit(0)
+
+new_text = re.sub(r'(?m)^(\s*)stay_alive\s*=\s*true\b', r'\1stay_alive = false', text)
+if new_text != text:
+    path.write_text(new_text, encoding="utf-8")
+PY
+
+    if command -v flatpak >/dev/null 2>&1; then
+        flatpak kill io.github.alyraffauf.Switchyard >/dev/null 2>&1 || true
     fi
 }
 
@@ -576,7 +607,7 @@ copy_if_missing "${defaults_dir}/gtk-4.0/gtk.css" "${HOME}/.config/gtk-4.0/gtk.c
 copy_if_missing "${defaults_dir}/gtk-4.0/settings.ini" "${HOME}/.config/gtk-4.0/settings.ini"
 ensure_gtk_settings
 copy_if_missing "${defaults_dir}/qt6ct/qt6ct.conf" "${HOME}/.config/qt6ct/qt6ct.conf"
-copy_if_missing "${defaults_dir}/switchyard/config.toml" "${HOME}/.var/app/io.github.alyraffauf.Switchyard/config/switchyard/config.toml"
+ensure_switchyard_config
 nautilus_extensions_changed=0
 for nautilus_extension in "${defaults_dir}"/nautilus/*.py; do
     [[ -f "${nautilus_extension}" ]] || continue

@@ -4,6 +4,6 @@ hidden_browsers = []
 check_default_browser = false
 show_app_names = false
 force_dark_mode = true
-stay_alive = true
+stay_alive = false
 sanitize_links = true
 rules = []
