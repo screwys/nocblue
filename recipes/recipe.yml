@@ -26,6 +26,7 @@ modules:
         - helium.repo
         - mullvad.repo
         - librewolf.repo
+        - fedora-multimedia.repo
       keys:
         - RPM-GPG-KEY-chatgpt.asc
     install:
