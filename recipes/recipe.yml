@@ -52,6 +52,13 @@ modules:
         - qt6ct
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
+        # COSMIC session and apps, available alongside Niri and GNOME.
+        - cosmic-session
+        - cosmic-files
+        - cosmic-edit
+        - cosmic-term
+        - cosmic-player
+        - cosmic-store
         - fish
         - fastfetch
         - just
