@@ -102,8 +102,12 @@ modules:
         - rust2rpm
         - gcc
         - gcc-c++
+        - libasan
+        - libubsan
         - make
         - cmake
+        - meson
+        - ninja-build
         - selinux-policy-devel
         - pkgconf-pkg-config
         - libtalloc-devel
@@ -122,11 +126,16 @@ modules:
         - wireplumber-devel
         - pam-devel
         - libcurl-devel
+        - libsecret-devel
+        - libsodium-devel
         - libqalculate-devel
+        - libical-devel
         - md4c-devel
         - json-devel
         - tomlplusplus-devel
         - libwebp-devel
+        - libjxl-devel
+        - libsndfile-devel
         - stb_image_resize2-devel
         - stb_image_write-devel
         - jemalloc-devel
