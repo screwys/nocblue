@@ -9,6 +9,8 @@ set -euo pipefail
 readonly STATE_FILE=/usr/lib/nocblue/fedora-openrazer-kernel-release
 readonly FEDORA_RELEASE="$(rpm -E '%fedora')"
 readonly ARCH="$(rpm -E '%_arch')"
+readonly ROOT_PRELOAD=/etc/ld.so.preload
+readonly ROOT_USR_PRELOAD=/usr/etc/ld.so.preload
 readonly ROOT_HARDENED_CONF=/usr/lib/systemd/system.conf.d/40-hardened_malloc.conf
 readonly ROOT_HARDENED_MASK=/etc/systemd/system.conf.d/40-hardened_malloc.conf
 readonly DRACUT_MASK_MODULE=/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
@@ -78,11 +80,20 @@ vmlinuz="/usr/lib/modules/${kver}/vmlinuz"
 [[ -s "${vmlinuz}" ]] || fatal "missing ${vmlinuz}"
 sbverify --list "${vmlinuz}" >/dev/null
 
-# The real root must retain Secureblue's allocator hardening. The /etc mask is
-# generated inside the initramfs by the dracut module and must never leak here.
-[[ -f "${ROOT_HARDENED_CONF}" ]] || fatal "missing ${ROOT_HARDENED_CONF}"
-grep -Fq 'LD_PRELOAD=libhardened_malloc.so libno_rlimit_as.so' \
-    "${ROOT_HARDENED_CONF}" || fatal 'real-root hardened malloc configuration is unexpected'
+# The real root must retain Secureblue's allocator hardening via ld.so.preload.
+# The /etc systemd mask is generated inside the initramfs and must never leak here.
+root_preload=
+if [[ -f "${ROOT_PRELOAD}" ]]; then
+    root_preload="${ROOT_PRELOAD}"
+elif [[ -f "${ROOT_USR_PRELOAD}" ]]; then
+    root_preload="${ROOT_USR_PRELOAD}"
+else
+    fatal "missing ${ROOT_PRELOAD}"
+fi
+grep -Fq 'libhardened_malloc.so libno_rlimit_as.so' \
+    "${root_preload}" || fatal 'real-root hardened malloc preload is unexpected'
+[[ ! -e "${ROOT_HARDENED_CONF}" ]] || \
+    fatal "legacy ${ROOT_HARDENED_CONF} remained present"
 [[ ! -e "${ROOT_HARDENED_MASK}" && ! -L "${ROOT_HARDENED_MASK}" ]] || \
     fatal "initramfs-only hardened malloc mask leaked into the real root"
 [[ -x "${DRACUT_MASK_MODULE}" ]] || fatal "missing ${DRACUT_MASK_MODULE}"
@@ -119,5 +130,7 @@ initrd_mask="${unpack_dir}/etc/systemd/system.conf.d/40-hardened_malloc.conf"
     fatal 'initramfs does not mask 40-hardened_malloc.conf'
 [[ "$(readlink "${initrd_mask}")" == /dev/null ]] || \
     fatal "initramfs hardened malloc mask points to $(readlink "${initrd_mask}"), expected /dev/null"
+[[ ! -e "${unpack_dir}/etc/ld.so.preload" ]] || \
+    fatal 'initramfs contains /etc/ld.so.preload'
 
 printf 'Validated Fedora kernel, signed OpenRazer modules, and preload-free initramfs: %s\n' "${kver}"
