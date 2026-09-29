@@ -67,6 +67,13 @@ if [[ -e "${target}" && ! -e "${managed_stamp}" ]]; then
     exit 0
 fi
 
+if [[ -f "${target}/index.theme" ]] && grep -q '^Inherits=.*breeze' "${target}/index.theme"; then
+    sed -i 's/^Inherits=.*/Inherits=Adwaita,hicolor/' "${target}/index.theme"
+    if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+        gtk-update-icon-cache -q -f -t "${target}" || true
+    fi
+fi
+
 if [[ -e "${target}" && -f "${stamp}" ]] && grep -qxF "${source_id}" "${stamp}"; then
     exit 0
 fi
@@ -84,6 +91,12 @@ elif [[ -n "${vesktop_app_icon_source}" ]]; then
     install -D -m 0644 "${vesktop_app_icon_source}" "${target}/apps/scalable/vesktop.svg"
 else
     rm -f "${target}/apps/scalable/vesktop.svg"
+fi
+if [[ -f "${target}/index.theme" ]]; then
+    sed -i 's/^Inherits=.*/Inherits=Adwaita,hicolor/' "${target}/index.theme"
+fi
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+    gtk-update-icon-cache -q -f -t "${target}" || true
 fi
 printf '%s\n' "${source_id}" > "${stamp}"
 touch "${managed_stamp}"

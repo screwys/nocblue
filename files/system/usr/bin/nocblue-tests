@@ -1081,6 +1081,7 @@ grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
 ! grep -q 'rm -rf "${target}"' /usr/bin/nocblue-sync-icon-theme
 grep -q 'vesktop-icon-overrides-v1' /usr/bin/nocblue-sync-icon-theme
 grep -q 'dev.vencord.Vesktop.svg' /usr/bin/nocblue-sync-icon-theme
+grep -q 'Inherits=Adwaita,hicolor' /usr/bin/nocblue-sync-icon-theme
 grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
 grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
 grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults

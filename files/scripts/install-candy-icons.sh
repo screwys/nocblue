@@ -33,6 +33,7 @@ done
 
 install -m 0644 "${src_root}/index.theme" "${theme_dir}/"
 install -m 0644 "${src_root}/LICENSE" "${theme_dir}/"
+sed -i 's/^Inherits=.*/Inherits=Adwaita,hicolor/' "${theme_dir}/index.theme"
 
 ln -sfn chromium.svg "${theme_dir}/apps/scalable/trivalent.svg"
 ln -sfn brave-browser-beta.svg "${theme_dir}/apps/scalable/brave-origin-beta.svg"
