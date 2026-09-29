@@ -1415,7 +1415,8 @@ pm = open(f"{d}/process_monitor.py", encoding="utf-8").read()
 assert "errors='replace'" in pm, "missing errors='replace' in process_monitor.py"
 
 sm = open(f"{d}/socket_monitor.py", encoding="utf-8").read()
-assert "bpf_get_current_pid_tgid() >> 32" in sm, "missing tgid bitshift in socket_monitor.py"
+assert "pid_tgid >> 32" in sm, "missing tgid bitshift in socket_monitor.py"
+assert "u32 pid = pid_tgid >> 32" in sm, "missing pid assignment in socket_monitor.py"
 
 pmatch = open(f"{d}/process_matcher.py", encoding="utf-8").read()
 assert "_extract_flatpak_id" in pmatch, "missing _extract_flatpak_id in process_matcher.py"

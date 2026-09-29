@@ -73,10 +73,10 @@ old_lookup = """    u32 pid = bpf_get_current_pid_tgid();
 
     u32 *pid_found = pid_map.lookup(&pid);"""
 new_lookup = """    u64 pid_tgid = bpf_get_current_pid_tgid();
-    u32 tgid = pid_tgid >> 32;
+    u32 pid = pid_tgid >> 32;
     u32 tid = (u32)pid_tgid;
 
-    u32 *pid_found = pid_map.lookup(&tgid);
+    u32 *pid_found = pid_map.lookup(&pid);
     if (!pid_found) {{
         pid_found = pid_map.lookup(&tid);
     }}"""
