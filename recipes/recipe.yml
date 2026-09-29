@@ -320,7 +320,7 @@ modules:
   # boot-related operation.
   - type: containerfile
     snippets:
-      - RUN ldconfig
+      - RUN ldconfig && glib-compile-schemas /usr/share/glib-2.0/schemas
 
   - type: initramfs
 
