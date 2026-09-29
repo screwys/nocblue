@@ -578,11 +578,69 @@ path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 PY
 }
 
+ensure_protonvpn_split_tunneling_settings() {
+    local settings_path="${HOME}/.config/Proton/VPN/settings.json"
+
+    [[ -f "${settings_path}" ]] || return 0
+
+    python3 - "${settings_path}" <<'PY'
+from pathlib import Path
+import json
+import sys
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text(encoding="utf-8"))
+except Exception:
+    sys.exit(0)
+
+if not isinstance(data, dict):
+    sys.exit(0)
+
+st = data.get("features", {}).get("split_tunneling", {})
+cfg_by_mode = st.get("config_by_mode", {})
+exclude = cfg_by_mode.get("exclude", {})
+app_paths = exclude.get("app_paths")
+if not isinstance(app_paths, list):
+    sys.exit(0)
+
+modified = False
+cleaned = []
+for p in app_paths:
+    if p == "/usr/bin/env":
+        if "/usr/bin/env" not in cleaned:
+            cleaned.append("/usr/bin/env")
+        else:
+            modified = True
+    else:
+        if p not in cleaned:
+            cleaned.append(p)
+
+steam_cmd = "flatpak run com.valvesoftware.Steam"
+lutris_cmd = "flatpak run net.lutris.Lutris"
+
+if "/usr/bin/env" in cleaned:
+    has_steam = any("com.valvesoftware.Steam" in p for p in cleaned)
+    if not has_steam:
+        cleaned.append(steam_cmd)
+        modified = True
+    has_lutris = any("net.lutris.Lutris" in p for p in cleaned)
+    if not has_lutris:
+        cleaned.append(lutris_cmd)
+        modified = True
+
+if modified:
+    exclude["app_paths"] = cleaned
+    path.write_text(json.dumps(data, indent=4) + "\n", encoding="utf-8")
+PY
+}
+
 stage_user_icon_theme
 ensure_browser_environment
 apply_user_flatpak_theme_overrides
 install_flatpak_desktop_entries
 ensure_protonvpn_visible_launch
+ensure_protonvpn_split_tunneling_settings
 copy_if_missing_or_legacy "${defaults_dir}/niri/config.kdl" "${HOME}/.config/niri/config.kdl" legacy_niri_config
 ensure_niri_ghostty_launcher
 ensure_niri_browser_bridge

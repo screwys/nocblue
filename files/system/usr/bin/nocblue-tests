@@ -1138,6 +1138,7 @@ grep -q 'dbus-update-activation-environment --systemd BROWSER=/usr/bin/xdg-open'
 grep -q 'io.github.alyraffauf.Switchyard' /usr/bin/nocblue-apply-user-defaults
 grep -q -- '--unset-env=LD_PRELOAD' /usr/bin/nocblue-apply-user-defaults
 grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
+grep -q 'ensure_protonvpn_split_tunneling_settings' /usr/bin/nocblue-apply-user-defaults
 grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
 grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
 user_defaults_stamp="$(sed -n 's|^version_stamp="${state_dir}/\(user-defaults\.v[0-9][0-9]*\.done\)"$|\1|p' /usr/bin/nocblue-apply-user-defaults)"
@@ -1403,6 +1404,33 @@ test -L /etc/systemd/system/multi-user.target.wants/me.proton.vpn.split_tunnelin
 grep -q '^SystemdService=me.proton.vpn.split_tunneling.service$' /etc/dbus-1/system-services/me.proton.vpn.split_tunneling.service
 test -f /usr/share/applications/proton.vpn.app.gtk.desktop
 test ! -e /usr/share/applications/com.protonvpn.www.desktop
+python3 - <<'PY'
+import glob
+
+daemon_dirs = glob.glob("/usr/lib/python3.*/site-packages/proton/vpn/daemon/split_tunneling/apps")
+assert daemon_dirs, "missing proton daemon split tunneling package"
+d = daemon_dirs[0]
+
+pm = open(f"{d}/process_monitor.py", encoding="utf-8").read()
+assert "errors='replace'" in pm, "missing errors='replace' in process_monitor.py"
+
+sm = open(f"{d}/socket_monitor.py", encoding="utf-8").read()
+assert "bpf_get_current_pid_tgid() >> 32" in sm, "missing tgid bitshift in socket_monitor.py"
+
+pmatch = open(f"{d}/process_matcher.py", encoding="utf-8").read()
+assert "_extract_flatpak_id" in pmatch, "missing _extract_flatpak_id in process_matcher.py"
+assert "_get_process_flatpak_id" in pmatch, "missing _get_process_flatpak_id in process_matcher.py"
+
+pmap = open(f"{d}/process_map.py", encoding="utf-8").read()
+assert "self.processes = dict(processes)" in pmap, "missing dict snapshot in process_map.py"
+
+gtk_dirs = glob.glob("/usr/lib/python3.*/site-packages/proton/vpn/app/gtk/widgets/headerbar/menu/settings/split_tunneling/app")
+assert gtk_dirs, "missing proton gtk split tunneling package"
+g = gtk_dirs[0]
+
+ia = open(f"{g}/installed_apps.py", encoding="utf-8").read()
+assert 'return "flatpak" in command_line' in ia, "missing flatpak check in installed_apps.py"
+PY
 grep -q '1714-1764' /etc/firewalld/services/kdeconnect.xml
 grep -q 'service name="kdeconnect"' /etc/firewalld/zones/FedoraWorkstation.xml
 grep -q 'service name="syncthing"' /etc/firewalld/zones/FedoraWorkstation.xml
