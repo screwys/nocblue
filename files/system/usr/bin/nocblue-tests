@@ -483,6 +483,15 @@ SH
     grep -Fxq 'repair-complete' <<<"${nix_wrapper_repair_output}"
     grep -Fxq 'command-after-repair=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' <<<"${nix_wrapper_repair_output}"
 )
+preload_file=
+if [[ -f /etc/ld.so.preload ]]; then
+    preload_file=/etc/ld.so.preload
+elif [[ -f /usr/etc/ld.so.preload ]]; then
+    preload_file=/usr/etc/ld.so.preload
+fi
+[[ -n "${preload_file}" ]]
+grep -Fq 'libhardened_malloc.so' "${preload_file}"
+grep -Fq 'libno_rlimit_as.so' "${preload_file}"
 host_bash_loader_env="$(
     env \
         -u BASH_ENV \
@@ -494,8 +503,7 @@ host_bash_loader_env="$(
             printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
         '
 )"
-[[ "${host_bash_loader_env}" == *libhardened_malloc* ]]
-[[ "${host_bash_loader_env}" == *libno_rlimit_as* ]]
+test "${host_bash_loader_env}" = '|'
 nix_bash_loader_env="$(
     env \
         -u BASH_ENV \
@@ -845,7 +853,8 @@ test ! -e /usr/libexec/nocblue/codex-bwrap-path
 test -x /usr/libexec/nocblue/chatgpt
 test "$(readlink /usr/bin/chatgpt)" = ../libexec/nocblue/chatgpt
 grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
-grep -Fqx 'exec /usr/lib/chatgpt/codex-launcher --class=Codex --ozone-platform=wayland "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
+grep -Fq 'exec /usr/bin/bwrap' /usr/libexec/nocblue/chatgpt
+grep -Fq 'exec /usr/lib/chatgpt/codex-launcher --class=Codex --ozone-platform=wayland "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
 ! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
 for chatgpt_label_path in \
     /usr/lib/chatgpt/ChatGPT \
@@ -1275,8 +1284,9 @@ grep -q 'check-secureblue' /usr/share/nocblue/njust/Justfile
 grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
 grep -q '^repo_gpgcheck=0$' /etc/yum.repos.d/librewolf.repo 2>/dev/null || grep -q '^repo_gpgcheck=0$' /usr/etc/yum.repos.d/librewolf.repo
 [[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
-grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
+! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 test -x /usr/bin/nocblue-browser-no-preload
+! grep -q -- '--cap-drop' /usr/bin/nocblue-browser-no-preload
 test -x /usr/bin/nocblue-portal-bwrap
 test -x /usr/libexec/nocblue/flatpak-builder
 grep -q 'FLATPAK_BWRAP=/usr/bin/nocblue-portal-bwrap' /usr/bin/flatpak-builder
@@ -1286,6 +1296,8 @@ test -x /usr/bin/librewolf
 ! test -L /usr/bin/librewolf
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/firefox
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/lib/mullvad-browser/start-mullvad-browser
+grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /opt/brave.com/brave-origin-beta/brave-origin-beta
+grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /opt/helium/helium-wrapper
 grep -Fqx 'exec /usr/bin/nocblue-browser-no-preload /usr/share/librewolf/librewolf "$@"' /usr/bin/librewolf
 grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib64/firefox/firefox "$@"' /usr/bin/firefox
 grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib/mullvad-browser/start-mullvad-browser "$@"' /usr/lib/mullvad-browser/start-mullvad-browser

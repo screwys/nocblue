@@ -53,8 +53,39 @@ func cleanEnv(env []string) []string {
     return cleaned
 }
 
+func hasPreload() bool {
+    fi, err := os.Stat("/etc/ld.so.preload")
+    if err == nil && fi.Mode().IsRegular() && fi.Size() > 0 {
+        return true
+    }
+    fi, err = os.Stat("/usr/etc/ld.so.preload")
+    if err == nil && fi.Mode().IsRegular() && fi.Size() > 0 {
+        return true
+    }
+    return false
+}
+
 func main() {
-    if err := syscall.Exec(target, os.Args, cleanEnv(os.Environ())); err != nil {
+    env := cleanEnv(os.Environ())
+    if hasPreload() {
+        bwrapArgs := []string{
+            "bwrap",
+            "--dev-bind", "/", "/",
+            "--ro-bind-try", "/dev/null", "/etc/ld.so.preload",
+            "--ro-bind-try", "/dev/null", "/usr/etc/ld.so.preload",
+            "--unsetenv", "LD_PRELOAD",
+            "--unsetenv", "LD_AUDIT",
+            "--",
+            target,
+        }
+        bwrapArgs = append(bwrapArgs, os.Args[1:]...)
+        if err := syscall.Exec("/usr/bin/bwrap", bwrapArgs, env); err != nil {
+            fmt.Fprintf(os.Stderr, "${name}: failed to exec bwrap: %v\n", err)
+            os.Exit(127)
+        }
+    }
+
+    if err := syscall.Exec(target, os.Args, env); err != nil {
         fmt.Fprintf(os.Stderr, "${name}: failed to exec %s: %v\n", target, err)
         os.Exit(127)
     }

@@ -26,4 +26,13 @@ restore_session_env() {
 
 restore_session_env
 unset LD_PRELOAD
+if [[ -r /etc/ld.so.preload || -r /usr/etc/ld.so.preload ]]; then
+    exec /usr/bin/bwrap \
+        --dev-bind / / \
+        --ro-bind-try /dev/null /etc/ld.so.preload \
+        --ro-bind-try /dev/null /usr/etc/ld.so.preload \
+        --unsetenv LD_PRELOAD \
+        -- "$@"
+fi
+
 exec "$@"

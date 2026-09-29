@@ -186,3 +186,7 @@ patch_desktop_exec \
 patch_shell_launcher /usr/bin/firefox /usr/lib64/firefox/firefox
 install_command_wrapper /usr/bin/librewolf /usr/share/librewolf/librewolf
 patch_shell_launcher /usr/lib/mullvad-browser/start-mullvad-browser /usr/lib/mullvad-browser/start-mullvad-browser
+patch_shell_launcher /opt/brave.com/brave-origin-beta/brave-origin-beta /opt/brave.com/brave-origin-beta/brave-origin-beta
+patch_shell_launcher /usr/lib/opt/brave.com/brave-origin-beta/brave-origin-beta /usr/lib/opt/brave.com/brave-origin-beta/brave-origin-beta
+patch_shell_launcher /opt/helium/helium-wrapper /opt/helium/helium-wrapper
+patch_shell_launcher /usr/lib/opt/helium/helium-wrapper /usr/lib/opt/helium/helium-wrapper
