@@ -203,6 +203,8 @@
 (allow brave_origin_t brave_origin_t (user_namespace (create)))
 (allow helium_t helium_t (user_namespace (create)))
 (allow nocblue_firefox_t nocblue_firefox_t (user_namespace (create)))
+; GTK decodes symbolic icons through Glycin's Bubblewrap sandbox.
+(allow nocblue_firefox_t bubblewrap_exec_t (file (getattr open read execute execute_no_trans map)))
 (allow brave_origin_t proc_t (file (getattr open read)))
 (allow helium_t proc_t (file (getattr open read)))
 (allow nocblue_firefox_t proc_t (file (getattr open read)))
