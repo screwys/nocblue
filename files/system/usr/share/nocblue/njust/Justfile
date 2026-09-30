@@ -9,7 +9,7 @@ update:
     sudo bootc upgrade
     flatpak update --system -y
     flatpak update --user -y || true
-    if command -v brew >/dev/null 2>&1; then brew update && brew upgrade; fi
+    if command -v brew >/dev/null 2>&1; then brew update && brew upgrade --fetch-HEAD; fi
 
 auto-update-status:
     systemctl status rpm-ostreed-automatic.timer rpm-ostreed-automatic.service --no-pager || true
@@ -40,7 +40,7 @@ flatpaks-repair:
 
 brew:
     brew update
-    brew upgrade
+    brew upgrade --fetch-HEAD
 
 android-sdk api="36" build_tools="36.0.0":
     ANDROID_BUILD_TOOLS="{{build_tools}}" nocblue-setup-android-sdk "{{api}}"

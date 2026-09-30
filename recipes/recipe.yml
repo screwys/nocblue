@@ -90,6 +90,25 @@ modules:
         - ShellCheck
         - shfmt
         - uv
+        # Desktop and user tooling with native Fedora/Terra providers.
+        - age
+        - chezmoi
+        - starship
+        - yazi
+        - jujutsu
+        - ruff
+        - gdb
+        - mkcert
+        - nss-tools
+        - sqlite
+        - rustup
+        - strace
+        - dmg2img
+        - mingw32-nsis
+        - pacman
+        - powershell
+        - tracy
+        - smartmontools
         - android-tools
         - java-latest-openjdk-devel
         - golang
@@ -153,6 +172,15 @@ modules:
         - nautilus-python
         - loupe
         - showtime
+        - mpv
+        - kdenlive
+        - gnome-boxes
+        - virt-manager
+        - virt-install
+        - virt-viewer
+        - libvirt-client
+        - libvirt-daemon-kvm
+        - qemu-kvm
         - fcitx5
         - fcitx5-mozc
         - fcitx5-configtool
@@ -187,7 +215,6 @@ modules:
         - grim
         - slurp
         - wf-recorder
-        - swappy
         - cliphist
         - wlsunset
         - wl-mirror
@@ -292,6 +319,9 @@ modules:
         - nocblue-session-defaults.service
         - input-remapper.service
         - firewalld.service
+        - virtqemud.socket
+        - virtnetworkd.socket
+        - virtstoraged.socket
         - me.proton.vpn.split_tunneling.service
         - greetd.service
       masked:
@@ -309,6 +339,7 @@ modules:
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
         - nix-portable-gc.timer
+        - nocblue-nix-profile-setup.service
         - nocblue-flatpak-icon-fixes.service
         - noctalia.service
       masked:

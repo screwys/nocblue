@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+manifest="${NOCBLUE_NIX_PROFILE_MANIFEST:-/usr/share/nocblue/manifests/nix-profile.txt}"
+
+installed_attrs="$(nix profile list --json | jq -r '
+    .elements[] | select(.active != false) | .attrPath
+')"
+
+while IFS= read -r ref; do
+    [[ -n "${ref}" && "${ref}" != \#* ]] || continue
+    if grep -Fxq -- "${ref##*#}" <<<"${installed_attrs}"; then
+        printf 'OK: Nix profile package %s already installed\n' "${ref##*#}"
+        continue
+    fi
+    nix profile install "${ref}"
+    installed_attrs+=$'\n'"${ref##*#}"
+done <"${manifest}"
+
+nix-profile-sync
