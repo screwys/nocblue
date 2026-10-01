@@ -350,6 +350,7 @@
     (typetransition unconfined_bubblewrap_t helium_exec_t process helium_t)
     (typetransition unconfined_bubblewrap_t mozilla_exec_t process nocblue_firefox_t)
     (typetransition unconfined_bubblewrap_t nocblue_chatgpt_exec_t process nocblue_chatgpt_t)
+    (typetransition unconfined_bubblewrap_t nocblue_chatgpt_agent_exec_t process unconfined_t)
 )
 
 (filecon "/var/lib/noctalia-greeter" dir (system_u object_r xdm_var_lib_t ((s0)(s0))))
