@@ -2,7 +2,7 @@
 Description=Mount the persistent Nix store
 DefaultDependencies=no
 Requires=systemd-tmpfiles-setup.service
-After=systemd-tmpfiles-setup.service
+After=systemd-tmpfiles-setup.service nocblue-sandbox-userns-selinux.service
 RequiresMountsFor=/var/home/nix
 Conflicts=umount.target
 Before=systemd-user-sessions.service umount.target
