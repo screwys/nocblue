@@ -62,6 +62,16 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
                  continue
 --- a/proton/vpn/daemon/split_tunneling/apps/process_monitor.py
 +++ b/proton/vpn/daemon/split_tunneling/apps/process_monitor.py
+@@ -182,7 +182,8 @@
+         )
+
+     def _run_blocking_process_monitoring(self):
+-        self._bpf["events"].open_perf_buffer(self._process_perf_buffer_event)
++        # Keep exec and fork bursts from overflowing the default 32 KiB buffer.
++        self._bpf["events"].open_perf_buffer(self._process_perf_buffer_event, page_cnt=256)
+         while not self._stop_requested:
+             self._bpf.perf_buffer_poll(timeout=30)  # timeout in ms
+
 @@ -200,7 +200,7 @@
          if event.type == PerfBufferEventType.EXEC.value:
              # Once the exec syscall returns, the final exe path is built out of all the
