@@ -64,6 +64,8 @@ modules:
         - just
         - gh
         - jq
+        - nix-core
+        - nix-filesystem
         - nodejs24-bin
         - nodejs24-npm-bin
         - pnpm
@@ -128,6 +130,7 @@ modules:
         - meson
         - ninja-build
         - selinux-policy-devel
+        - python3-setools
         - pkgconf-pkg-config
         - libtalloc-devel
         - openssl
@@ -309,9 +312,7 @@ modules:
       - configure-sandbox-userns-selinux.sh
       - configure-flatpak-builder-hardened.sh
       - install-protonvpn.sh
-      - install-nix-portable.sh
-      - install-nix-portable-proot.sh
-      - install-nix-launcher.sh
+      - configure-nix.sh
       - install-uv-launchers.sh
       - configure-anticheat-support.sh
       - build-loupe-reuse-window.sh
@@ -322,6 +323,7 @@ modules:
       enabled:
         - nocblue-sandbox-userns-selinux.service
         - nocblue-session-defaults.service
+        - nix.mount
         - input-remapper.service
         - firewalld.service
         - virtqemud.socket
@@ -343,7 +345,7 @@ modules:
         - nocblue-adwsteamgtk.timer
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
-        - nix-portable-gc.timer
+        - nocblue-nix-gc.timer
         - nocblue-nix-profile-setup.service
         - nocblue-flatpak-icon-fixes.service
         - noctalia.service

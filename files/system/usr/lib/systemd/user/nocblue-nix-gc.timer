@@ -1,10 +1,10 @@
 [Unit]
-Description=Weekly Nix store cleanup
+Description=Collect unused Nix store paths weekly
 
 [Timer]
 OnCalendar=weekly
-Persistent=true
 RandomizedDelaySec=2h
+Persistent=true
 
 [Install]
 WantedBy=timers.target

@@ -1,0 +1,2 @@
+(typeattributeset userns_privileged_domain (nocblue_nix_t))
+(typeattributeset userns_privileged_file_type (nocblue_nix_exec_t))

@@ -1,0 +1,4 @@
+/usr/libexec/nocblue/nix -- gen_context(system_u:object_r:nocblue_nix_exec_t,s0)
+/etc/nix(/.*)? gen_context(system_u:object_r:nocblue_nix_conf_t,s0)
+/var/home/nix(/.*)? gen_context(system_u:object_r:nocblue_nix_store_t,s0)
+/nix(/.*)? gen_context(system_u:object_r:nocblue_nix_store_t,s0)

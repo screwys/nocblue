@@ -622,10 +622,6 @@ if [[ "${nautilus_extensions_changed}" -eq 1 ]]; then
     pkill -x nautilus >/dev/null 2>&1 || true
 fi
 
-if [[ -x /usr/bin/nix-profile-sync ]]; then
-    /usr/bin/nix-profile-sync >/dev/null 2>&1 || true
-fi
-
 if command -v gsettings >/dev/null 2>&1; then
     gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3" || true
     gsettings set org.gnome.desktop.interface icon-theme "candy-icons" || true

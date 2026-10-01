@@ -23,11 +23,17 @@ jobs:
       - name: checkout
         uses: actions/checkout@v7
 
-      - name: shell syntax
+      - name: script syntax
         run: |
           find files/scripts files/system/usr/bin files/compat/usr/libexec \
             files/compat/usr/lib/dracut/modules.d \
-            -type f -print0 | xargs -0 -r bash -n
+            -type f -print0 | while IFS= read -r -d '' script; do
+              if head -n 1 "$script" | grep -q '^#!.*python'; then
+                python3 -c 'import ast, pathlib, sys; ast.parse(pathlib.Path(sys.argv[1]).read_text())' "$script"
+              else
+                bash -n "$script"
+              fi
+            done
 
       - name: repository shape
         run: |

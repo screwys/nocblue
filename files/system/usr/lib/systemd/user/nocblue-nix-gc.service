@@ -1,7 +1,7 @@
 [Unit]
 Description=Collect unused Nix store paths
-Documentation=https://github.com/DavHau/nix-portable
-ConditionPathExists=%h/.nix-portable
+ConditionPathIsDirectory=/nix/store
+ConditionUser=!root
 
 [Service]
 Type=oneshot

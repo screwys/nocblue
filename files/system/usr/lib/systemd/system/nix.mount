@@ -1,0 +1,17 @@
+[Unit]
+Description=Mount the persistent Nix store
+DefaultDependencies=no
+Requires=systemd-tmpfiles-setup.service
+After=systemd-tmpfiles-setup.service
+RequiresMountsFor=/var/home/nix
+Conflicts=umount.target
+Before=systemd-user-sessions.service umount.target
+
+[Mount]
+What=/var/home/nix
+Where=/nix
+Type=none
+Options=bind
+
+[Install]
+WantedBy=multi-user.target

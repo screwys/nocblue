@@ -1,0 +1,105 @@
+policy_module(nocblue_nix, 1.0.0)
+
+type nocblue_nix_t;
+type nocblue_nix_exec_t;
+application_domain(nocblue_nix_t, nocblue_nix_exec_t)
+
+type nocblue_nix_store_t;
+files_type(nocblue_nix_store_t)
+
+type nocblue_nix_conf_t;
+files_config_file(nocblue_nix_conf_t)
+
+gen_require(`
+    type unconfined_t;
+    type proc_t, sysctl_t;
+    type root_t, tmp_t, fs_t, devpts_t, random_device_t;
+    attribute non_security_file_type, user_home_type, user_tmp_type;
+    role unconfined_r;
+')
+
+role unconfined_r types nocblue_nix_t;
+domtrans_pattern(unconfined_t, nocblue_nix_exec_t, nocblue_nix_t)
+allow unconfined_t nocblue_nix_t:process2 { nnp_transition nosuid_transition };
+allow nocblue_nix_t nocblue_nix_exec_t:file execute_no_trans;
+
+# Nix has no capabilities in the initial user namespace.
+allow nocblue_nix_t self:user_namespace create;
+allow nocblue_nix_t self:cap_userns {
+    net_admin setgid setuid sys_admin sys_chroot sys_ptrace
+};
+
+allow nocblue_nix_t self:process { fork sigchld signal sigkill sigstop };
+allow nocblue_nix_t self:fifo_file rw_fifo_file_perms;
+allow nocblue_nix_t self:unix_stream_socket create_stream_socket_perms;
+allow nocblue_nix_t self:unix_stream_socket connectto;
+allow nocblue_nix_t self:tcp_socket create_stream_socket_perms;
+allow nocblue_nix_t self:udp_socket create_socket_perms;
+allow nocblue_nix_t self:netlink_route_socket { create bind getattr nlmsg_read };
+
+# Nix owns this single-user store and its build directories.
+manage_dirs_pattern(nocblue_nix_t, nocblue_nix_store_t, nocblue_nix_store_t)
+manage_files_pattern(nocblue_nix_t, nocblue_nix_store_t, nocblue_nix_store_t)
+manage_lnk_files_pattern(nocblue_nix_t, nocblue_nix_store_t, nocblue_nix_store_t)
+manage_fifo_files_pattern(nocblue_nix_t, nocblue_nix_store_t, nocblue_nix_store_t)
+manage_sock_files_pattern(nocblue_nix_t, nocblue_nix_store_t, nocblue_nix_store_t)
+allow nocblue_nix_t nocblue_nix_store_t:file { map mounton };
+allow nocblue_nix_t nocblue_nix_store_t:dir mounton;
+
+read_files_pattern(nocblue_nix_t, nocblue_nix_conf_t, nocblue_nix_conf_t)
+read_lnk_files_pattern(nocblue_nix_t, nocblue_nix_conf_t, nocblue_nix_conf_t)
+
+files_search_var(nocblue_nix_t)
+files_search_home(nocblue_nix_t)
+files_search_etc(nocblue_nix_t)
+files_search_usr(nocblue_nix_t)
+
+# Project files and native GC use the caller's ordinary Unix permissions.
+files_read_non_security_files(nocblue_nix_t)
+files_map_non_security_files(nocblue_nix_t)
+files_manage_non_security_dirs(nocblue_nix_t)
+manage_lnk_files_pattern(nocblue_nix_t, non_security_file_type, non_security_file_type)
+userdom_manage_user_home_content(nocblue_nix_t)
+userdom_manage_all_user_tmp_content(nocblue_nix_t)
+files_manage_generic_tmp_dirs(nocblue_nix_t)
+files_manage_generic_tmp_files(nocblue_nix_t)
+domain_read_all_domains_state(nocblue_nix_t)
+userdom_use_user_terminals(nocblue_nix_t)
+dev_rw_kvm(nocblue_nix_t)
+term_use_ptmx(nocblue_nix_t)
+term_use_generic_ptys(nocblue_nix_t)
+allow nocblue_nix_t devpts_t:chr_file setattr;
+allow nocblue_nix_t random_device_t:chr_file getattr;
+
+# Native Nix sets up its sandbox before executing the builder.
+allow nocblue_nix_t { devpts_t proc_t }:filesystem mount;
+fs_mount_tmpfs(nocblue_nix_t)
+allow nocblue_nix_t fs_t:filesystem unmount;
+allow nocblue_nix_t { root_t proc_t }:dir mounton;
+fs_read_nsfs_files(nocblue_nix_t)
+
+kernel_read_system_state(nocblue_nix_t)
+kernel_read_vm_sysctls(nocblue_nix_t)
+allow nocblue_nix_t sysctl_t:file read_file_perms;
+allow nocblue_nix_t proc_t:lnk_file read_lnk_file_perms;
+fs_getattr_all_fs(nocblue_nix_t)
+
+libs_use_ld_so(nocblue_nix_t)
+libs_use_shared_libs(nocblue_nix_t)
+auth_use_nsswitch(nocblue_nix_t)
+sysnet_read_config(nocblue_nix_t)
+miscfiles_read_generic_certs(nocblue_nix_t)
+miscfiles_read_localization(nocblue_nix_t)
+
+corenet_tcp_sendrecv_all_if(nocblue_nix_t)
+corenet_tcp_sendrecv_all_nodes(nocblue_nix_t)
+corenet_tcp_sendrecv_all_ports(nocblue_nix_t)
+corenet_tcp_connect_all_ports(nocblue_nix_t)
+corenet_udp_sendrecv_all_if(nocblue_nix_t)
+corenet_udp_sendrecv_all_nodes(nocblue_nix_t)
+corenet_udp_sendrecv_all_ports(nocblue_nix_t)
+
+optional_policy(`
+    systemd_userdbd_stream_connect(nocblue_nix_t)
+    systemd_read_userdbd_runtime_sock_files(nocblue_nix_t)
+')

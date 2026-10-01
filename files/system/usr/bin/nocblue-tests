@@ -257,232 +257,6 @@ for brew_service in brew-update.service brew-upgrade.service; do
     test -L "/etc/systemd/system/timers.target.wants/${brew_service%.service}.timer"
 done
 test -x /usr/bin/nix
-test -x /usr/bin/nix-profile-exec
-test -x /usr/bin/nix-profile-sync
-test -x /usr/libexec/nocblue/nix-portable/nix-portable
-test -x /usr/libexec/nocblue/nix-portable/proot
-test -x /usr/libexec/nocblue/nix-portable/clean-build-home
-test -x /usr/libexec/nocblue/nix-portable/nix-wrapper
-test -x /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-grep -Fqx 'rm -rf -- /homeless-shelter' /usr/libexec/nocblue/nix-portable/clean-build-home
-test -f /usr/libexec/nocblue/nix-portable/source-version
-grep -qx 'v012' /usr/libexec/nocblue/nix-portable/source-version
-test -f /usr/libexec/nocblue/nix-portable/proot-source-commit
-grep -qx 'acd6ca53375ff830fdf6e77251ee005c9c68b0d0' /usr/libexec/nocblue/nix-portable/proot-source-commit
-test -f /usr/libexec/nocblue/nix-portable/proot-source-sha256
-grep -qx '59e30229c852de246946c5ff32039f7a5d4e5ea917b1d4a80639694edf76dc91' /usr/libexec/nocblue/nix-portable/proot-source-sha256
-(
-    proot_copy_probe="$(mktemp -d)"
-    trap 'rm -rf "${proot_copy_probe}"' EXIT
-    mkdir -p "${proot_copy_probe}/src/inner" "${proot_copy_probe}/dst"
-    printf 'nix-portable proot copy probe\n' >"${proot_copy_probe}/src/inner/file.txt"
-    (
-        cd "${proot_copy_probe}/dst"
-        /usr/libexec/nocblue/nix-portable/proot /usr/bin/cp -r "${proot_copy_probe}/src" source
-    )
-    grep -qx 'nix-portable proot copy probe' "${proot_copy_probe}/dst/source/inner/file.txt"
-)
-for nix_package in nix nix-daemon; do
-    ! rpm -q "${nix_package}" >/dev/null 2>&1
-done
-(
-    nix_wrapper_probe="$(mktemp -d)"
-    trap 'rm -rf "${nix_wrapper_probe}"' EXIT
-    mkdir -p "${nix_wrapper_probe}/home"
-    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo"
-    printf 'stale cargo cache\n' >"${nix_wrapper_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo/.package-cache"
-    cat >"${nix_wrapper_probe}/payload" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-printf 'argv=%s\n' "$*"
-printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
-printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
-printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
-printf 'NOCBLUE_NIX_PORTABLE=%s\n' "${NOCBLUE_NIX_PORTABLE-}"
-if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
-    printf 'stale build home still exists\n' >&2
-    exit 43
-fi
-for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
-    if [[ -v "${name}" ]]; then
-        printf 'leaked %s\n' "${name}" >&2
-        exit 42
-    fi
-done
-printf 'build-home-clean\n'
-printf 'env-clean\n'
-SH
-    chmod 0755 "${nix_wrapper_probe}/payload"
-    nix_wrapper_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            LD_PRELOAD= \
-            LD_AUDIT= \
-            NIX_REMOTE=daemon \
-            NIX_PROFILES=/nix/var/nix/profiles/default \
-            NIX_USER_CONF_FILES=/tmp/nix.conf \
-            NIX_PATH=nixpkgs=/tmp/nixpkgs \
-            NIX_SSL_CERT_FILE=/tmp/certs.pem \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            /usr/bin/nix --version
-    )"
-    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' <<<"${nix_wrapper_output}"
-    grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_wrapper_output}"
-    grep -Fxq "NP_LOCATION=${nix_wrapper_probe}/home" <<<"${nix_wrapper_output}"
-    grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_wrapper_output}"
-    grep -Fxq 'NOCBLUE_NIX_PORTABLE=1' <<<"${nix_wrapper_output}"
-    grep -Fxq 'build-home-clean' <<<"${nix_wrapper_output}"
-    grep -Fxq 'env-clean' <<<"${nix_wrapper_output}"
-    mkdir -p "${nix_wrapper_probe}/repo"
-    git -C "${nix_wrapper_probe}/repo" init --quiet
-    if nix_wrapper_raw_flake_output="$(
-        cd "${nix_wrapper_probe}/repo"
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            /usr/bin/nix eval --impure --expr '(builtins.getFlake (toString ./.)).description' \
-            2>&1
-    )"; then
-        echo 'The Nix wrapper accepted a raw Git worktree flake.' >&2
-        exit 1
-    fi
-    grep -Fq 'refusing to import the Git worktree as a raw path' <<<"${nix_wrapper_raw_flake_output}"
-    grep -Fq "Use a git+file://${nix_wrapper_probe}/repo flake reference instead." \
-        <<<"${nix_wrapper_raw_flake_output}"
-    ! grep -Fq 'argv=' <<<"${nix_wrapper_raw_flake_output}"
-    nix_wrapper_allowed_raw_flake_output="$(
-        cd "${nix_wrapper_probe}/repo"
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_ALLOW_RAW_GIT_FLAKE=1 \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            /usr/bin/nix eval --impure --expr '(builtins.getFlake (toString ./.)).description'
-    )"
-    grep -Fq 'argv=nix --option post-build-hook' <<<"${nix_wrapper_allowed_raw_flake_output}"
-    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/nix/store"
-    mkdir -p "${nix_wrapper_probe}/low-space-bin"
-    cat >"${nix_wrapper_probe}/low-space-bin/df" <<'SH'
-#!/usr/bin/env bash
-printf 'Filesystem 1024-blocks Used Available Capacity Mounted on\n'
-printf 'probe 10000000 9999999 1 100%% /probe\n'
-SH
-    chmod 0755 "${nix_wrapper_probe}/low-space-bin/df"
-    nix_wrapper_low_space_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            PATH="${nix_wrapper_probe}/low-space-bin:/usr/bin:/usr/sbin" \
-            /usr/bin/nix --version 2>&1
-    )"
-    ! grep -Fxq 'argv=nix store gc' <<<"${nix_wrapper_low_space_output}"
-    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' \
-        <<<"${nix_wrapper_low_space_output}"
-    cat >"${nix_wrapper_probe}/payload-children" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-children=""
-IFS= read -r children <"/proc/$$/task/$$/children" || true
-printf 'process-substitution-children=<%s>\n' "${children}"
-if [[ -n "${children}" ]]; then
-    exit 45
-fi
-SH
-    chmod 0755 "${nix_wrapper_probe}/payload-children"
-    nix_wrapper_process_substitution_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            LD_PRELOAD= \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload-children" \
-            /usr/bin/nix --version > >(cat)
-    )"
-    grep -Fxq 'process-substitution-children=<>' <<<"${nix_wrapper_process_substitution_output}"
-    nix_wrapper_preload_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' \
-            LD_AUDIT='missing-audit.so' \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            /usr/bin/nix --version 2>&1
-    )"
-    grep -Fxq 'env-clean' <<<"${nix_wrapper_preload_output}"
-    ! grep -Eq 'cannot be preloaded|cannot be loaded as audit' <<<"${nix_wrapper_preload_output}"
-    cat >"${nix_wrapper_probe}/bash-env-poison" <<'SH'
-exit 91
-SH
-    BASH_ENV="${nix_wrapper_probe}/bash-env-poison" /usr/bin/nix --version >/dev/null
-    BASH_ENV="${nix_wrapper_probe}/bash-env-poison" /usr/bin/nix-profile-exec --help >/dev/null
-    nix_wrapper_shellopts_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            SHELLOPTS=noexec \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            /usr/bin/nix --version
-    )"
-    grep -Fxq 'env-clean' <<<"${nix_wrapper_shellopts_output}"
-    cat >"${nix_wrapper_probe}/profile-sync" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-printf 'profile-sync-called\n'
-SH
-    chmod 0755 "${nix_wrapper_probe}/profile-sync"
-    nix_wrapper_profile_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            LD_PRELOAD= \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            NOCBLUE_NIX_PROFILE_SYNC="${nix_wrapper_probe}/profile-sync" \
-            /usr/bin/nix profile install nixpkgs#hello
-    )"
-    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile install nixpkgs#hello' <<<"${nix_wrapper_profile_output}"
-    grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_output}"
-    nix_wrapper_profile_add_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            NOCBLUE_NIX_PROFILE_SYNC="${nix_wrapper_probe}/profile-sync" \
-            /usr/bin/nix profile add nixpkgs#hello
-    )"
-    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile add nixpkgs#hello' <<<"${nix_wrapper_profile_add_output}"
-    grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_add_output}"
-    nix_wrapper_profile_list_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/payload" \
-            NOCBLUE_NIX_PROFILE_SYNC="${nix_wrapper_probe}/profile-sync" \
-            /usr/bin/nix profile list
-    )"
-    grep -Fxq 'argv=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home profile list' <<<"${nix_wrapper_profile_list_output}"
-    ! grep -Fxq 'profile-sync-called' <<<"${nix_wrapper_profile_list_output}"
-    mkdir -p "${nix_wrapper_probe}/home/.nix-portable/nix/var/nix/db"
-    : >"${nix_wrapper_probe}/home/.nix-portable/nix/var/nix/db/db.sqlite"
-    cat >"${nix_wrapper_probe}/repair-payload" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-case "${1:-} ${2:-} ${3:-}" in
-    'nix-store --verify ')
-        exit 1
-        ;;
-    'nix-store --verify --repair')
-        printf 'repair-complete\n'
-        : >"${NP_LOCATION}/repair-complete"
-        ;;
-    *)
-        test -f "${NP_LOCATION}/repair-complete"
-        printf 'command-after-repair=%s\n' "$*"
-        ;;
-esac
-SH
-    chmod 0755 "${nix_wrapper_probe}/repair-payload"
-    nix_wrapper_repair_output="$(
-        env \
-            HOME="${nix_wrapper_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_wrapper_probe}/repair-payload" \
-            /usr/bin/nix --version 2>&1
-    )"
-    grep -Fxq 'nix: repairing an inconsistent nix-portable store before continuing' <<<"${nix_wrapper_repair_output}"
-    grep -Fxq 'repair-complete' <<<"${nix_wrapper_repair_output}"
-    grep -Fxq 'command-after-repair=nix --option post-build-hook /usr/libexec/nocblue/nix-portable/clean-build-home --version' <<<"${nix_wrapper_repair_output}"
-)
 preload_file=
 if [[ -f /etc/ld.so.preload ]]; then
     preload_file=/etc/ld.so.preload
@@ -497,7 +271,7 @@ host_bash_loader_env="$(
         -u BASH_ENV \
         -u LD_PRELOAD \
         -u LD_AUDIT \
-        -u NOCBLUE_NIX_PORTABLE \
+        -u NOCBLUE_NIX_ENV \
         /usr/bin/bash --noprofile --norc -c '
             . /etc/bashrc
             printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
@@ -509,154 +283,18 @@ nix_bash_loader_env="$(
         -u BASH_ENV \
         -u LD_PRELOAD \
         -u LD_AUDIT \
-        NOCBLUE_NIX_PORTABLE=1 \
+        NOCBLUE_NIX_ENV=1 \
         /usr/bin/bash --noprofile --norc -c '
             . /etc/bashrc
             printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
         '
 )"
 test "${nix_bash_loader_env}" = '|'
-(
-    nix_profile_exec_probe="$(mktemp -d)"
-    trap 'rm -rf "${nix_profile_exec_probe}"' EXIT
-    mkdir -p "${nix_profile_exec_probe}/home/.nix-profile/bin"
-    mkdir -p "${nix_profile_exec_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo"
-    printf 'stale cargo cache\n' >"${nix_profile_exec_probe}/home/.nix-portable/emptyroot/homeless-shelter/.cargo/.package-cache"
-    cat >"${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-printf 'tool-argv=%s\n' "$*"
-printf 'profile-command=%s\n' "$(command -v probe-tool)"
-printf 'NIX_CONFIG=%s\n' "${NIX_CONFIG-}"
-for name in LD_PRELOAD LD_AUDIT NIX_REMOTE NIX_PROFILES NIX_USER_CONF_FILES NIX_PATH NIX_SSL_CERT_FILE; do
-    if [[ -v "${name}" ]]; then
-        printf 'leaked %s\n' "${name}" >&2
-        exit 42
-    fi
-done
-printf 'profile-env-clean\n'
-SH
-    chmod 0755 "${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool"
-    cat >"${nix_profile_exec_probe}/payload" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-printf 'payload-mode=%s %s %s\n' "$1" "$2" "$3"
-printf 'NP_RUNTIME=%s\n' "${NP_RUNTIME-}"
-printf 'NP_LOCATION=%s\n' "${NP_LOCATION-}"
-printf 'NP_PROOT=%s\n' "${NP_PROOT-}"
-printf 'NOCBLUE_NIX_PORTABLE=%s\n' "${NOCBLUE_NIX_PORTABLE-}"
-if [[ -e "${NP_LOCATION}/.nix-portable/emptyroot/homeless-shelter" ]]; then
-    printf 'stale build home still exists\n' >&2
-    exit 43
-fi
-if [[ "$1" != "debug" || "$2" != "sh" || "$3" != "-c" ]]; then
-    printf 'unexpected payload argv\n' >&2
-    exit 44
-fi
-printf 'build-home-clean\n'
-if [[ $# -eq 4 ]]; then
-    exec sh -c "$4"
-fi
-exec sh -c "$4" "$5" "${@:6}"
-SH
-    chmod 0755 "${nix_profile_exec_probe}/payload"
-    nix_profile_exec_output="$(
-        env \
-            HOME="${nix_profile_exec_probe}/home" \
-            LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' \
-            LD_AUDIT='missing-audit.so' \
-            NIX_REMOTE=daemon \
-            NIX_PROFILES=/nix/var/nix/profiles/default \
-            NIX_USER_CONF_FILES=/tmp/nix.conf \
-            NIX_PATH=nixpkgs=/tmp/nixpkgs \
-            NIX_SSL_CERT_FILE=/tmp/certs.pem \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_profile_exec_probe}/payload" \
-            /usr/bin/nix-profile-exec probe-tool one "two words" 2>&1
-    )"
-    grep -Fxq 'payload-mode=debug sh -c' <<<"${nix_profile_exec_output}"
-    grep -Fxq 'NP_RUNTIME=proot' <<<"${nix_profile_exec_output}"
-    grep -Fxq "NP_LOCATION=${nix_profile_exec_probe}/home" <<<"${nix_profile_exec_output}"
-    grep -Fxq 'NP_PROOT=/usr/libexec/nocblue/nix-portable/proot' <<<"${nix_profile_exec_output}"
-    grep -Fxq 'NOCBLUE_NIX_PORTABLE=1' <<<"${nix_profile_exec_output}"
-    grep -Fxq 'build-home-clean' <<<"${nix_profile_exec_output}"
-    grep -Fxq 'tool-argv=one two words' <<<"${nix_profile_exec_output}"
-    grep -Fxq "profile-command=${nix_profile_exec_probe}/home/.nix-profile/bin/probe-tool" <<<"${nix_profile_exec_output}"
-    grep -Fxq 'NIX_CONFIG=post-build-hook = /usr/libexec/nocblue/nix-portable/clean-build-home' <<<"${nix_profile_exec_output}"
-    grep -Fxq 'profile-env-clean' <<<"${nix_profile_exec_output}"
-    ! grep -Eq 'cannot be preloaded|cannot be loaded as audit' <<<"${nix_profile_exec_output}"
-    nix_profile_exec_list="$(
-        env \
-            HOME="${nix_profile_exec_probe}/home" \
-            NOCBLUE_NIX_PORTABLE_PAYLOAD="${nix_profile_exec_probe}/payload" \
-            /usr/bin/nix-profile-exec --list
-    )"
-    grep -Fxq 'probe-tool' <<<"${nix_profile_exec_list}"
-    ! env HOME="${nix_profile_exec_probe}/home" /usr/bin/nix-profile-exec ./probe-tool >/dev/null 2>&1
-)
-(
-    nix_profile_sync_probe="$(mktemp -d)"
-    trap 'rm -rf "${nix_profile_sync_probe}"' EXIT
-    mkdir -p "${nix_profile_sync_probe}/host-bin" "${nix_profile_sync_probe}/shims" "${nix_profile_sync_probe}/state/nocblue"
-    mkdir -p "${nix_profile_sync_probe}/state/nix/profiles" "${nix_profile_sync_probe}/home/.nix-portable/nix/store/probe-profile"
-    ln -s profile-1-link "${nix_profile_sync_probe}/state/nix/profiles/profile"
-    ln -s /nix/store/probe-profile "${nix_profile_sync_probe}/state/nix/profiles/profile-1-link"
-    printf '{"elements":{"one":{},"two":{}}}\n' >"${nix_profile_sync_probe}/home/.nix-portable/nix/store/probe-profile/manifest.json"
-    cat >"${nix_profile_sync_probe}/profile-exec" <<'SH'
-#!/usr/bin/env bash
-set -euo pipefail
-if [[ "$*" != "--list" ]]; then
-    printf 'unexpected profile-exec argv: %s\n' "$*" >&2
-    exit 44
-fi
-printf 'nixpkgs-review\n'
-printf 'python\n'
-printf 'bad/name\n'
-SH
-    chmod 0755 "${nix_profile_sync_probe}/profile-exec"
-    cat >"${nix_profile_sync_probe}/host-bin/python" <<'SH'
-#!/usr/bin/env bash
-exit 0
-SH
-    chmod 0755 "${nix_profile_sync_probe}/host-bin/python"
-    cat >"${nix_profile_sync_probe}/shims/stale-tool" <<'SH'
-#!/usr/bin/env bash
-# nocblue-nix-profile-shim v1
-exit 0
-SH
-    chmod 0755 "${nix_profile_sync_probe}/shims/stale-tool"
-    printf 'stale-tool\n' >"${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
-    nix_profile_sync_output="$(
-        env \
-            HOME="${nix_profile_sync_probe}/home" \
-            PATH="${nix_profile_sync_probe}/host-bin:/usr/bin:/usr/sbin" \
-            XDG_STATE_HOME="${nix_profile_sync_probe}/state" \
-            NOCBLUE_NIX_PROFILE_EXEC="${nix_profile_sync_probe}/profile-exec" \
-            NOCBLUE_NIX_PROFILE_SHIM_DIR="${nix_profile_sync_probe}/shims" \
-            /usr/bin/nix-profile-sync 2>&1
-    )"
-    test -x "${nix_profile_sync_probe}/shims/nixpkgs-review"
-    grep -Fqx '# nocblue-nix-profile-shim v1' "${nix_profile_sync_probe}/shims/nixpkgs-review"
-    grep -Fqx 'exec /usr/bin/nix-profile-exec "nixpkgs-review" "$@"' "${nix_profile_sync_probe}/shims/nixpkgs-review"
-    test ! -e "${nix_profile_sync_probe}/shims/python"
-    test ! -e "${nix_profile_sync_probe}/shims/stale-tool"
-    grep -Fxq 'nixpkgs-review' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
-    grep -Fxq '2' "${nix_profile_sync_probe}/state/nocblue/nix-profile-count"
-    ! grep -Fxq 'python' "${nix_profile_sync_probe}/state/nocblue/nix-profile-shims"
-    grep -Fxq "nix-profile-sync: skipping python; would shadow ${nix_profile_sync_probe}/host-bin/python" <<<"${nix_profile_sync_output}"
-    grep -Fxq 'nix-profile-sync: skipping invalid command name: bad/name' <<<"${nix_profile_sync_output}"
-)
-test -f /usr/lib/systemd/user/nix-portable-gc.service
-test -f /usr/lib/systemd/user/nix-portable-gc.timer
-grep -qx 'ExecStart=/usr/bin/nix store gc' /usr/lib/systemd/user/nix-portable-gc.service
-grep -qx 'OnCalendar=weekly' /usr/lib/systemd/user/nix-portable-gc.timer
-grep -qx 'RandomizedDelaySec=2h' /usr/lib/systemd/user/nix-portable-gc.timer
-test ! -e /nix
 test ! -e /etc/profile.d/nix-daemon.sh
 test ! -e /usr/lib/systemd/system/nix-daemon.service
 test ! -e /usr/lib/systemd/system/nix-daemon.socket
 test ! -e /usr/lib/tmpfiles.d/nix-daemon.conf
 test ! -e /usr/lib/sysusers.d/nix-daemon.conf
-! grep -RIn '\.nix-profile\|/nix/var/nix/profiles/default' /etc/profile.d /usr/share/nocblue/defaults/fish/config.fish
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
 test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
 test -f /usr/lib/systemd/system/flatpak-system-update.service
@@ -684,7 +322,7 @@ for masked_user_unit in security-update-notification.path security-update-notifi
     test "$(readlink "/etc/systemd/user/${masked_user_unit}")" = "/dev/null"
 done
 test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
-test -L /etc/systemd/user/timers.target.wants/nix-portable-gc.timer
+test -L /etc/systemd/user/timers.target.wants/nocblue-nix-gc.timer
 test -L /etc/systemd/system/display-manager.service
 test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/greetd.service"
 test -L /etc/systemd/user/niri.service.wants/noctalia.service
@@ -787,9 +425,6 @@ bash -n /usr/bin/nocblue-sync-icon-theme
 bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
 bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/libexec/nocblue/chatgpt
-bash -n /usr/libexec/nocblue/nix-portable/nix-wrapper
-bash -n /usr/libexec/nocblue/nix-portable/nix-profile-exec-wrapper
-bash -n /usr/bin/nix-profile-sync
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
 bash -n /usr/bin/nocblue-setup-android-sdk

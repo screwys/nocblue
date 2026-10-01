@@ -5,6 +5,13 @@ cil=/usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 module=nocblue_sandbox_userns
 file_manager_policy_root=/usr/share/nocblue/selinux/file-managers
 file_manager_modules=(nautilus)
+nix_policy_root=/usr/share/nocblue/selinux/nix
+nix_modules=()
+# The image builds Nix after the shared sandbox policy.
+if [[ -e /usr/libexec/nocblue/nix ]]; then
+    nix_modules=(nocblue_nix nocblue_nix_userns nocblue_nix_exec)
+fi
+required_modules=("${module}" "${file_manager_modules[@]}" "${nix_modules[@]}")
 legacy_modules=(nocblue_browser_userns thunar)
 target_priority=300
 stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256
@@ -22,6 +29,9 @@ critical_label_paths=(
     /usr/lib/chatgpt/ChatGPT
     /usr/lib/chatgpt/browser_crashpad_handler
     /usr/lib/chatgpt/resources/codex
+    /usr/libexec/nocblue/nix
+    /var/home/nix
+    /etc/nix
 )
 
 module_priorities_for() {
@@ -32,7 +42,7 @@ module_priorities_for() {
 module_loaded_at_target() {
     local required_module
 
-    for required_module in "${module}" "${file_manager_modules[@]}"; do
+    for required_module in "${required_modules[@]}"; do
         module_priorities_for "${required_module}" | grep -qx "${target_priority}" || return 1
     done
 }
@@ -40,7 +50,7 @@ module_loaded_at_target() {
 module_has_stale_priority() {
     local required_module
 
-    for required_module in "${module}" "${file_manager_modules[@]}"; do
+    for required_module in "${required_modules[@]}"; do
         if module_priorities_for "${required_module}" | grep -vx "${target_priority}" | grep -q .; then
             return 0
         fi
@@ -86,7 +96,7 @@ remove_stale_modules() {
     local legacy_module
     local required_module
 
-    for required_module in "${module}" "${file_manager_modules[@]}"; do
+    for required_module in "${required_modules[@]}"; do
         while read -r priority; do
             [[ -n "${priority}" && "${priority}" != "${target_priority}" ]] || continue
             semodule -X "${priority}" -r "${required_module}"
@@ -102,6 +112,13 @@ policy_artifacts=("${cil}")
 for file_manager_module in "${file_manager_modules[@]}"; do
     policy_artifacts+=("${file_manager_policy_root}/${file_manager_module}/${file_manager_module}.pp")
 done
+if ((${#nix_modules[@]})); then
+    policy_artifacts+=(
+        "${nix_policy_root}/nocblue_nix.pp"
+        "${nix_policy_root}/nocblue_nix_userns.cil"
+        "${nix_policy_root}/nocblue_nix_exec.cil"
+    )
+fi
 for policy_artifact in "${policy_artifacts[@]}"; do
     [[ -s "${policy_artifact}" ]] || {
         printf 'missing SELinux policy artifact: %s\n' "${policy_artifact}" >&2
@@ -124,9 +141,7 @@ fi
 # The pre-rename module declares the same types, so remove it before installing
 # the neutral module name.
 remove_stale_modules
-semodule -X "${target_priority}" -i \
-    "${file_manager_policy_root}/nautilus/nautilus.pp" \
-    "${cil}"
+semodule -X "${target_priority}" -i "${policy_artifacts[@]}"
 
 label_failed=0
 for path in \
@@ -135,6 +150,9 @@ for path in \
     /usr/bin/nocblue-portal-bwrap \
     /usr/libexec/nocblue/file-manager-launcher \
     /usr/libexec/nocblue/file-managers/nautilus \
+    /usr/libexec/nocblue/nix \
+    /var/home/nix \
+    /etc/nix \
     /usr/lib/chatgpt \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \
