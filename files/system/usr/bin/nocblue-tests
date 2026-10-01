@@ -310,7 +310,6 @@ grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/system
 test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
 test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
 test "$(readlink /etc/systemd/system/timers.target.wants/flatpak-system-update.timer)" = "/usr/lib/systemd/system/flatpak-system-update.timer"
-test -L /etc/systemd/system/multi-user.target.wants/nocblue-sandbox-userns-selinux.service
 test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
 test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
 test -L /etc/systemd/system/multi-user.target.wants/securebluecleanup.service
@@ -376,8 +375,6 @@ grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
 grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
 grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
 test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
-test -f /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
-test -f /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
 ! test -L /etc/systemd/system/graphical.target.wants/nocblue-openrazer-plugdev.service
 test -f /usr/lib/systemd/system/nocblue-session-defaults.service
@@ -409,8 +406,6 @@ test -f /usr/share/doc/noctalia-greeter/README.md
 test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
 test -x /usr/bin/nocblue-sync-game-shortcuts
 test -x /usr/bin/nocblue-sync-icon-theme
-test -x /usr/bin/nocblue-sync-sandbox-userns-selinux
-test -x /usr/bin/nocblue-sync-browser-userns-selinux
 test -x /usr/bin/nocblue-openrazer-plugdev
 test -x /usr/bin/nocblue-setup-flatpaks
 test -x /usr/bin/nocblue-setup-android-sdk
@@ -422,8 +417,6 @@ bash -n /usr/bin/nocblue-apply-user-defaults
 bash -n /usr/bin/nocblue-apply-adwsteamgtk
 bash -n /usr/bin/nocblue-sync-game-shortcuts
 bash -n /usr/bin/nocblue-sync-icon-theme
-bash -n /usr/bin/nocblue-sync-sandbox-userns-selinux
-bash -n /usr/bin/nocblue-sync-browser-userns-selinux
 bash -n /usr/libexec/nocblue/chatgpt
 bash -n /usr/bin/nocblue-openrazer-plugdev
 bash -n /usr/bin/nocblue-setup-flatpaks
@@ -448,17 +441,6 @@ test -f /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 test -s /usr/share/nocblue/selinux/file-managers/nautilus/nautilus.pp
 ! test -e /usr/share/nocblue/selinux/file-managers/thunar
 ! test -e /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
-grep -qx 'module=nocblue_sandbox_userns' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -qx 'legacy_modules=(nocblue_browser_userns thunar)' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -qx 'target_priority=300' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -q 'legacy_modules_loaded' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -Fq "semodule -X \"\${priority}\" -r \"\${remove_module}\"" /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -Fq 'remove_module_priorities "${legacy_module}"' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -Fq '"${file_manager_policy_root}/nautilus/nautilus.pp"' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -qx 'stamp=/var/lib/nocblue/selinux/sandbox-userns.sha256' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -q 'NOCBLUE_SELINUX_SYNC_FORCE' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -q 'critical_labels_match' /usr/bin/nocblue-sync-sandbox-userns-selinux
-grep -q 'one or more SELinux relabel operations failed' /usr/bin/nocblue-sync-sandbox-userns-selinux
 semodule -lfull | awk '$1 == 300 && $2 == "nautilus" {found=1} END {exit !found}'
 test -L /usr/bin/nautilus
 test "$(readlink -f /usr/bin/nautilus)" = /usr/libexec/nocblue/file-manager-launcher
@@ -477,9 +459,6 @@ sesearch -T -s unconfined_t -t nocblue_file_manager_launcher_exec_t -c process |
 sesearch -T -s nocblue_file_manager_launcher_t -t nautilus_exec_t -c process | grep -q '^type_transition nocblue_file_manager_launcher_t nautilus_exec_t:process nautilus_t;$'
 sesearch -A -s nautilus_t -t nautilus_t -c user_namespace -p create | grep -q '^allow nautilus_t nautilus_t:user_namespace create;$'
 ! sesearch -A -s unconfined_t -t unconfined_t -c user_namespace -p create | grep -q .
-grep -Fxq 'exec /usr/bin/nocblue-sync-sandbox-userns-selinux "$@"' /usr/bin/nocblue-sync-browser-userns-selinux
-grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-sandbox-userns-selinux.service
-grep -qx '^ExecStart=/usr/bin/nocblue-sync-sandbox-userns-selinux$' /usr/lib/systemd/system/nocblue-browser-userns-selinux.service
 test ! -e /usr/bin/nocblue-codex
 test ! -e /etc/profile.d/nocblue-codex-bwrap.sh
 test ! -e /etc/fish/conf.d/nocblue-codex-bwrap.fish
@@ -491,12 +470,6 @@ grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
 grep -Fq 'exec /usr/bin/bwrap' /usr/libexec/nocblue/chatgpt
 grep -Fq 'exec /usr/lib/chatgpt/codex-launcher --class=Codex --ozone-platform=wayland "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
 ! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
-for chatgpt_label_path in \
-    /usr/lib/chatgpt/ChatGPT \
-    /usr/lib/chatgpt/browser_crashpad_handler \
-    /usr/lib/chatgpt/resources/codex; do
-    grep -Fq "${chatgpt_label_path}" /usr/bin/nocblue-sync-sandbox-userns-selinux
-done
 grep -q 'nocblue_chatgpt_t nocblue_chatgpt_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'typetransition unconfined_t nocblue_chatgpt_exec_t process nocblue_chatgpt_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
 grep -q 'typetransition nocblue_chatgpt_t nocblue_chatgpt_agent_exec_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil

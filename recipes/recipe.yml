@@ -321,7 +321,6 @@ modules:
   - type: systemd
     system:
       enabled:
-        - nocblue-sandbox-userns-selinux.service
         - nocblue-session-defaults.service
         - nix.mount
         - input-remapper.service
