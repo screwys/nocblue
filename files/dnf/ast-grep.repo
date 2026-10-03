@@ -1,0 +1,11 @@
+[copr:copr.fedorainfracloud.org:marcin:agentlab]
+name=Copr repo for agentlab owned by marcin
+baseurl=https://download.copr.fedorainfracloud.org/results/marcin/agentlab/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=False
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/marcin/agentlab/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+includepkgs=ast-grep
