@@ -113,7 +113,12 @@ modules:
         - smartmontools
         - heaptrack
         - pandoc-cli
-        - texlive-scheme-full
+        # Small predefined TeX setup with math and CJK language collections.
+        - texlive-scheme-small
+        - texlive-collection-mathscience
+        - texlive-collection-langchinese
+        - texlive-collection-langjapanese
+        - texlive-collection-langkorean
         - android-tools
         - java-latest-openjdk-devel
         - golang
