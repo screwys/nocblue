@@ -256,6 +256,8 @@ modules:
         - zed
         - libappindicator-gtk3
         - chatgpt
+        - "postgresql-contrib"
+        - "postgresql-server"
     remove:
       auto-remove: false
       packages:
