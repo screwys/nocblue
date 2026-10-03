@@ -72,6 +72,10 @@ without_preload() {
 
 without_preload pipx install --global --force --pip-args='--no-cache-dir' "pywalfox==${pywalfox_version}"
 
+UV_TOOL_DIR=/usr/lib/opt/uv UV_TOOL_BIN_DIR=/usr/bin UV_PYTHON_DOWNLOADS=never \
+    without_preload uv tool install --python /usr/bin/python3 --no-cache "semgrep==1.178.0"
+/usr/bin/semgrep --version
+
 rm -f /usr/local/bin/pywalfox
 
 python3 - <<'PY'

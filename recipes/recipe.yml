@@ -27,9 +27,6 @@ modules:
         - mullvad.repo
         - librewolf.repo
         - fedora-multimedia.repo
-        - actionlint.repo
-        - ast-grep.repo
-        - lazygit.repo
       keys:
         - RPM-GPG-KEY-chatgpt.asc
     install:
@@ -117,9 +114,6 @@ modules:
         - heaptrack
         - pandoc-cli
         - texlive-scheme-full
-        - actionlint
-        - ast-grep
-        - lazygit
         - android-tools
         - java-latest-openjdk-devel
         - golang
@@ -312,7 +306,7 @@ modules:
   - type: script
     scripts:
       - install-candy-icons.sh
-      - install-kotofetch.sh
+      - install-code-tools.sh
       - configure-nocblue-branding.sh
       - install-pywalfox.sh
       - install-browser-policies.sh
