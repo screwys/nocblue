@@ -10,7 +10,7 @@ Native single-user Nix is available through `/usr/bin/nix`. The desktop user own
 
 This personal image creates a new store for UID 1000 and GID 1000. For another owner, override `/usr/lib/tmpfiles.d/nocblue-nix.conf` with `/etc/tmpfiles.d/nocblue-nix.conf` before the first boot. Existing store ownership remains unchanged.
 
-On the first login after moving from nix-portable, nocblue saves the old profile manifest and symlinks under `~/.local/state/nocblue/nix-portable-migration`, restores active package selections, and installs missing image tools. It removes only recorded nocblue command shims with the managed marker. The old `~/.nix-portable` store remains available for recovery. A package without a source reference must still be available at its store path; otherwise setup reports a migration failure and retains the saved selection.
+User Nix tools are installed explicitly by the personal Fedora install script. The image does not install user profile packages at login.
 
 Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't useGNOME before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window, and they also only mount the current folder read-only for extra hardening, which even disables basics like cropping.
 

@@ -356,7 +356,6 @@ modules:
         - nocblue-game-shortcuts-sync.timer
         - nocblue-icon-theme-sync.timer
         - nocblue-nix-gc.timer
-        - nocblue-nix-profile-setup.service
         - nocblue-flatpak-icon-fixes.service
         - noctalia.service
       masked:
