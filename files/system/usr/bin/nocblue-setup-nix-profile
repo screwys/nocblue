@@ -133,20 +133,39 @@ def main():
     migration = prepare_migration(home, state_home)
     failures = []
     installed = installed_packages()
-    selections = json.loads((migration / "selections.json").read_text())
+    selections_file = migration / "selections.json"
+    selections = json.loads(selections_file.read_text())
+    original_refs = {}
+    changed = False
     for selection in selections:
         refs = selection["refs"]
-        present = {installable(entry) for entry in installed}
-        present.update(installable(entry, locked=False) for entry in installed)
-        present.update(path for entry in installed for path in entry.get("storePaths", []))
-        if all(ref in present for ref in refs):
-            continue
         try:
+            normalized = []
+            for ref in refs:
+                source, separator, attributes = ref.partition("#")
+                # Nix omits tarball lastModified metadata from profile URLs.
+                if separator and "lastModified=" in source:
+                    if source not in original_refs:
+                        metadata = json.loads(nix("flake", "metadata", "--json", source, capture=True).stdout)
+                        original_refs[source] = metadata["originalUrl"]
+                    ref = original_refs[source] + "#" + attributes
+                normalized.append(ref)
+            if normalized != refs:
+                selection["refs"] = refs = normalized
+                changed = True
+
+            present = {installable(entry) for entry in installed}
+            present.update(installable(entry, locked=False) for entry in installed)
+            present.update(path for entry in installed for path in entry.get("storePaths", []))
+            if all(ref in present for ref in refs):
+                continue
             nix("profile", "install", "--priority", str(selection["priority"]), *refs)
             installed = installed_packages()
         except subprocess.CalledProcessError:
             failures.append(refs)
             print(f"Could not restore {refs}; saved selections and the old portable store remain available.", file=sys.stderr)
+    if changed:
+        write_state(selections_file, json.dumps(selections, indent=2) + "\n")
 
     manifest = Path(os.environ.get("NOCBLUE_NIX_PROFILE_MANIFEST", "/usr/share/nocblue/manifests/nix-profile.txt"))
     for line in manifest.read_text().splitlines():
