@@ -4,13 +4,9 @@
 
 `nocblue` is a **beyond opinionated** Fedora Silverblue bootc image for personal use, powered by [Universal Blue](https://github.com/ublue-os) and based on [secureblue](https://github.com/secureblue/secureblue). It has both gaming and development packages. It ships with [niri](https://github.com/niri-wm/niri), [Noctalia v5](https://github.com/noctalia-dev/noctalia), nix, the official Noctalia Greeter on greetd, 6 natively installed browsers with preinstalled extensions/disabled telemetry, ~50 flatpak packages, native Ghostty, OpenRazer and Proton VPN.
 
-User namescapes are enabled per browser, allowing them to use their own sandboxing, while keeping broad user namespaces disabled, respecting secureblue default. 
+User namescapes are enabled per browser, allowing them to use their own sandboxing, while keeping broad user namespaces disabled.
 
 Native single-user Nix is available through `/usr/bin/nix`. The desktop user owns the persistent store at `/var/home/nix`, mounted at `/nix`. Nix runs as that user and builds use its namespace sandbox. A weekly user timer collects unused store paths and keeps profile generations and running packages. Bash and fish append `~/.nix-profile/bin` after existing system, user, and Homebrew paths, so profile tools can be called directly without replacing host commands.
-
-This personal image creates a new store for UID 1000 and GID 1000. For another owner, override `/usr/lib/tmpfiles.d/nocblue-nix.conf` with `/etc/tmpfiles.d/nocblue-nix.conf` before the first boot. Existing store ownership remains unchanged.
-
-User Nix tools are installed explicitly by the personal Fedora install script. The image does not install user profile packages at login.
 
 Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't useGNOME before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window, and they also only mount the current folder read-only for extra hardening, which even disables basics like cropping.
 
