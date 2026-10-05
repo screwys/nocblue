@@ -308,7 +308,8 @@
 
 (allow nocblue_chatgpt_t nocblue_chatgpt_t (user_namespace (create)))
 (allow nocblue_chatgpt_t proc_t (file (getattr open read)))
-(allow nocblue_chatgpt_t cache_home_t (file (map)))
+(allow nocblue_chatgpt_t cache_home_t (file (map execute execute_no_trans)))
+(allow nocblue_chatgpt_t cache_home_t (lnk_file (getattr read unlink)))
 (allow nocblue_chatgpt_t cgroup_t (file (getattr open read)))
 (allow nocblue_chatgpt_t gconf_home_t (dir (add_name create write)))
 (allow nocblue_chatgpt_t gconf_home_t (file (append create getattr map open read write)))
@@ -334,6 +335,7 @@
 (typetransition nocblue_chatgpt_t bin_t process unconfined_t)
 
 (optional nocblue_unconfined_bubblewrap_transitions
+    (allow unconfined_bubblewrap_t nocblue_chatgpt_t (fifo_file (read write)))
     (allow unconfined_bubblewrap_t brave_origin_exec_t (file (getattr open read execute map)))
     (allow unconfined_bubblewrap_t helium_exec_t (file (getattr open read execute map)))
     (allow unconfined_bubblewrap_t mozilla_exec_t (file (getattr open read execute map)))
