@@ -266,6 +266,8 @@ modules:
         - chatgpt
         - "postgresql-contrib"
         - "postgresql-server"
+        - "qt6-qtbase-devel"
+        - "qt6-qtdeclarative-devel"
     remove:
       auto-remove: false
       packages:
