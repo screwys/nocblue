@@ -377,7 +377,6 @@ apply_user_flatpak_theme_overrides() {
         io.github.diegopvlk.Cine
         org.gnome.Papers
         org.gnome.Fractal
-        io.github.ilya_zlobintsev.LACT
         io.github.radiolamp.mangojuice
         io.missioncenter.MissionCenter
         com.github.marhkb.Pods
