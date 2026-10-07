@@ -249,7 +249,6 @@ modules:
         - radicale3
         - radicale3-selinux
         - nginx
-        - input-remapper
         - lact
         - libinput-utils
         - gamescope
@@ -337,7 +336,6 @@ modules:
       enabled:
         - nocblue-session-defaults.service
         - nix.mount
-        - input-remapper.service
         - lactd.service
         - firewalld.service
         - virtqemud.socket
