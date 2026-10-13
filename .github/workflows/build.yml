@@ -25,7 +25,7 @@ jobs:
 
       - name: script syntax
         run: |
-          find files/scripts files/system/usr/bin files/compat/usr/libexec \
+          find .github/scripts files/scripts files/system/usr/bin files/compat/usr/libexec \
             files/compat/usr/lib/dracut/modules.d \
             -type f -print0 | while IFS= read -r -d '' script; do
               if head -n 1 "$script" | grep -q '^#!.*python'; then
@@ -45,8 +45,8 @@ jobs:
 
           grep -q 'name: nocblue-fedora-openrazer$' recipes/compat.yml
           grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/compat.yml
-          grep -q 'image-version: 44' recipes/compat.yml
-          grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/compat.yml
+          grep -q 'image-version: latest' recipes/compat.yml
+          grep -q 'ghcr.io/ublue-os/akmods:main-' recipes/compat.yml
           grep -q 'src=/kernel-rpms' recipes/compat.yml
           grep -q 'src=/rpms' recipes/compat.yml
           grep -q 'type: initramfs' recipes/compat.yml
@@ -69,7 +69,7 @@ jobs:
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
           grep -q 'type: initramfs' recipes/recipe.yml
           grep -q 'validate-fedora-openrazer-compat.sh' recipes/recipe.yml
-          ! grep -q 'ghcr.io/ublue-os/akmods:main-44' recipes/recipe.yml
+          ! grep -q 'ghcr.io/ublue-os/akmods:' recipes/recipe.yml
           ! grep -q 'ublue-akmods.repo' recipes/recipe.yml
           ! grep -q 'openrazer.repo' recipes/recipe.yml
 
@@ -118,6 +118,9 @@ jobs:
 
   compatibility:
     name: build Fedora/OpenRazer compatibility base
+    outputs:
+      fedora_release: ${{ steps.stable.outputs.fedora_release }}
+      compatibility_tag: ${{ steps.stable.outputs.compatibility_tag }}
     needs: static
     runs-on: ubuntu-latest
     permissions:
@@ -125,10 +128,19 @@ jobs:
       packages: write
       id-token: write
     steps:
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: resolve stable release
+        id: stable
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends skopeo python3-yaml
+          python3 .github/scripts/prepare-stable-build.py
       - name: build compatibility image
         uses: blue-build/github-action@v1.13.0
         with:
-          recipe: compat.yml
+          skip_checkout: true
+          recipe: compat-build.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
@@ -140,8 +152,7 @@ jobs:
   bluebuild:
     name: build nocblue image
     needs: compatibility
-    # A pull request fully builds the compatibility base. The downstream image
-    # starts building after merge, once that base has been published as latest.
+    # Use the exact compatibility artifact from this run.
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
@@ -149,13 +160,68 @@ jobs:
       packages: write
       id-token: write
     steps:
+      - name: checkout
+        uses: actions/checkout@v7
+      - name: select compatibility image
+        env:
+          COMPATIBILITY_TAG: ${{ needs.compatibility.outputs.compatibility_tag }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends python3-yaml
+          python3 - <<'PYRECIPE'
+          import os
+          from pathlib import Path
+          import yaml
+          recipe = yaml.safe_load(Path('recipes/recipe.yml').read_text())
+          recipe['image-version'] = os.environ['COMPATIBILITY_TAG']
+          recipe['alt-tags'] = [f"build-{os.environ['GITHUB_RUN_ID']}"]
+          Path('recipes/recipe-build.yml').write_text(yaml.safe_dump(recipe, sort_keys=False))
+          PYRECIPE
       - name: build custom image
         uses: blue-build/github-action@v1.13.0
         with:
-          recipe: recipe.yml
+          skip_checkout: true
+          recipe: recipe-build.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
           registry_token: ${{ github.token }}
           maximize_build_space: true
           use_cache: false
           rechunk: false
           push: true
+
+      - name: verify candidate image
+        id: candidate
+        env:
+          IMAGE_TAG: ${{ needs.compatibility.outputs.compatibility_tag }}
+        run: |
+          set -euo pipefail
+          image_repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nocblue"
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends podman skopeo
+          digest="$(skopeo inspect --format '{{.Digest}}' "docker://${image_repo}:${IMAGE_TAG}")"
+          image_ref="${image_repo}@${digest}"
+          cosign verify --key cosign.pub "$image_ref" >/dev/null
+          sudo podman run --rm --entrypoint /usr/bin/bash "$image_ref" -c '
+            set -euo pipefail
+            rpm -q libadwaita gtk4 glib2 gnome-shell mutter gstreamer1 gstreamer1-plugins-base gstreamer1-plugins-good openrazer-daemon python3-openrazer kmod-openrazer nocblue-openrazer-kmod-dkms-compat proton-vpn-gnome-desktop
+            python3 -c "import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent"
+            /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
+          '
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: publish verified image
+        env:
+          IMAGE_DIGEST: ${{ steps.candidate.outputs.digest }}
+          FEDORA_RELEASE: ${{ needs.compatibility.outputs.fedora_release }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          image_repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nocblue"
+          image_tag=latest
+          if [[ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]]; then
+            image_tag="br-${GITHUB_REF_NAME//\//_}-${FEDORA_RELEASE}"
+          fi
+          printf '%s' "$REGISTRY_TOKEN" | skopeo login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          skopeo copy --all --preserve-digests \
+            "docker://${image_repo}@${IMAGE_DIGEST}" "docker://${image_repo}:${image_tag}"

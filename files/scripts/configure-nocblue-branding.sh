@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+fedora_version="$(rpm -E %fedora)"
 os_release_sed="$(mktemp)"
-cat >"${os_release_sed}" <<'EOF'
+cat >"${os_release_sed}" <<EOF
 s|^NAME=.*|NAME="nocblue"|
 s|^ID=.*|ID=nocblue|
-s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue 44"|
-s|^CPE_NAME=.*|CPE_NAME="cpe:/o:nocblue:nocblue:44"|
+s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue ${fedora_version}"|
+s|^CPE_NAME=.*|CPE_NAME="cpe:/o:nocblue:nocblue:${fedora_version}"|
 s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="desktop"|
 s|^HOME_URL=.*|HOME_URL="https://github.com/screwys/nocblue"|
 s|^DOCUMENTATION_URL=.*|DOCUMENTATION_URL="https://github.com/screwys/nocblue"|

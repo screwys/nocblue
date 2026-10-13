@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-sed -i -f - /usr/lib/os-release <<'EOF'
+fedora_version="$(rpm -E %fedora)"
+sed -i -f - /usr/lib/os-release <<EOF
 s|^NAME=.*|NAME="nocblue"|
-s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue Fedora 44 bootc"|
+s|^PRETTY_NAME=.*|PRETTY_NAME="nocblue Fedora ${fedora_version} bootc"|
 s|^DEFAULT_HOSTNAME=.*|DEFAULT_HOSTNAME="desktop"|
 EOF
 

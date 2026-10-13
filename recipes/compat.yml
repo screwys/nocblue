@@ -7,7 +7,7 @@ name: nocblue-fedora-openrazer
 description: Secureblue Silverblue userspace with Fedora's kernel, matching signed OpenRazer modules, and validated initramfs.
 
 base-image: ghcr.io/secureblue/silverblue-main-hardened
-image-version: 44
+image-version: latest
 platforms:
   - linux/amd64
 

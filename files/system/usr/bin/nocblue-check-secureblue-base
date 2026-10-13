@@ -63,22 +63,24 @@ def image_info(repo, ref):
 
 
 def main():
-    upstream = image_info("secureblue/silverblue-main-hardened", "44")
-    nocblue = image_info("screwys/nocblue", "44")
+    nocblue = image_info("screwys/nocblue", "latest")
+    compatibility = image_info("screwys/nocblue-fedora-openrazer", nocblue["base"])
+    upstream_tag = "latest"
+    upstream = image_info("secureblue/silverblue-main-hardened", upstream_tag)
 
-    print(f"secureblue 44: {upstream['version']} created {upstream['created']}")
+    print(f"secureblue {upstream_tag}: {upstream['version']} created {upstream['created']}")
     print(f"  index:    {upstream['index']}")
     print(f"  platform: {upstream['platform']}")
-    print(f"nocblue 44: {nocblue['version']} created {nocblue['created']}")
+    print(f"nocblue latest: {nocblue['version']} created {nocblue['created']}")
     print(f"  index:    {nocblue['index']}")
     print(f"  platform: {nocblue['platform']}")
     print(f"  base:     {nocblue['base_name']} @ {nocblue['base']}")
 
-    if nocblue["base"] in {upstream["platform"], upstream["index"]}:
-        print("status: nocblue was built from the current secureblue 44 image")
+    if compatibility["base"] in {upstream["platform"], upstream["index"]}:
+        print(f"status: nocblue was built from the current secureblue {upstream_tag} image")
         return 0
 
-    print("status: nocblue is behind the current secureblue 44 image")
+    print(f"status: nocblue is behind the current secureblue {upstream_tag} image")
     return 1
 
 

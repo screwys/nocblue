@@ -42,7 +42,7 @@ jobs:
           grep -q -- "container-image:" .github/workflows/iso.yml
           grep -q -- "hook-post-rootfs:" .github/workflows/iso.yml
           grep -q -- "hook-pre-initramfs:" .github/workflows/iso.yml
-          grep -q -- "iso-dest: nocblue-44.iso" .github/workflows/iso.yml
+          grep -q -- "iso-dest: nocblue.iso" .github/workflows/iso.yml
           grep -q -- "anaconda-live" iso_files/configure_iso_anaconda.sh
           grep -q -- "/usr/lib64/libno_rlimit_as.so" iso_files/configure_iso_initramfs.sh
           grep -q -- "/etc/ld.so.cache" iso_files/configure_iso_initramfs.sh
@@ -97,19 +97,19 @@ jobs:
           compression: squashfs
           kargs: ""
           builder-distro: fedora
-          iso-dest: nocblue-44.iso
+          iso-dest: nocblue.iso
 
       - name: checksum iso
         run: |
           mkdir -p output
-          install -m 0644 "${{ steps.build.outputs.iso-dest }}" output/nocblue-44.iso
+          install -m 0644 "${{ steps.build.outputs.iso-dest }}" output/nocblue.iso
           cd output
-          sha256sum nocblue-44.iso | tee nocblue-44.iso.sha256
+          sha256sum nocblue.iso | tee nocblue.iso.sha256
 
       - name: upload iso
         uses: actions/upload-artifact@v7
         with:
-          name: nocblue-44-iso
+          name: nocblue-iso
           path: output
           if-no-files-found: error
           retention-days: 7

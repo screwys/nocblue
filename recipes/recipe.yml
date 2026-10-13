@@ -4,7 +4,7 @@
 # This is the final nocblue desktop image. Its compatibility base retains
 # Secureblue userspace while providing Fedora kernel/OpenRazer ABI pairing.
 name: nocblue
-description: Personal Fedora 44 bootc image with nocblue desktop defaults on the validated Fedora/OpenRazer compatibility base.
+description: Personal stable Fedora bootc image with nocblue desktop defaults on the validated Fedora/OpenRazer compatibility base.
 
 base-image: ghcr.io/screwys/nocblue-fedora-openrazer
 image-version: latest

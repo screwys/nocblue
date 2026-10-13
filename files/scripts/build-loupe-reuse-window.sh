@@ -78,8 +78,9 @@ meson setup "${srcdir}/build" "${srcdir}" \
     --prefix=/usr \
     -Dprofile=release \
     -Dx11=disabled
-meson compile -C "${srcdir}/build"
-meson install -C "${srcdir}/build"
+# Thin LTO avoids merging every dependency into one LLVM module.
+CARGO_PROFILE_RELEASE_LTO=thin meson compile -C "${srcdir}/build"
+meson install --no-rebuild -C "${srcdir}/build"
 
 install -D -m 0644 /dev/null /usr/share/nocblue/media-patches/loupe-reuse-active-window.patch-applied
 

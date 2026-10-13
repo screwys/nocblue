@@ -30,10 +30,10 @@
     },
     "break",
     {
-      "type": "command",
+      "type": "os",
       "key": "  ",
       "keyColor": "green",
-      "text": "printf 'nocblue 44'"
+      "format": "{name} {version-id}"
     },
     {
       "type": "command",
