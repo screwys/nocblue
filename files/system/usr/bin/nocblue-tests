@@ -30,10 +30,23 @@ test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
 ! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
 mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
 ((${#openrazer_modules[@]} > 0))
+enrollment_cert="$(python3 - <<'PY'
+import sys
+sys.path.insert(0, "/usr/libexec/secureblue")
+from enroll_secure_boot_keys import required_mok_cert
+print(required_mok_cert())
+PY
+)"
+enrollment_serial="$(openssl x509 -inform DER -in "${enrollment_cert}" -noout -serial | cut -d= -f2 | tr '[:upper:]' '[:lower:]')"
 for module_path in "${openrazer_modules[@]}"; do
     signer="$(modinfo -F signer "${module_path}")"
     if [[ -z "${signer}" ]]; then
         printf 'unsigned OpenRazer kernel module: %s\n' "${module_path}" >&2
+        exit 1
+    fi
+    module_key="$(modinfo -F sig_key "${module_path}" | tr -d ':' | tr '[:upper:]' '[:lower:]')"
+    if [[ "${module_key}" != "${enrollment_serial}" ]]; then
+        printf 'OpenRazer signing key does not match the enrollment certificate: %s\n' "${module_path}" >&2
         exit 1
     fi
 done

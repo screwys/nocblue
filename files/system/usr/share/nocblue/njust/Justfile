@@ -125,7 +125,7 @@ image action="" scope="":
 
 secureboot-check:
     mokutil --sb-state || true
-    mokutil --list-enrolled | grep -E "nocblue|ublue kernel" || true
+    ujust enroll-secure-boot-keys status
 
 fde-list:
     nocblue-fde-helper list

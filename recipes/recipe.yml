@@ -329,6 +329,7 @@ modules:
       - configure-nix.sh
       - install-uv-launchers.sh
       - configure-anticheat-support.sh
+      - configure-secure-boot.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
 
