@@ -1,0 +1,14 @@
+[Unit]
+Description=Voxtype dictation
+PartOf=niri.service
+After=niri.service pipewire.service pipewire-pulse.service
+
+[Service]
+Type=simple
+Environment=VOXTYPE_GPU=1
+ExecStart=/usr/bin/voxtype -q daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=niri.service

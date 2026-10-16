@@ -1,0 +1,21 @@
+engine = "whisper"
+
+[hotkey]
+enabled = false
+
+[whisper]
+model = "/usr/share/voxtype/models/ggml-base.bin"
+language = "auto"
+on_demand_loading = true
+
+[audio.feedback]
+enabled = true
+
+[output]
+mode = "type"
+fallback_to_clipboard = true
+
+[output.notification]
+on_recording_start = true
+on_recording_stop = true
+on_transcription = false

@@ -236,6 +236,7 @@ modules:
         - wlsunset
         - wl-mirror
         - wtype
+        - vulkan-loader
         - brightnessctl
         - ddcutil
         - libnotify
@@ -306,6 +307,10 @@ modules:
         - scx-scheds
         - scx-tools
 
+  - type: script
+    scripts:
+      - install-voxtype.sh
+
   - type: files
     files:
       - source: system
@@ -362,6 +367,7 @@ modules:
         - nocblue-nix-gc.timer
         - nocblue-flatpak-icon-fixes.service
         - noctalia.service
+        - voxtype.service
       masked:
         - security-update-notification.path
         - security-update-notification.service
