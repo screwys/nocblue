@@ -181,7 +181,6 @@ modules:
         - polkit
         - nautilus
         - nautilus-python
-        - nemo
         - loupe
         - showtime
         - mpv
