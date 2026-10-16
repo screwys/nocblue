@@ -22,6 +22,9 @@ semodule -X 300 -i \
     "${policy_dir}/nocblue_nix_userns.cil" \
     "${policy_dir}/nocblue_nix_exec.cil"
 
+# Home-directory contexts override module rules for the persistent store.
+semanage fcontext -a -e /nix /var/home/nix
+
 restorecon -v /usr/libexec/nocblue/nix
 for directory in /etc/nix /var/home/nix; do
     if [[ -d "${directory}" ]]; then

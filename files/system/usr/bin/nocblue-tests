@@ -267,6 +267,10 @@ for brew_service in brew-update.service brew-upgrade.service; do
     test -L "/etc/systemd/system/timers.target.wants/${brew_service%.service}.timer"
 done
 test -x /usr/bin/nix
+test -x /usr/bin/busybox
+for nix_store_path in /nix/store /var/home/nix/store; do
+    [[ "$(matchpathcon -n "${nix_store_path}")" == *:nocblue_nix_store_t:s0 ]]
+done
 preload_file=
 if [[ -f /etc/ld.so.preload ]]; then
     preload_file=/etc/ld.so.preload

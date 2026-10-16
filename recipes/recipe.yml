@@ -66,6 +66,7 @@ modules:
         - jq
         - nix-core
         - nix-filesystem
+        - busybox
         - nodejs24-bin
         - nodejs24-npm-bin
         - pnpm
