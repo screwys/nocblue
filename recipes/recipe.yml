@@ -30,7 +30,7 @@ modules:
       keys:
         - RPM-GPG-KEY-chatgpt.asc
     install:
-      install-weak-deps: false
+      install-weak-deps: true
       allow-erasing: true
       exclude:
         # Protect only the boot/runtime kernel ABI. Development and userspace
@@ -289,7 +289,7 @@ modules:
 
   - type: dnf
     install:
-      install-weak-deps: false
+      install-weak-deps: true
       skip-unavailable: true
       exclude:
         # Protect only the boot/runtime kernel ABI. Development and userspace
