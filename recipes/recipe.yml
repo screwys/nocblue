@@ -270,6 +270,7 @@ modules:
         - "postgresql-server"
         - "qt6-qtbase-devel"
         - "qt6-qtdeclarative-devel"
+        - "strawberry"
     remove:
       auto-remove: false
       packages:
