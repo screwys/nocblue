@@ -30,7 +30,7 @@ modules:
       keys:
         - RPM-GPG-KEY-chatgpt.asc
     install:
-      install-weak-deps: true
+      install-weak-deps: false
       allow-erasing: true
       exclude:
         # Protect only the boot/runtime kernel ABI. Development and userspace
@@ -46,9 +46,14 @@ modules:
         - niri
         - xwayland-satellite
         - noctalia-git
+        - noctalia-git-bash-completion
+        - noctalia-git-fish-completion
         - noctalia-greeter
         - greetd
         - ghostty
+        - ghostty-shell-integration
+        - ghostty-bash-completion
+        - ghostty-fish-completion
         - qt6ct
         - xdg-desktop-portal-gnome
         - xdg-desktop-portal-gtk
@@ -79,10 +84,12 @@ modules:
         - curl
         - wget2-wget
         - unzip
+        - bsdunzip
         - 7zip
         - yq
         - direnv
         - neovim
+        - tree-sitter-cli
         - socat
         - zoxide
         - btop
@@ -99,6 +106,9 @@ modules:
         - starship
         - yazi
         - jujutsu
+        - jujutsu-bash-completion
+        - jujutsu-fish-completion
+        - git-lfs
         - ruff
         - gdb
         - mkcert
@@ -291,7 +301,7 @@ modules:
 
   - type: dnf
     install:
-      install-weak-deps: true
+      install-weak-deps: false
       skip-unavailable: true
       exclude:
         # Protect only the boot/runtime kernel ABI. Development and userspace
