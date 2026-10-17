@@ -1,7 +1,9 @@
 engine = "whisper"
 
 [hotkey]
-enabled = false
+enabled = true
+key = "F13"
+mode = "push_to_talk"
 
 [whisper]
 model = "/usr/share/voxtype/models/ggml-base.bin"

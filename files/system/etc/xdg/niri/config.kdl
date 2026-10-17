@@ -234,7 +234,8 @@ binds {
     Mod+O repeat=false { toggle-overview; }
 
     Mod+Shift+S hotkey-overlay-title="Screenshot Area" { spawn "sh" "-c" "grim -g \"$(slurp)\" - | wl-copy"; }
-    XF86Tools repeat=false hotkey-overlay-title="M1: Dictation" { spawn "voxtype" "record" "toggle"; }
+    // Voxtype handles F13 press and release; keep M1 out of focused apps.
+    XF86Tools repeat=false hotkey-overlay-title="M1: Dictation" { spawn "true"; }
     XF86Launch5 hotkey-overlay-title="M2: OCR Japanese" { spawn "/usr/bin/nocblue-ocr-japanese"; }
     XF86Launch7 hotkey-overlay-title="M4: Mission Center" { spawn "flatpak" "run" "io.missioncenter.MissionCenter"; }
     XF86Launch8 hotkey-overlay-title="M5: Launcher" { spawn "noctalia" "msg" "panel-toggle" "launcher"; }
