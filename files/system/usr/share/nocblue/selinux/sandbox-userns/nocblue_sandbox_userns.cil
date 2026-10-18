@@ -243,10 +243,6 @@
 (allow nocblue_firefox_t var_lib_t (dir (watch)))
 (allow nocblue_firefox_t var_lib_t (file (map)))
 
-(optional nocblue_firefox_radicale_client
-    (allow nocblue_firefox_t radicale_port_t (tcp_socket (name_connect)))
-)
-
 ; The official ChatGPT Electron process gets only the user namespace needed by
 ; Chromium. The bundled Codex app server and login shell return to the normal
 ; unconfined desktop domain so full-access agent work keeps its usual behavior.

@@ -258,8 +258,6 @@ modules:
         - kde-connect
         - kde-connect-nautilus
         - kf6-kitemmodels
-        - radicale3
-        - radicale3-selinux
         - nginx
         - lact
         - libinput-utils
