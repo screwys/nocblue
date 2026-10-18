@@ -2,7 +2,7 @@ engine = "whisper"
 
 [hotkey]
 enabled = true
-key = "F13"
+key = "F17"
 mode = "push_to_talk"
 
 [whisper]
