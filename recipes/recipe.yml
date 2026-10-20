@@ -19,6 +19,7 @@ modules:
     repos:
       files:
         - niri.repo
+        - xwayland-satellite.repo
         - noctalia-v5.repo
         - terra.repo
         - brave-browser-beta.repo

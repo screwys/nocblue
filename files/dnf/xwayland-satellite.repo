@@ -1,0 +1,11 @@
+[copr:copr.fedorainfracloud.org:ulysg:xwayland-satellite]
+name=Copr repo for xwayland-satellite owned by ulysg
+baseurl=https://download.copr.fedorainfracloud.org/results/ulysg/xwayland-satellite/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/ulysg/xwayland-satellite/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+includepkgs=xwayland-satellite

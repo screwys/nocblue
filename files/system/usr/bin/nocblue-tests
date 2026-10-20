@@ -2,6 +2,7 @@
 set -euo pipefail
 
 rpm -q kernel kernel-core kernel-modules-core >/dev/null
+rpm -q --whatprovides 'xwayland-satellite >= 0.8.3' >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
 ! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
 
