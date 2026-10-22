@@ -27,8 +27,8 @@ sed -i \
     's/^SystemdService=proton\.VPN\.service$/SystemdService=me.proton.vpn.split_tunneling.service/' \
     /etc/dbus-1/system-services/me.proton.vpn.split_tunneling.service
 
-# Keep native matching upstream. Flatpak selections use the
-# app's metadata identity, so launcher arguments do not change what is selected.
+# Prepare process tracking before login and queue events before scanning apps.
+# Flatpak selections use metadata identity independently of launcher arguments.
 # Invalid bytes in exec arguments must not abort the process event callback.
 site_packages="$(python3 -c 'from importlib.metadata import distribution; print(distribution("proton-vpn-daemon").locate_file(""))')"
 patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
@@ -62,17 +62,51 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
                  continue
 --- a/proton/vpn/daemon/split_tunneling/apps/process_monitor.py
 +++ b/proton/vpn/daemon/split_tunneling/apps/process_monitor.py
-@@ -182,7 +182,8 @@
+@@ -99,11 +99,11 @@
+         if not self._background_task:
+             logger.info("Starting process monitor")
+
++            # Queue events before scanning, so launches cannot fall between the two.
++            self._attach_bpf()
+             self._tracked_procs = self._process_matcher.check_all_processes(config_by_uid)
+             for process in self._tracked_procs.values():
+                 self._process_event_callback(process, config_by_uid[process.uid].mode)
+-
+-            self._attach_bpf()
+
+             # start listening for process events via ebpf
+             self._background_task = asyncio.create_task(
+@@ -144,7 +144,8 @@
+         self.__init__(process_event_callback=callback)  # pylint: disable=C2801
+         logger.info("Process monitor stopped")
+
+-    def _attach_bpf(self):
++    def prepare(self):
++        """Compile the process probes before the login connection starts."""
+         if not self._bpf:
+             with open(BPF_PROGRAM_PATH, "r", encoding="utf-8") as file:
+                 bpf_text = file.read()
+@@ -158,6 +159,11 @@
+                     ) from exc
+                 raise
+
++    def _attach_bpf(self):
++        self.prepare()
++        # Subscribe before attaching exec probes or scanning existing processes.
++        self._bpf["events"].open_perf_buffer(self._process_perf_buffer_event, page_cnt=256)
++
+         # Explicitly attach kprobes/kretprobes,
+         # tracepoints using TRACEPOINT_PROBE are automatically attached when
+         # the BPF object is created
+@@ -182,7 +188,6 @@
          )
 
      def _run_blocking_process_monitoring(self):
 -        self._bpf["events"].open_perf_buffer(self._process_perf_buffer_event)
-+        # Keep exec and fork bursts from overflowing the default 32 KiB buffer.
-+        self._bpf["events"].open_perf_buffer(self._process_perf_buffer_event, page_cnt=256)
          while not self._stop_requested:
              self._bpf.perf_buffer_poll(timeout=30)  # timeout in ms
 
-@@ -200,7 +200,7 @@
+@@ -200,7 +205,7 @@
          if event.type == PerfBufferEventType.EXEC.value:
              # Once the exec syscall returns, the final exe path is built out of all the
              # previous EXEC_ARGV_FRAGMENT events containing the fragments that make it up.
@@ -178,10 +212,30 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
 
      def _save_settings(self):
          self._controller.save_setting_attr(self._setting_path_name, self._stored_apps)
+--- a/proton/vpn/daemon/split_tunneling/apps/service.py
++++ b/proton/vpn/daemon/split_tunneling/apps/service.py
+@@ -36,6 +36,7 @@
+     def __init__(self):
+         self._process_monitor = ProcessMonitor(self._on_process_event)
+         self._socket_monitor = SocketMonitor()
++        self._process_monitor.prepare()
+
+     def _on_process_event(self, process: Process, mode: SplitTunnelingMode):
+         if process.matched_config_paths:
+@@ -71,6 +72,8 @@
+             await self._process_monitor.stop()
+         finally:
+             self._socket_monitor.stop()
++            # Prepare the next connection while the VPN is disconnected.
++            self._process_monitor.prepare()
+
+
+ async def main():
 PATCH
 python3 -m py_compile \
     "${site_packages}/proton/vpn/daemon/split_tunneling/apps/process_matcher.py" \
     "${site_packages}/proton/vpn/daemon/split_tunneling/apps/process_monitor.py" \
+    "${site_packages}/proton/vpn/daemon/split_tunneling/apps/service.py" \
     "${site_packages}/proton/vpn/daemon/split_tunneling/apps/socket_monitor.py" \
     "${site_packages}/proton/vpn/daemon/split_tunneling/apps/process_map.py" \
     "${site_packages}/proton/vpn/app/gtk/widgets/headerbar/menu/settings/split_tunneling/app/installed_apps.py" \
