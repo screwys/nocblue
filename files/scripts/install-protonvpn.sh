@@ -117,7 +117,15 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
              except KeyError:
 --- a/proton/vpn/daemon/split_tunneling/apps/socket_monitor.py
 +++ b/proton/vpn/daemon/split_tunneling/apps/socket_monitor.py
-@@ -32,7 +32,7 @@
+@@ -17,6 +17,7 @@
+ along with ProtonVPN.  If not, see <https://www.gnu.org/licenses/>.
+ """
+ import ctypes
++import errno
+ import os
+
+ from bcc import BPF
+@@ -32,7 +33,7 @@
  BPF_HASH(pid_map, u32, u32);
 
  int split_tunnel(struct bpf_sock *sk) {{
@@ -126,6 +134,32 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
 
      u32 *pid_found = pid_map.lookup(&pid);
 
+@@ -111,7 +112,24 @@
+             raise RuntimeError("Socket monitor was not started yet")
+
+         logger.debug("Adding %s to pid map", pid)
+-        self._bpf_pid_map[ctypes.c_uint32(pid)] = ctypes.c_uint32(1)
++        try:
++            self._bpf_pid_map[ctypes.c_uint32(pid)] = ctypes.c_uint32(1)
++        except Exception:
++            # BCC raises a plain Exception for a full kernel hash map.
++            if ctypes.get_errno() != errno.E2BIG:
++                raise
++            self._remove_exited_processes()
++            self._bpf_pid_map[ctypes.c_uint32(pid)] = ctypes.c_uint32(1)
++
++    def _remove_exited_processes(self):
++        # Lost exit events can leave dead task IDs occupying the map.
++        removed = 0
++        for key in list(self._bpf_pid_map.keys()):
++            if not os.path.exists(f"/proc/{key.value}"):
++                del self._bpf_pid_map[key]
++                removed += 1
++        logger.warning("Removed %d exited tasks from the split tunneling map", removed)
++        return removed
+
+     def stop_tracking_process(self, pid: int):  # pylint: disable=redefined-outer-name
+         """
 --- a/proton/vpn/daemon/split_tunneling/apps/process_map.py
 +++ b/proton/vpn/daemon/split_tunneling/apps/process_map.py
 @@ -35,7 +35,7 @@
