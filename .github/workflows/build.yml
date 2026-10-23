@@ -207,6 +207,10 @@ jobs:
             python3 -c "import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent"
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
           '
+          sudo podman run --rm --network=none --read-only --user 65534:65534 \
+            --tmpfs /tmp:rw,mode=1777 \
+            --volume "$PWD/.github:/tests:ro" \
+            --entrypoint /usr/bin/python3 "$image_ref" /tests/scripts/test-secret-service.py
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
       - name: publish verified image
