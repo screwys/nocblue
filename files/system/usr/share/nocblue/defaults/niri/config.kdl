@@ -149,7 +149,6 @@ window-rule {
 
 spawn-at-startup "dbus-update-activation-environment" "--systemd" "WAYLAND_DISPLAY" "DISPLAY" "XDG_CURRENT_DESKTOP" "XDG_SESSION_TYPE" "NIRI_SOCKET"
 spawn-at-startup "nocblue-refresh-portals"
-spawn-at-startup "gnome-keyring-daemon" "--start" "--components=secrets"
 spawn-at-startup "sh" "-lc" "sleep 4; command -v xembedsniproxy >/dev/null 2>&1 && exec xembedsniproxy"
 
 binds {

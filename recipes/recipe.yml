@@ -188,7 +188,6 @@ modules:
         - no_rlimit_as
 
         # Desktop apps and integration.
-        - gnome-keyring
         - dbus-tools
         - polkit
         - nautilus
@@ -347,6 +346,7 @@ modules:
       - configure-secure-boot.sh
       - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
+      - configure-secret-service.sh
 
   - type: systemd
     system:

@@ -3,6 +3,7 @@ auth       substack    system-auth
 -auth       optional    pam_gnome_keyring.so
 -auth       optional    pam_kwallet5.so
 -auth       optional    pam_kwallet.so
+-auth       optional    pam_oo7.so
 auth       include     postlogin
 # The session picker only lists Wayland sessions. pam_systemd needs this before it opens one.
 auth       required    pam_env.so envfile=/etc/greetd/session-environment
@@ -22,4 +23,5 @@ session    include     system-auth
 -session    optional    pam_gnome_keyring.so auto_start
 -session    optional    pam_kwallet5.so auto_start
 -session    optional    pam_kwallet.so auto_start
+-session    optional    pam_oo7.so auto_start
 session    include     postlogin

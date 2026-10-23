@@ -408,6 +408,12 @@ grep -qx 'After=niri.service' /usr/lib/systemd/user/noctalia.service
 grep -qx 'ExecStart=/usr/bin/noctalia' /usr/lib/systemd/user/noctalia.service
 grep -qx 'WantedBy=niri.service' /usr/lib/systemd/user/noctalia.service
 test -f /etc/greetd/config.toml
+if (( $(rpm -E '%fedora') >= 45 )); then
+    rpm -q oo7-daemon pam_oo7 oo7-portal >/dev/null
+    systemctl --global is-enabled oo7-daemon.service >/dev/null
+else
+    rpm -q gnome-keyring gnome-keyring-pam >/dev/null
+fi
 grep -qx 'command = "/usr/bin/nocblue-noctalia-greeter-session"' /etc/greetd/config.toml
 grep -qx 'user = "greetd"' /etc/greetd/config.toml
 test -x /usr/bin/nocblue-noctalia-greeter-session
