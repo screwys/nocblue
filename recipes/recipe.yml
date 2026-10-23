@@ -319,6 +319,7 @@ modules:
   - type: script
     scripts:
       - install-voxtype.sh
+      - install-claude-desktop.sh
 
   - type: files
     files:

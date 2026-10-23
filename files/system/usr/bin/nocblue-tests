@@ -17,6 +17,8 @@ rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-waylan
 rpm -q --whatprovides openrazer-kmod-common >/dev/null
 rpm -q --whatprovides openrazer-kernel-modules-dkms >/dev/null
 rpm -q voxtype >/dev/null
+rpm -q claude-desktop >/dev/null
+test -x /usr/bin/claude-desktop
 voxtype --version >/dev/null
 test -r /usr/share/voxtype/models/ggml-base.bin
 test -L /etc/systemd/user/niri.service.wants/voxtype.service
