@@ -407,4 +407,10 @@ modules:
         test -f /usr/share/applications/org.gnome.Settings.desktop &&
         test -f /usr/share/wayland-sessions/niri.desktop
 
+  # Package updates can restore the executable removed by secureblue.
+  # Keep the RPM installed for KDE dependencies and use run0 for admin commands.
+  - type: containerfile
+    snippets:
+      - RUN rm -f /usr/bin/sudo
+
   - type: signing

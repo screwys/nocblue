@@ -203,6 +203,10 @@ jobs:
           cosign verify --key cosign.pub "$image_ref" >/dev/null
           sudo podman run --rm --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
+            test ! -e /usr/bin/sudo
+            for command in run0 kdeconnectd kioclient; do
+              command -v "$command" >/dev/null
+            done
             rpm -q libadwaita gtk4 glib2 gnome-shell mutter gstreamer1 gstreamer1-plugins-base gstreamer1-plugins-good openrazer-daemon python3-openrazer kmod-openrazer nocblue-openrazer-kmod-dkms-compat proton-vpn-gnome-desktop
             python3 -c "import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent"
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+test ! -e /usr/bin/sudo
+command -v run0 >/dev/null
+command -v kioclient >/dev/null
+
 rpm -q kernel kernel-core kernel-modules-core >/dev/null
 rpm -q --whatprovides 'xwayland-satellite >= 0.8.3' >/dev/null
 ! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1

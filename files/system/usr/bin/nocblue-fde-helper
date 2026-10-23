@@ -10,7 +10,7 @@ as_root() {
     if [[ "$(id -u)" -eq 0 ]]; then
         "$@"
     else
-        sudo "$@"
+        run0 "$@"
     fi
 }
 
@@ -24,7 +24,7 @@ Usage:
 
 Examples:
   nocblue-fde-helper list
-  sudo nocblue-fde-helper tpm2-enroll /dev/nvme0n1pX yes 7
+  run0 nocblue-fde-helper tpm2-enroll /dev/nvme0n1pX yes 7
 MSG
 }
 

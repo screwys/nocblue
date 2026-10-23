@@ -6,7 +6,7 @@ status:
     bootc status || true
 
 update:
-    sudo bootc upgrade
+    run0 bootc upgrade
     flatpak update --system -y
     flatpak update --user -y || true
     if command -v brew >/dev/null 2>&1; then brew update && brew upgrade --fetch-HEAD; fi
@@ -21,7 +21,7 @@ auto-update-status:
     systemctl --user list-timers flatpak-user-update.timer secureblue-flatpak-setup.timer nocblue-flatpak-setup.timer --no-pager || true
 
 rollback:
-    sudo rpm-ostree rollback
+    run0 rpm-ostree rollback
 
 flatpaks:
     flatpak list --app
@@ -30,7 +30,7 @@ flatpak-icon-fixes:
     nocblue-fix-flatpak-icons
 
 flatpak-overrides:
-    sudo nocblue-apply-flatpak-overrides
+    run0 nocblue-apply-flatpak-overrides
 
 flatpak-overrides-user:
     nocblue-apply-flatpak-overrides --user
@@ -70,14 +70,6 @@ image action="" scope="":
         fi
     }
 
-    privileged() {
-        if command -v run0 >/dev/null 2>&1; then
-            run0 "$@"
-        else
-            sudo "$@"
-        fi
-    }
-
     set_user_trust() {
         local tmp
         mkdir -p "$(dirname "${user_policy}")"
@@ -104,7 +96,7 @@ image action="" scope="":
             ;;
         trust)
             require_scope
-            privileged podman image trust set -t accept "${scope}"
+            run0 podman image trust set -t accept "${scope}"
             ;;
         trust-user)
             require_scope
@@ -112,7 +104,7 @@ image action="" scope="":
             podman image trust show --policypath "${user_policy}" | grep -E "(^TRANSPORT|${scope})" || true
             ;;
         trust-show)
-            privileged podman image trust show
+            run0 podman image trust show
             ;;
         trust-show-user)
             podman image trust show --policypath "${user_policy}"
@@ -134,10 +126,10 @@ fde-status device:
     nocblue-fde-helper status "{{device}}"
 
 fde-tpm2 device pin="yes" pcrs="7":
-    sudo nocblue-fde-helper tpm2-enroll "{{device}}" "{{pin}}" "{{pcrs}}"
+    run0 nocblue-fde-helper tpm2-enroll "{{device}}" "{{pin}}" "{{pcrs}}"
 
 fde-recovery-key device:
-    sudo nocblue-fde-helper recovery-key "{{device}}"
+    run0 nocblue-fde-helper recovery-key "{{device}}"
 
 tests:
     nocblue-tests
@@ -229,14 +221,6 @@ openrazer-plugdev mode="status" user="":
             '  njust openrazer-plugdev disable [USER]'
     }
 
-    privileged() {
-        if command -v run0 >/dev/null 2>&1; then
-            run0 "$@"
-        else
-            sudo "$@"
-        fi
-    }
-
     case "${mode}" in
         status)
             if id -nG "${target_user}" 2>/dev/null | tr ' ' '\n' | grep -qx 'plugdev'; then
@@ -246,11 +230,11 @@ openrazer-plugdev mode="status" user="":
             fi
             ;;
         enable)
-            privileged /usr/bin/nocblue-openrazer-plugdev "${target_user}"
+            run0 /usr/bin/nocblue-openrazer-plugdev "${target_user}"
             printf 'log out and back in before using OpenRazer as %s\n' "${target_user}"
             ;;
         disable)
-            privileged usermod -rG plugdev "${target_user}"
+            run0 usermod -rG plugdev "${target_user}"
             printf 'removed %s from plugdev; log out and back in to refresh groups\n' "${target_user}"
             ;;
         *)
