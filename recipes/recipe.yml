@@ -319,7 +319,6 @@ modules:
   - type: script
     scripts:
       - install-voxtype.sh
-      - install-claude-desktop.sh
 
   - type: files
     files:
@@ -336,6 +335,7 @@ modules:
       - configure-hardened-portal.sh
       - configure-standard-malloc-browsers.sh
       - configure-chatgpt.sh
+      - install-claude-desktop.sh
       - configure-file-manager-launchers.sh
       - compile-file-manager-selinux.sh
       - configure-sandbox-userns-selinux.sh

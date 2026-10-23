@@ -1,0 +1,15 @@
+#!/usr/bin/bash -p
+set -euo pipefail
+
+# Scrub loader injection before entering the namespace-enabled application.
+unset LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH
+# Keep the upstream executable path for relaunch and autostart entries.
+exec /usr/bin/bwrap \
+    --dev-bind / / \
+    --ro-bind /usr/lib/claude-desktop/claude-desktop.bin /usr/lib/claude-desktop/claude-desktop \
+    --ro-bind-try /dev/null /etc/ld.so.preload \
+    --ro-bind-try /dev/null /usr/etc/ld.so.preload \
+    --unsetenv LD_PRELOAD \
+    --unsetenv LD_AUDIT \
+    --unsetenv LD_LIBRARY_PATH \
+    -- /usr/lib/claude-desktop/claude-desktop --disable-setuid-sandbox "$@"
