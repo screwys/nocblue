@@ -6,7 +6,7 @@
 
 User namescapes are enabled per browser, allowing them to use their own sandboxing, while keeping broad user namespaces disabled.
 
-Native single-user Nix is available through `/usr/bin/nix`. The desktop user owns the persistent store at `/var/home/nix`, mounted at `/nix`. Nix runs as that user and builds use its namespace sandbox. A weekly user timer collects unused store paths and keeps profile generations and running packages. Bash and fish append `~/.nix-profile/bin` after existing system, user, and Homebrew paths, so profile tools can be called directly without replacing host commands.
+Native single-user Nix is available through `/usr/bin/nix`. The desktop user owns the persistent store at `/var/home/nix`, mounted at `/nix`. Nix runs as that user, and builds run without its namespace sandbox. A weekly user timer collects unused store paths and keeps profile generations and running packages. Bash and fish append `~/.nix-profile/bin` after existing system, user, and Homebrew paths, so profile tools can be called directly without replacing host commands.
 
 Nautilus has an expanded context menu with options to set folder icon, create a new file directly (probably hard to believe if you didn't useGNOME before), and copy file location; Loupe and Showtime reuse the window for new media instead of launching another window, and they also only mount the current folder read-only for extra hardening, which even disables basics like cropping.
 

@@ -38,7 +38,7 @@ func cleanEnv(env []string) []string {
 	for _, entry := range env {
 		name, _, _ := strings.Cut(entry, "=")
 		switch name {
-		case "LD_PRELOAD", "LD_AUDIT", "BASH_ENV", "SHELLOPTS", "NOCBLUE_NIX_ENV":
+		case "LD_PRELOAD", "LD_AUDIT", "NOCBLUE_NIX_ENV":
 			continue
 		case "NIX_REMOTE":
 			hasRemote = true

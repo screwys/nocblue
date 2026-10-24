@@ -20,4 +20,3 @@ done
 install -d -m 0755 /nix
 
 "${script_dir}/install-nix-launcher.sh"
-bash "${script_dir}/configure-nix-selinux.sh"

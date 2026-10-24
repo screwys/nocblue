@@ -1,3 +1,0 @@
-[D-BUS Service]
-Name=org.gnome.Nautilus
-Exec=/usr/bin/nautilus --gapplication-service
