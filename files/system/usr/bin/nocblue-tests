@@ -545,6 +545,11 @@ for claude_domain in claude_desktop_launcher_t claude_desktop_t; do
         exit 1
     fi
 done
+sesearch -T -s claude_desktop_t -t user_home_dir_t -c file \
+    | grep -Fxq 'type_transition claude_desktop_t user_home_dir_t:file user_home_t;'
+sesearch -T -s claude_desktop_t -t config_home_t -c process \
+    | grep -Fxq 'type_transition claude_desktop_t config_home_t:process unconfined_t;'
+grep -Fq -- '--password-store=gnome-libsecret' /usr/lib/claude-desktop/claude-desktop
 if sesearch -A -s unconfined_t -t claude_desktop_launcher_t -c process -p noatsecure | grep -q .; then
     printf 'Claude launcher must enter secure-execution mode\n' >&2
     exit 1

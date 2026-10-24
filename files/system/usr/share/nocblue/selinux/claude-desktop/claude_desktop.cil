@@ -12,6 +12,7 @@
 (typeattributeset x_domain (claude_desktop_t))
 (typeattributeset xcolormap_type (claude_desktop_t))
 (typeattributeset xdrawable_type (claude_desktop_t))
+(typeattributeset nocblue_browser_wayland_clipboard_peer (claude_desktop_t))
 (typeattributeset file_type (claude_desktop_exec_t))
 (typeattributeset exec_type (claude_desktop_exec_t))
 (typeattributeset entry_type (claude_desktop_exec_t))
@@ -79,9 +80,19 @@
 (allow claude_desktop_t unconfined_t (process2 (nnp_transition nosuid_transition)))
 (typetransition claude_desktop_t shell_exec_t process unconfined_t)
 (typetransition claude_desktop_t bin_t process unconfined_t)
+(allow claude_desktop_t ssh_exec_t (file (getattr open read execute map)))
+(typetransition claude_desktop_t ssh_exec_t process unconfined_t)
+; The Code tab runs the Claude Code binary it downloads under ~/.config/Claude.
+(allow claude_desktop_t config_home_t (file (execute)))
+(allow unconfined_t config_home_t (file (entrypoint)))
+(typetransition claude_desktop_t config_home_t process unconfined_t)
 (allow unconfined_t claude_desktop_t (process (sigchld signull)))
 (allow unconfined_t claude_desktop_t (fd (use)))
 (allow unconfined_t claude_desktop_t (fifo_file (getattr read write append ioctl lock open)))
+
+; Claude Code saves ~/.claude.json through a lock directory and a temporary file.
+(typetransition claude_desktop_t user_home_dir_t file user_home_t)
+(typetransition claude_desktop_t user_home_dir_t dir user_home_t)
 
 ; Chromium resources, desktop integration, and native account lookup.
 (allow claude_desktop_t cache_home_t (file (map)))

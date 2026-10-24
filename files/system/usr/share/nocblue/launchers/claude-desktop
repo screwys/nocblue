@@ -4,6 +4,7 @@ set -euo pipefail
 # Scrub loader injection before entering the namespace-enabled application.
 unset LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH
 # Keep the upstream executable path for relaunch and autostart entries.
+# Chromium only picks the Secret Service on desktops it recognizes, not Niri.
 exec /usr/bin/bwrap \
     --dev-bind / / \
     --ro-bind /usr/lib/claude-desktop/claude-desktop.bin /usr/lib/claude-desktop/claude-desktop \
@@ -12,4 +13,5 @@ exec /usr/bin/bwrap \
     --unsetenv LD_PRELOAD \
     --unsetenv LD_AUDIT \
     --unsetenv LD_LIBRARY_PATH \
-    -- /usr/lib/claude-desktop/claude-desktop --disable-setuid-sandbox "$@"
+    -- /usr/lib/claude-desktop/claude-desktop --disable-setuid-sandbox \
+    --password-store=gnome-libsecret "$@"
