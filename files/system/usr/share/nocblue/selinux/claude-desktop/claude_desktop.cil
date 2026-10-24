@@ -86,6 +86,11 @@
 (allow claude_desktop_t config_home_t (file (execute)))
 (allow unconfined_t config_home_t (file (entrypoint)))
 (typetransition claude_desktop_t config_home_t process unconfined_t)
+; The Code tab terminal gives those commands a user pty.
+(allow claude_desktop_t ptmx_t (chr_file (getattr open read write ioctl)))
+(allow claude_desktop_t devpts_t (dir (getattr open read search)))
+(allow claude_desktop_t user_devpts_t (chr_file (getattr open read write ioctl setattr)))
+(typetransition claude_desktop_t devpts_t chr_file user_devpts_t)
 (allow unconfined_t claude_desktop_t (process (sigchld signull)))
 (allow unconfined_t claude_desktop_t (fd (use)))
 (allow unconfined_t claude_desktop_t (fifo_file (getattr read write append ioctl lock open)))
