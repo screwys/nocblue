@@ -70,7 +70,7 @@
 (allow claude_desktop_t claude_desktop_launcher_t (process (sigchld)))
 (allow claude_desktop_t claude_desktop_launcher_t (fd (use)))
 (allow claude_desktop_t claude_desktop_launcher_t (fifo_file (getattr read write append ioctl lock open)))
-(allow claude_desktop_t unconfined_t (process (sigchld)))
+(allow claude_desktop_t unconfined_t (process (sigchld signal sigkill signull)))
 (allow claude_desktop_t unconfined_t (fd (use)))
 (allow claude_desktop_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))
 
