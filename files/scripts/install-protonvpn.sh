@@ -237,15 +237,15 @@ patch --batch --fuzz=0 -p1 -d "${site_packages}" <<'PATCH'
          ]
 
      def _get_settings(self) -> list[str]:
--        return cast(list[str], self._controller.get_setting_attr(self._setting_path_name))
-+        paths = cast(list[str], self._controller.get_setting_attr(self._setting_path_name))
+-        return list(self._controller.get_setting_attr(self._setting_path_name))
++        paths = list(self._controller.get_setting_attr(self._setting_path_name))
 +        normalized = normalize_flatpak_paths(paths)
 +        if normalized != paths:
 +            self._controller.save_setting_attr(self._setting_path_name, normalized)
 +        return normalized
 
      def _save_settings(self):
-         self._controller.save_setting_attr(self._setting_path_name, self._stored_apps)
+         self._controller.save_setting_attr(self._setting_path_name, tuple(self._stored_apps))
 --- a/proton/vpn/daemon/split_tunneling/apps/service.py
 +++ b/proton/vpn/daemon/split_tunneling/apps/service.py
 @@ -36,6 +36,7 @@
