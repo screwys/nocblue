@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+DEFAULT_PATH="${NAUTILUS_DEFAULT_PATH:-$HOME/.config/niri}"
+
+if [ "$#" -eq 0 ]; then
+    exec nautilus --new-window "$DEFAULT_PATH"
+fi
+
+exec nautilus --new-window "$@"

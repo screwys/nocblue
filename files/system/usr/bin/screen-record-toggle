@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "${1:-}" in
+    region)
+        start_event="recordMp4"
+        ;;
+    fullscreen)
+        start_event="recordFullscreenMp4"
+        ;;
+    *)
+        echo "Usage: $0 <region|fullscreen>" >&2
+        exit 2
+        ;;
+esac
+
+# Screen Toolkit gives every active recording a unique raw output path. Match
+# that path so this never stops another recorder running on the desktop.
+if pgrep -f -- '/tmp/screen-toolkit-record-[0-9]+[.]mp4' >/dev/null; then
+    event="recordStop"
+else
+    event="$start_event"
+fi
+
+noctalia msg plugin "alexander/screen-toolkit:service" all "$event"

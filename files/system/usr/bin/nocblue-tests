@@ -878,8 +878,6 @@ grep -q '^repo_gpgcheck=0$' /etc/yum.repos.d/librewolf.repo 2>/dev/null || grep 
 ! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
 test -x /usr/bin/nocblue-browser-no-preload
 ! grep -q -- '--cap-drop' /usr/bin/nocblue-browser-no-preload
-grep -qx '    Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }' /etc/xdg/niri/config.kdl
-grep -qx '    Mod+B hotkey-overlay-title="Open Browser: LibreWolf" { spawn "/usr/bin/librewolf"; }' /usr/share/nocblue/defaults/niri/config.kdl
 test -x /usr/bin/librewolf
 ! test -L /usr/bin/librewolf
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/firefox
@@ -944,8 +942,6 @@ grep -q 'set -q EDITOR; or set -gx EDITOR nvim' /usr/share/nocblue/defaults/fish
 grep -q 'export EDITOR="${EDITOR:-nvim}"' /etc/profile.d/nocblue.sh
 grep -q 'EDITOR "nvim"' /etc/xdg/niri/config.kdl
 grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kdl
-grep -Fqx '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }' /etc/xdg/niri/config.kdl
-grep -Fqx '    Mod+Return hotkey-overlay-title="Open Terminal: Ghostty" { spawn "/usr/bin/ghostty" "+new-window"; }' /usr/share/nocblue/defaults/niri/config.kdl
 test -x /usr/bin/nocblue-refresh-portals
 grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
 grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl

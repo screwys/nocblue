@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+unit="noctalia.service"
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/noctalia"
+log_file="$state_dir/restart.log"
+
+find_wayland_display() {
+    if [ -n "${WAYLAND_DISPLAY:-}" ] &&
+        [ -n "${XDG_RUNTIME_DIR:-}" ] &&
+        [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
+        return 0
+    fi
+
+    if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+        return 1
+    fi
+
+    for socket in "$XDG_RUNTIME_DIR"/wayland-*; do
+        [ -S "$socket" ] || continue
+        export WAYLAND_DISPLAY="${socket##*/}"
+        return 0
+    done
+
+    return 1
+}
+
+if systemctl --user cat "$unit" >/dev/null 2>&1; then
+    if systemctl --user restart "$unit"; then
+        exit 0
+    fi
+fi
+
+if ! find_wayland_display; then
+    printf 'No live Wayland display found; refusing to start Noctalia without a compositor.\n' >&2
+    exit 1
+fi
+
+mkdir -p "$state_dir"
+pkill -u "$USER" -x noctalia 2>/dev/null || true
+nohup noctalia >"$log_file" 2>&1 &
