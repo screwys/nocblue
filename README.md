@@ -13,15 +13,15 @@ Nautilus has an expanded context menu with options to set folder icon, create a 
 For installation, you need to be on Fedora Silverblue/Universal Blue base (Bazzite/Aurora/Bluefin...) and run:
 
 ```bash
-run0 rpm-ostree rebase ostree-unverified-registry:ghcr.io/screwys/nocblue:latest
-run0 systemctl reboot
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/screwys/nocblue:latest
+reboot
 ```
 
 and then:
 
 ```bash
-run0 rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue:latest
-run0 systemctl reboot
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/screwys/nocblue:latest
+reboot
 ```
 
 For testing in a VM, you need to enable 3D Accelaration.
