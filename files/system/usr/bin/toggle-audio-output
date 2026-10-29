@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Switch the default output to the next available sink.
+# Switch the default output to the next available sink, skipping monitor HDMI.
 set -euo pipefail
 
-mapfile -t sinks < <(pactl list short sinks | cut -f2)
+mapfile -t sinks < <(pactl list short sinks | cut -f2 | grep -v hdmi)
 (( ${#sinks[@]} > 1 )) || exit 0
 
 current="$(pactl get-default-sink)"
