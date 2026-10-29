@@ -1,15 +1,19 @@
-#!/bin/bash
-# Toggle between SteelSeries Arctis 1 Wireless and Built-in Audio
+#!/usr/bin/env bash
+# Switch the default output to the next available sink.
+set -euo pipefail
 
-WIRELESS="alsa_output.usb-SteelSeries_SteelSeries_Arctis_1_Wireless-00.analog-stereo"
-BUILTIN="alsa_output.pci-0000_00_1f.3.analog-stereo"
+mapfile -t sinks < <(pactl list short sinks | cut -f2)
+(( ${#sinks[@]} > 1 )) || exit 0
 
-current=$(pactl get-default-sink)
+current="$(pactl get-default-sink)"
+next="${sinks[0]}"
+for i in "${!sinks[@]}"; do
+    if [[ "${sinks[$i]}" == "${current}" ]]; then
+        next="${sinks[$(( (i + 1) % ${#sinks[@]} ))]}"
+        break
+    fi
+done
 
-if [ "$current" = "$WIRELESS" ]; then
-    pactl set-default-sink "$BUILTIN"
-    notify-send -t 2000 "Audio Output" "Switched to Built-in Audio"
-else
-    pactl set-default-sink "$WIRELESS"
-    notify-send -t 2000 "Audio Output" "Switched to SteelSeries Arctis 1"
-fi
+pactl set-default-sink "${next}"
+description="$(pactl -f json list sinks | jq -r --arg name "${next}" '.[] | select(.name == $name) | .description')"
+notify-send -t 2000 "Audio Output" "Switched to ${description:-${next}}"
