@@ -377,6 +377,7 @@ modules:
         - nocblue-flatpak-icon-fixes.service
         - noctalia.service
         - voxtype.service
+        - tailscale-systray.service
       masked:
         - security-update-notification.path
         - security-update-notification.service
