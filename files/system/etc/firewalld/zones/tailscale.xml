@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Tailscale</short>
+  <description>Tailnet peers reach only the listed services, whatever the control server's ACLs allow.</description>
+  <interface name="tailscale0"/>
+  <port protocol="tcp" port="8096"/>
+</zone>
