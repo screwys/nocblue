@@ -26,6 +26,7 @@ modules:
         - chatgpt.repo
         - helium.repo
         - mullvad.repo
+        - netbird.repo
         - librewolf.repo
         - fedora-multimedia.repo
       keys:
@@ -337,6 +338,7 @@ modules:
       - install-claude-desktop.sh
       - configure-sandbox-userns-selinux.sh
       - install-protonvpn.sh
+      - install-netbird.sh
       - configure-nix.sh
       - install-uv-launchers.sh
       - configure-anticheat-support.sh
@@ -356,6 +358,7 @@ modules:
         - virtnetworkd.socket
         - virtstoraged.socket
         - me.proton.vpn.split_tunneling.service
+        - netbird.service
         - greetd.service
       masked:
         - rpm-ostree-countme.timer
