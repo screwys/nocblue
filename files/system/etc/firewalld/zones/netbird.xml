@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>NetBird</short>
+  <description>Mesh peers reach only the listed services. The daemon cannot change firewalld, so the management server cannot widen this.</description>
+  <interface name="wt0"/>
+  <port protocol="tcp" port="8096"/>
+</zone>
