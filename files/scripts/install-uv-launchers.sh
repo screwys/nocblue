@@ -55,8 +55,8 @@ func cleanEnv(env []string) []string {
 
 func hasPreload() bool {
     fi, err := os.Stat("/etc/ld.so.preload")
-    if err == nil && fi.Mode().IsRegular() && fi.Size() > 0 {
-        return true
+    if err == nil {
+        return fi.Mode().IsRegular() && fi.Size() > 0
     }
     fi, err = os.Stat("/usr/etc/ld.so.preload")
     if err == nil && fi.Mode().IsRegular() && fi.Size() > 0 {

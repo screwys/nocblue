@@ -201,7 +201,7 @@ jobs:
           digest="$(skopeo inspect --format '{{.Digest}}' "docker://${image_repo}:${IMAGE_TAG}")"
           image_ref="${image_repo}@${digest}"
           cosign verify --key cosign.pub "$image_ref" >/dev/null
-          sudo podman run --rm --entrypoint /usr/bin/bash "$image_ref" -c '
+          sudo podman run --rm --privileged --hostname desktop --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
             test ! -e /usr/bin/sudo
             for command in run0 kdeconnectd kioclient; do
@@ -210,6 +210,20 @@ jobs:
             rpm -q libadwaita gtk4 glib2 gnome-shell mutter gstreamer1 gstreamer1-plugins-base gstreamer1-plugins-good openrazer-daemon python3-openrazer kmod-openrazer nocblue-openrazer-kmod-dkms-compat proton-vpn-gnome-desktop
             python3 -c "import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent"
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
+            /usr/bin/nocblue-tests
+            sockdir="$(mktemp -d /run/nocblue-bwrap-sock.XXXXXX)"
+            trap "rm -rf \"$sockdir\"" EXIT
+            python3 -c "import socket, sys; s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM); s.bind(sys.argv[1])" "$sockdir/socket"
+            /usr/bin/bwrap \
+              --dev-bind / / \
+              --bind "$sockdir" "$sockdir" \
+              --ro-bind "$sockdir/socket" "$sockdir/socket" \
+              --ro-bind /dev/null /etc/ld.so.preload \
+              -- /usr/bin/uv --version >/dev/null
+            /usr/bin/bwrap \
+              --dev-bind / / \
+              --ro-bind /dev/null /etc/ld.so.preload \
+              -- /usr/bin/uvx --version >/dev/null
           '
           sudo podman run --rm --network=none --read-only --user 65534:65534 \
             --tmpfs /tmp:rw,mode=1777 \

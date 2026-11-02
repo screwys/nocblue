@@ -1,4 +1,3 @@
-io.github.kolunmi.Bazaar --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.belmoussaoui.Authenticator --unshare=network --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 studio.planetpeanut.Bobby --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.diegopvlk.Cine --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
@@ -6,11 +5,13 @@ org.gnome.Papers --nofilesystem=home --filesystem=xdg-config/gtk-3.0:ro --filesy
 org.gnome.Fractal --talk-name=org.freedesktop.secrets --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.radiolamp.mangojuice --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.missioncenter.MissionCenter --unset-env=LD_PRELOAD --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-com.github.marhkb.Pods --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
-io.github.alyraffauf.Switchyard --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+com.github.marhkb.Pods --nofilesystem=/run/systemd/journal --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+io.github.alyraffauf.Switchyard --unset-env=LD_PRELOAD --nofilesystem=host-os --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 io.github.Foldex.AdwSteamGtk --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
+com.github.tchx84.Flatseal --talk-name=org.gnome.Software --talk-name=org.freedesktop.impl.portal.PermissionStore
 it.mijorus.gearlever --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 org.signal.Signal --env=SIGNAL_PASSWORD_STORE=gnome-libsecret --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 net.lutris.Lutris --unset-env=LD_PRELOAD --env=MANGOHUD=1 --nofilesystem=host-os --filesystem=~/Games --nofilesystem=~/.ssh --nofilesystem=~/.gnupg --nofilesystem=~/.password-store --nofilesystem=~/.local/share/keyrings --nofilesystem=~/.mozilla --nofilesystem=~/.librewolf --nofilesystem=~/.mullvad-browser --nofilesystem=~/.config/BraveSoftware --nofilesystem=~/.config/helium --nofilesystem=~/.config/Helium --nofilesystem=~/.config/trivalent --nofilesystem=~/.cache/mozilla --nofilesystem=~/.cache/librewolf --nofilesystem=~/.cache/mullvad-browser --nofilesystem=~/.cache/BraveSoftware --nofilesystem=~/.cache/helium --nofilesystem=~/.cache/Helium --nofilesystem=~/.cache/trivalent --filesystem=xdg-config/MangoHud:ro --filesystem=xdg-config/gtk-3.0:ro --filesystem=xdg-config/gtk-4.0:ro
 com.valvesoftware.Steam --unset-env=LD_PRELOAD --env=MANGOHUD=1 --nofilesystem=host-os --filesystem=xdg-config/MangoHud:ro --share=network --share=ipc --socket=x11 --socket=pulseaudio --allow=multiarch --allow=per-app-dev-shm
 dev.vencord.Vesktop --nosocket=x11 --nosocket=system-bus
+org.kde.krita --unset-env=LD_PRELOAD

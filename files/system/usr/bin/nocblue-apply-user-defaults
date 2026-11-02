@@ -355,7 +355,6 @@ apply_user_flatpak_theme_overrides() {
         org.gnome.Fractal
         io.github.radiolamp.mangojuice
         io.missioncenter.MissionCenter
-        com.github.marhkb.Pods
         io.github.Foldex.AdwSteamGtk
         it.mijorus.gearlever
     )
@@ -367,6 +366,13 @@ apply_user_flatpak_theme_overrides() {
             --filesystem=xdg-config/gtk-4.0:ro \
             "${app_id}" >/dev/null 2>&1 || true
     done
+
+    flatpak override --user \
+        --unset-env=GTK_THEME \
+        --nofilesystem=/run/systemd/journal \
+        --filesystem=xdg-config/gtk-3.0:ro \
+        --filesystem=xdg-config/gtk-4.0:ro \
+        com.github.marhkb.Pods >/dev/null 2>&1 || true
 
     flatpak override --user \
         --unset-env=GTK_THEME \
