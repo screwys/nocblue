@@ -52,6 +52,10 @@
     (typeattributeset nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t))
 )
 
+(optional nocblue_browser_flatpak_wayland_clipboard_peer
+    (typeattributeset nocblue_browser_wayland_clipboard_peer (flatpak_t))
+)
+
 (optional nocblue_browser_read_removable_media
     (allow trivalent_domain mnt_t (dir (getattr open read search)))
     (allow trivalent_domain removable_t (dir (getattr ioctl lock open read search)))
