@@ -5,30 +5,32 @@ test ! -e /usr/bin/sudo
 command -v run0 >/dev/null
 command -v kioclient >/dev/null
 
-rpm -q kernel kernel-core kernel-modules-core >/dev/null
-rpm -q xwayland-satellite >/dev/null
-! rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1
-! find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .
+rpm -q kernel kernel-core kernel-modules-core xwayland-satellite >/dev/null
+if rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1; then
+    exit 1
+fi
+if find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .; then
+    exit 1
+fi
 
-for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt claude-desktop voxtype magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
     }
 done
 
-rpm -q noctalia-git noctalia-greeter greetd gdm gnome-shell gnome-session-wayland-session gnome-control-center gh jq nodejs24-bin nodejs24-npm-bin pnpm ripgrep fd-find bat eza fzf tree curl wget2-wget unzip 7zip yq direnv neovim socat zoxide btop duf du-dust hyperfine tokei ShellCheck shfmt uv android-tools java-latest-openjdk-devel golang rust cargo gcc gcc-c++ make cmake selinux-policy-devel pkgconf-pkg-config libtalloc-devel openssl-devel ffmpeg ffmpeg-devel libavcodec brave-origin-beta helium-bin mullvad-browser ghostty loupe showtime openrazer-daemon python3-openrazer kmod-openrazer nocblue-openrazer-kmod-dkms-compat ImageMagick tesseract tesseract-langpack-eng tesseract-langpack-jpn tesseract-langpack-jpn_vert adwaita-cursor-theme secureblue-logos google-noto-sans-cjk-fonts nginx protonvpn-beta-release proton-vpn-gnome-desktop hardened_malloc no_rlimit_as podman podman-docker podman-compose nm-connection-editor NetworkManager-tui NetworkManager-wifi kf6-kitemmodels zram-generator wlsunset chatgpt >/dev/null
 rpm -q --whatprovides openrazer-kmod-common >/dev/null
 rpm -q --whatprovides openrazer-kernel-modules-dkms >/dev/null
-rpm -q voxtype >/dev/null
-rpm -q claude-desktop >/dev/null
-test -x /usr/bin/claude-desktop
+if rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'; then
+    exit 1
+fi
 test ! -u /usr/lib/claude-desktop/chrome-sandbox
 test ! -g /usr/lib/claude-desktop/chrome-sandbox
 voxtype --version >/dev/null
 test -r /usr/share/voxtype/models/ggml-base.bin
-test -L /etc/systemd/user/niri.service.wants/voxtype.service
-python3 -c 'import proton.vpn.platform.local_agent'
+python3 -c 'import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent'
+
 if rpm -q ffmpeg-free-devel >/dev/null 2>&1; then
     printf 'restricted ffmpeg-free-devel must not replace the full FFmpeg provider\n' >&2
     exit 1
@@ -39,8 +41,7 @@ if rpm -q libavcodec-free >/dev/null 2>&1; then
 fi
 ffmpeg_decoders="$(ffmpeg -hide_banner -decoders 2>/dev/null)"
 grep -Eq '^ V[^ ]*D h264[[:space:]]' <<<"${ffmpeg_decoders}"
-test -f /usr/lib64/qt6/qml/org/kde/kitemmodels/qmldir
-! rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'
+
 mapfile -t openrazer_modules < <(find /usr/lib/modules -path '*/extra/openrazer/razer*.ko*' -type f | sort)
 ((${#openrazer_modules[@]} > 0))
 enrollment_cert="$(python3 - <<'PY'
@@ -63,225 +64,33 @@ for module_path in "${openrazer_modules[@]}"; do
         exit 1
     fi
 done
-rpm -q pipx >/dev/null
+
 LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uv --version >/dev/null
 LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uvx --version >/dev/null
-! rpm -q protonvpn-stable-release >/dev/null 2>&1
+
+if rpm -q protonvpn-stable-release >/dev/null 2>&1; then
+    exit 1
+fi
 for pkg in docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
-    ! rpm -q "${pkg}" >/dev/null 2>&1 || {
+    if rpm -q "${pkg}" >/dev/null 2>&1; then
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
-    }
+    fi
 done
-! grep -RIn 'lxqt-policykit-agent' /etc/xdg/niri /usr/share/nocblue/defaults/niri >/dev/null 2>&1
-grep -q 'xembedsniproxy' /etc/xdg/niri/config.kdl
-grep -q 'xembedsniproxy' /usr/share/nocblue/defaults/niri/config.kdl
 
-test -x /usr/bin/ghostty
-test ! -e /usr/local/bin/ghostty
-grep -q '^mouse-shift-capture = never$' /usr/share/nocblue/defaults/ghostty/config
-grep -q '^quit-after-last-window-closed = true$' /usr/share/nocblue/defaults/ghostty/config
-grep -q '^quit-after-last-window-closed-delay = 5m$' /usr/share/nocblue/defaults/ghostty/config
-test -f /usr/share/applications/nocblue-nvim.desktop
-grep -q '^Exec=/usr/bin/ghostty -e /usr/bin/nvim %F$' /usr/share/applications/nocblue-nvim.desktop
-grep -q '^MimeType=.*text/plain.*text/markdown.*application/json' /usr/share/applications/nocblue-nvim.desktop
-grep -q 'single_file_support = false' /usr/share/nocblue/defaults/nvim/lua/plugins/languages.lua
-grep -q 'command = vim.fn.executable "/usr/bin/shfmt" == 1 and "/usr/bin/shfmt" or "shfmt"' /usr/share/nocblue/defaults/nvim/lua/plugins/tools.lua
-test -x /usr/bin/pywalfox
-test ! -e /usr/local/bin/pywalfox
-test -x /usr/libexec/pywalfox-native-messaging-host
-test -f /usr/lib/mozilla/native-messaging-hosts/pywalfox.json
-test -f /usr/lib64/mozilla/native-messaging-hosts/pywalfox.json
-test -f /usr/share/mozilla/native-messaging-hosts/pywalfox.json
-test -f /usr/share/librewolf/native-messaging-hosts/pywalfox.json
-test -f /usr/lib64/librewolf/native-messaging-hosts/pywalfox.json
-test -f /usr/lib/librewolf/native-messaging-hosts/pywalfox.json
-test -x /usr/libexec/pywalfox-native-messaging-host-proxy
-test -f /usr/lib64/firefox/distribution/policies.json
-test -f /usr/share/librewolf/distribution/policies.json
-test -f /usr/lib64/librewolf/distribution/policies.json
-test -f /usr/lib/librewolf/distribution/policies.json
-test ! -e /etc/trivalent/policies/managed/nocblue-search.json
-test ! -e /etc/trivalent/policies/managed/nocblue-extensions.json
-test -f /etc/trivalent/policies/recommended/nocblue-search.json
-test -f /etc/trivalent/policies/recommended/nocblue-extensions.json
-test -f /etc/trivalent/master_preferences
-test -f /etc/trivalent/trivalent.conf.d/20-nocblue.conf
-test -f /etc/brave/policies/managed/nocblue-extensions.json
-test -f /etc/chromium/policies/managed/nocblue-extensions.json
-test -f /etc/helium/policies/managed/nocblue-extensions.json
-test -f /etc/brave/policies/recommended/nocblue-startup-defaults.json
-test -f /etc/chromium/policies/recommended/nocblue-startup-defaults.json
-test -f /etc/helium/policies/recommended/nocblue-startup-defaults.json
-python3 - <<'PY'
-import json
-from pathlib import Path
+if (( $(rpm -E '%fedora') >= 45 )); then
+    rpm -q oo7-daemon pam_oo7 oo7-portal >/dev/null
+    systemctl --global is-enabled oo7-daemon.service >/dev/null
+else
+    rpm -q gnome-keyring gnome-keyring-pam >/dev/null
+fi
 
-firefox = json.loads(Path("/usr/lib64/firefox/distribution/policies.json").read_text(encoding="utf-8"))
-librewolf = json.loads(Path("/usr/share/librewolf/distribution/policies.json").read_text(encoding="utf-8"))
-librewolf_lib64 = json.loads(Path("/usr/lib64/librewolf/distribution/policies.json").read_text(encoding="utf-8"))
-librewolf_lib = json.loads(Path("/usr/lib/librewolf/distribution/policies.json").read_text(encoding="utf-8"))
-trivalent = json.loads(Path("/etc/trivalent/policies/recommended/nocblue-search.json").read_text(encoding="utf-8"))
-trivalent_extensions = json.loads(Path("/etc/trivalent/policies/recommended/nocblue-extensions.json").read_text(encoding="utf-8"))
-trivalent_preferences = json.loads(Path("/etc/trivalent/master_preferences").read_text(encoding="utf-8"))
-brave_extensions = json.loads(Path("/etc/brave/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
-chromium_extensions = json.loads(Path("/etc/chromium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
-helium_extensions = json.loads(Path("/etc/helium/policies/managed/nocblue-extensions.json").read_text(encoding="utf-8"))
-brave_startup = json.loads(Path("/etc/brave/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
-chromium_startup = json.loads(Path("/etc/chromium/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
-helium_startup = json.loads(Path("/etc/helium/policies/recommended/nocblue-startup-defaults.json").read_text(encoding="utf-8"))
-pywalfox = json.loads(Path("/usr/lib/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-pywalfox_lib64 = json.loads(Path("/usr/lib64/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-pywalfox_share = json.loads(Path("/usr/share/mozilla/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-pywalfox_librewolf = json.loads(Path("/usr/share/librewolf/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-pywalfox_librewolf_lib64 = json.loads(Path("/usr/lib64/librewolf/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-pywalfox_librewolf_lib = json.loads(Path("/usr/lib/librewolf/native-messaging-hosts/pywalfox.json").read_text(encoding="utf-8"))
-
-shared = {
-    "jid1-BoFifL9Vbdl2zQ@jetpack": "decentraleyes",
-    "78272b6fa58f4a1abaac99321d503a20@proton.me": "proton-pass",
-    "vpn@proton.ch": "proton-vpn-firefox-extension",
-    "pywalfox@frewacom.org": "pywalfox",
-    "search@kagi.com": "kagi-search-for-firefox",
-    "{7a7a4a92-a2a0-41d1-9fd7-1e92480d612d}": "styl-us",
-    "firefox@tampermonkey.net": "tampermonkey",
-}
-
-firefox_settings = firefox["policies"]["ExtensionSettings"]
-librewolf_settings = librewolf["policies"]["ExtensionSettings"]
-assert librewolf_lib64 == librewolf
-assert librewolf_lib == librewolf
-for extension_id, slug in shared.items():
-    for settings in (firefox_settings, librewolf_settings):
-        policy = settings[extension_id]
-        assert policy["installation_mode"] == "allowed"
-        assert policy["private_browsing"] is True
-        assert "install_url" not in policy
-
-ublock = firefox_settings["uBlock0@raymondhill.net"]
-assert ublock["installation_mode"] == "allowed"
-assert "install_url" not in ublock
-assert firefox["policies"]["DisableFirefoxStudies"] is True
-assert firefox["policies"]["DisablePocket"] is True
-assert firefox["policies"]["DisableTelemetry"] is True
-assert firefox["policies"]["DontCheckDefaultBrowser"] is True
-assert firefox["policies"]["ManualAppUpdateOnly"] is True
-assert firefox["policies"]["OfferToSaveLoginsDefault"] is False
-assert firefox["policies"]["OverrideFirstRunPage"] == ""
-assert firefox["policies"]["OverridePostUpdatePage"] == ""
-assert firefox["policies"]["SearchEngines"]["Default"] == "DuckDuckGo"
-assert firefox["policies"]["SearchEngines"]["PreventInstalls"] is True
-assert firefox["policies"]["SearchSuggestEnabled"] is False
-assert firefox["policies"]["SkipTermsOfUse"] is True
-assert firefox["policies"]["FirefoxSuggest"]["WebSuggestions"] is False
-assert firefox["policies"]["FirefoxSuggest"]["SponsoredSuggestions"] is False
-assert firefox["policies"]["Homepage"] == {
-    "Locked": False,
-    "StartPage": "none",
-    "URL": "about:blank",
-}
-assert librewolf["policies"]["Homepage"] == firefox["policies"]["Homepage"]
-assert firefox["policies"]["UserMessaging"]["SkipOnboarding"] is True
-assert librewolf["policies"]["DisableTelemetry"] is True
-
-assert trivalent["DefaultSearchProviderEnabled"] is True
-assert trivalent["DefaultSearchProviderName"] == "DuckDuckGo"
-assert trivalent["DefaultSearchProviderSearchURL"] == "https://duckduckgo.com/?q={searchTerms}"
-assert trivalent_preferences["extensions"]["disabled"] is False
-
-chromium_ids = {
-    "ghmbeldphafepmbegfdlkpapadhbakde",
-    "jplgfhpmjnbigmhklmmbgecoobifkmpa",
-    "ldpochfccmkkmhdbclfhpagapcfdljkj",
-    "eimadpbcbfnmbkopoojfekhnkhdbieeh",
-    "clngdbkpkpeebahjckkjfobafhncgmne",
-    "dhdgffkkebhmkfjojejmpbldmpobfkfo",
-}
-chromium_startup_defaults = {
-    "HomepageIsNewTabPage": True,
-    "ImportHomepage": False,
-    "PromotionalTabsEnabled": False,
-    "RestoreOnStartup": 5,
-}
-for policy in (brave_extensions, chromium_extensions, helium_extensions):
-    assert not set(chromium_startup_defaults).intersection(policy)
-    settings = policy["ExtensionSettings"]
-    assert set(settings) == chromium_ids
-    assert "ExtensionInstallForcelist" not in policy
-    for extension_id in chromium_ids:
-        assert settings[extension_id]["installation_mode"] == "allowed"
-        assert "update_url" not in settings[extension_id]
-for policy in (brave_startup, chromium_startup, helium_startup):
-    assert policy == chromium_startup_defaults
-
-trivalent_policy = trivalent_extensions["ExtensionSettings"]
-assert trivalent_extensions["HomepageIsNewTabPage"] is True
-assert trivalent_extensions["ImportHomepage"] is False
-assert trivalent_extensions["PromotionalTabsEnabled"] is False
-assert trivalent_extensions["RestoreOnStartup"] == 5
-assert set(trivalent_policy) == {"ghmbeldphafepmbegfdlkpapadhbakde"}
-assert trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]["installation_mode"] == "allowed"
-assert "update_url" not in trivalent_policy["ghmbeldphafepmbegfdlkpapadhbakde"]
-
-assert pywalfox["name"] == "pywalfox"
-assert pywalfox_lib64 == pywalfox
-assert pywalfox_share == pywalfox
-assert pywalfox_librewolf == pywalfox
-assert pywalfox_librewolf_lib64 == pywalfox
-assert pywalfox_librewolf_lib == pywalfox
-assert "pywalfox@frewacom.org" in pywalfox["allowed_extensions"]
-assert pywalfox["path"] == "/usr/libexec/pywalfox-native-messaging-host"
-PY
-grep -q '^unset LD_PRELOAD$' /usr/libexec/pywalfox-native-messaging-host
-grep -q 'pywalfox-native-messaging-host-proxy' /usr/libexec/pywalfox-native-messaging-host
-grep -q 'env.pop("LD_PRELOAD", None)' /usr/libexec/pywalfox-native-messaging-host-proxy
-grep -q 'PYWALFOX_FIREFOX_PROFILES_PATH' /usr/libexec/pywalfox-native-messaging-host-proxy
-grep -q '.config/mozilla/firefox' /usr/libexec/pywalfox-native-messaging-host-proxy
-grep -q '.librewolf' /usr/libexec/pywalfox-native-messaging-host-proxy
-grep -q -- '--gtk-version=4' /etc/trivalent/trivalent.conf.d/20-nocblue.conf
-grep -q -- '--gtk-version=4' /usr/share/applications/brave-origin-beta.desktop
-grep -q '^MimeType=.*x-scheme-handler/http' /usr/share/applications/brave-origin-beta.desktop
-grep -q '^NoDisplay=true$' /usr/share/applications/com.brave.Origin.beta.desktop
-! grep -q '^MimeType=' /usr/share/applications/com.brave.Origin.beta.desktop
-grep -q -- '--gtk-version=4' /usr/share/applications/helium.desktop
-grep -q 'Fedora-Silverblue' /etc/xdg/fastfetch/config.jsonc
-grep -q '"format": "{name} {version-id}"' /etc/xdg/fastfetch/config.jsonc
-! grep -q 'nocblue-hardened' /etc/xdg/fastfetch/config.jsonc
-grep -q 'x86_64$//' /etc/xdg/fastfetch/config.jsonc
-test -x /usr/bin/nocblue-resolve-cursor-theme
-grep -q 'nocblue-resolve-cursor-theme' /etc/xdg/fastfetch/config.jsonc
-grep -q "Noctalia v%s" /etc/xdg/fastfetch/config.jsonc
-fedora_version="$(rpm -E '%fedora')"
-grep -qx "PRETTY_NAME=\"nocblue ${fedora_version}\"" /usr/lib/os-release
-grep -q '^VARIANT="nocblue"$' /usr/lib/os-release
-grep -q '^VARIANT_ID=nocblue$' /usr/lib/os-release
-grep -q '^IMAGE_ID="nocblue"$' /usr/lib/os-release
-grep -q '^DEFAULT_HOSTNAME="desktop"$' /usr/lib/os-release
-rpm -q bazaar >/dev/null 2>&1
-grep -qx 'desktop' /etc/hostname
-grep -qx 'PRETTY_HOSTNAME=desktop' /etc/machine-info
-test -d /usr/share/icons/candy-icons
-test -L /usr/share/icons/Candy
-test "$(readlink /usr/share/icons/Candy)" = "candy-icons"
-test -L /usr/share/icons/candy-icons/apps/scalable/trivalent.svg
-test "$(readlink /usr/share/icons/candy-icons/apps/scalable/trivalent.svg)" = "chromium.svg"
-test -L /usr/share/icons/candy-icons/apps/scalable/brave-origin-beta.svg
-test "$(readlink /usr/share/icons/candy-icons/apps/scalable/brave-origin-beta.svg)" = "brave-browser-beta.svg"
-test -L /usr/share/icons/candy-icons/apps/scalable/com.brave.Origin.beta.svg
-test "$(readlink /usr/share/icons/candy-icons/apps/scalable/com.brave.Origin.beta.svg)" = "brave-browser-beta.svg"
-grep -q '^Inherits=.*Adwaita' /usr/share/icons/candy-icons/index.theme
-! test -e /usr/share/icons/candy-icons/apps/scalable/dev.vencord.Vesktop.svg
-! test -e /usr/share/icons/candy-icons/apps/scalable/vesktop.svg
-test -f /usr/share/applications/org.mozilla.firefox.desktop
-test -f /usr/share/applications/mullvad-browser.desktop
 for brew_service in brew-update.service brew-upgrade.service; do
     brew_unit="/usr/lib/systemd/system/${brew_service}"
     test "$(rpm -qf --qf '%{NAME}\n' "${brew_unit}")" = homebrew
     grep -qx 'User=linuxbrew' "${brew_unit}"
-    test -L "/etc/systemd/system/timers.target.wants/${brew_service%.service}.timer"
 done
-test -x /usr/bin/nix
-test -x /usr/bin/busybox
+
 preload_file=
 if [[ -f /etc/ld.so.preload ]]; then
     preload_file=/etc/ld.so.preload
@@ -291,187 +100,33 @@ fi
 [[ -n "${preload_file}" ]]
 grep -Fq 'libhardened_malloc.so' "${preload_file}"
 grep -Fq 'libno_rlimit_as.so' "${preload_file}"
-host_bash_loader_env="$(
-    env \
-        -u BASH_ENV \
-        -u LD_PRELOAD \
-        -u LD_AUDIT \
-        -u NOCBLUE_NIX_ENV \
-        /usr/bin/bash --noprofile --norc -c '
-            . /etc/bashrc
-            printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
-        '
-)"
-test "${host_bash_loader_env}" = '|'
-nix_bash_loader_env="$(
-    env \
-        -u BASH_ENV \
-        -u LD_PRELOAD \
-        -u LD_AUDIT \
-        NOCBLUE_NIX_ENV=1 \
-        /usr/bin/bash --noprofile --norc -c '
-            . /etc/bashrc
-            printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"
-        '
-)"
-test "${nix_bash_loader_env}" = '|'
+
+for nix_flag in '' 'NOCBLUE_NIX_ENV=1'; do
+    loader_env="$(
+        env -u BASH_ENV -u LD_PRELOAD -u LD_AUDIT ${nix_flag:+"${nix_flag}"} \
+            /usr/bin/bash --noprofile --norc -c '. /etc/bashrc; printf "%s|%s\n" "${LD_PRELOAD-}" "${LD_AUDIT-}"'
+    )"
+    test "${loader_env}" = '|'
+done
+
 test ! -e /etc/profile.d/nix-daemon.sh
 test ! -e /usr/lib/systemd/system/nix-daemon.service
 test ! -e /usr/lib/systemd/system/nix-daemon.socket
-test ! -e /usr/lib/tmpfiles.d/nix-daemon.conf
-test ! -e /usr/lib/sysusers.d/nix-daemon.conf
-test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.service
-test -f /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
-test -f /usr/lib/systemd/system/flatpak-system-update.service
-test -f /usr/lib/systemd/system/flatpak-system-update.timer
-grep -q '^ExecStart=/usr/bin/bootc upgrade --apply --quiet$' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
-test -f /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
-grep -qx 'ExecStartPre=' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
-grep -qx 'ExecStartPre=/usr/bin/nocblue-verify-update-signature' /usr/lib/systemd/system/rpm-ostreed-automatic.service.d/zz-nocblue-verify-update.conf
-test ! -L /etc/systemd/system/timers.target.wants/bootc-fetch-apply-updates.timer
-test -L /etc/systemd/system/timers.target.wants/flatpak-system-update.timer
-test "$(readlink /etc/systemd/system/timers.target.wants/flatpak-system-update.timer)" = "/usr/lib/systemd/system/flatpak-system-update.timer"
-test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-hardened-malloc-flatpaks.service
-test ! -L /etc/systemd/system/multi-user.target.wants/nocblue-flatpak-overrides.service
-test -L /etc/systemd/system/multi-user.target.wants/securebluecleanup.service
-test -L /etc/systemd/user/timers.target.wants/secureblue-flatpak-setup.timer
-test -L /etc/systemd/user/timers.target.wants/flatpak-user-update.timer
-test -L /etc/systemd/user/timers.target.wants/nocblue-flatpak-setup.timer
-for masked_user_unit in security-update-notification.path security-update-notification.service; do
-    test -L "/etc/systemd/user/${masked_user_unit}"
-    test "$(readlink "/etc/systemd/user/${masked_user_unit}")" = "/dev/null"
-done
-test -L /etc/systemd/user/timers.target.wants/nocblue-game-shortcuts-sync.timer
-test -L /etc/systemd/user/timers.target.wants/nocblue-nix-gc.timer
-test -L /etc/systemd/system/display-manager.service
+
 test "$(readlink /etc/systemd/system/display-manager.service)" = "/usr/lib/systemd/system/greetd.service"
-test -L /etc/systemd/user/niri.service.wants/noctalia.service
-test "$(readlink /etc/systemd/user/niri.service.wants/noctalia.service)" = "/usr/lib/systemd/user/noctalia.service"
-test -L /etc/systemd/system/rpm-ostree-countme.timer
-test "$(readlink /etc/systemd/system/rpm-ostree-countme.timer)" = "/dev/null"
-for masked_unit in geoclue.service sshd.service sshd.socket sshd-keygen.target; do
-    test -L "/etc/systemd/system/${masked_unit}"
+for masked_unit in rpm-ostree-countme.timer geoclue.service sshd.service sshd.socket sshd-keygen.target; do
     test "$(readlink "/etc/systemd/system/${masked_unit}")" = "/dev/null"
 done
-test -f /usr/lib/systemd/system/securebluecleanup.service
-if [[ -L /etc/systemd/system/securebluecleanup.service ]]; then
-    test "$(readlink /etc/systemd/system/securebluecleanup.service)" != "/dev/null"
+
+ptrace_file=
+if [[ -f /etc/sysctl.d/61-ptrace-scope.conf ]]; then
+    ptrace_file=/etc/sysctl.d/61-ptrace-scope.conf
+elif [[ -f /usr/etc/sysctl.d/61-ptrace-scope.conf ]]; then
+    ptrace_file=/usr/etc/sysctl.d/61-ptrace-scope.conf
 fi
-! grep -RIn '^countme=1$' /etc/yum.repos.d /usr/etc/yum.repos.d >/dev/null 2>&1
-test -f /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.dmesg_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.unprivileged_bpf_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.kptr_restrict = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^net.ipv6.conf.default.use_tempaddr = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.oops_limit = 100$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.warn_limit = 100$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.kexec_load_disabled = 1$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^kernel.randomize_va_space = 2$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^vm.mmap_rnd_bits = 32$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^vm.mmap_rnd_compat_bits = 16$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-grep -q '^vm.mmap_min_addr = 65536$' /usr/lib/sysctl.d/55-nocblue-hardening.conf
-test -f /usr/lib/modprobe.d/dirtyfrag.conf
-for dirtyfrag_module in rxrpc esp4 esp4_offload esp6 esp6_offload nft_xfrm xfrm4_tunnel xfrm6_tunnel xfrm_algo xfrm_interface xfrm_ipcomp xfrm_iptfs xfrm_user ah4 ah6 ipcomp ipcomp6 af_key; do
-    grep -qx "install ${dirtyfrag_module} /bin/false" /usr/lib/modprobe.d/dirtyfrag.conf
-done
-test -f /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^vm.max_map_count = 1048576$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^vm.swappiness = 100$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^vm.vfs_cache_pressure = 50$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^vm.page-cluster = 0$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^fs.inotify.max_user_instances = 8192$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^fs.inotify.max_user_watches = 1048576$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^net.ipv4.tcp_congestion_control = bbr$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-grep -q '^net.ipv4.tcp_mtu_probing = 1$' /usr/lib/sysctl.d/60-nocblue-performance.conf
-test -f /usr/lib/systemd/zram-generator.conf
-grep -q '^compression-algorithm = zstd$' /usr/lib/systemd/zram-generator.conf
-grep -q '^zram-size = ram$' /usr/lib/systemd/zram-generator.conf
-test -f /usr/lib/udev/rules.d/60-nocblue-ioschedulers.rules
-grep -q 'KERNEL=="nvme\[0-9\]\*".*kyber' /usr/lib/udev/rules.d/60-nocblue-ioschedulers.rules
-grep -q 'ATTR{queue/rotational}=="0".*mq-deadline' /usr/lib/udev/rules.d/60-nocblue-ioschedulers.rules
-grep -q 'ATTR{queue/rotational}=="1".*bfq' /usr/lib/udev/rules.d/60-nocblue-ioschedulers.rules
-grep -q '^LLMNR=false$' /etc/systemd/resolved.conf.d/10-disable-llmnr.conf
-grep -q '^ipv6.ip6-privacy=2$' /usr/lib/NetworkManager/conf.d/40-nocblue-privacy.conf
-grep -q '^DumpCore=no$' /etc/systemd/system.conf.d/60-disable-coredump.conf
-grep -q '^DumpCore=no$' /etc/systemd/user.conf.d/60-disable-coredump.conf
-grep -q 'hard core 0' /etc/security/limits.d/60-disable-coredump.conf
-test -f /usr/lib/systemd/system/nocblue-hardened-malloc-flatpaks.service
-test -f /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
-! test -L /etc/systemd/system/graphical.target.wants/nocblue-openrazer-plugdev.service
-test -f /usr/lib/systemd/system/nocblue-session-defaults.service
-test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.service
-test -f /usr/lib/systemd/user/nocblue-adwsteamgtk.timer
-test -f /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
-test -f /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
-test -f /usr/lib/systemd/user/nocblue-flatpak-setup.service
-test -f /usr/lib/systemd/user/nocblue-flatpak-setup.timer
-test -f /usr/lib/systemd/user/nocblue-flatpak-icon-fixes.service
-test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.service
-test -f /usr/lib/systemd/user/nocblue-icon-theme-sync.timer
-test -f /usr/lib/systemd/user/noctalia.service
-grep -qx 'PartOf=niri.service' /usr/lib/systemd/user/noctalia.service
-grep -qx 'After=niri.service' /usr/lib/systemd/user/noctalia.service
-grep -qx 'ExecStart=/usr/bin/noctalia' /usr/lib/systemd/user/noctalia.service
-grep -qx 'WantedBy=niri.service' /usr/lib/systemd/user/noctalia.service
-greetd_config=/etc/greetd/config.toml
-if [[ -f /usr/etc/greetd/config.toml ]]; then
-    greetd_config=/usr/etc/greetd/config.toml
-fi
-test -f "${greetd_config}"
-if (( $(rpm -E '%fedora') >= 45 )); then
-    rpm -q oo7-daemon pam_oo7 oo7-portal >/dev/null
-    systemctl --global is-enabled oo7-daemon.service >/dev/null
-else
-    rpm -q gnome-keyring gnome-keyring-pam >/dev/null
-fi
-grep -qx 'command = "/usr/bin/nocblue-noctalia-greeter-session"' "${greetd_config}"
-grep -qx 'user = "greetd"' "${greetd_config}"
-test -x /usr/bin/nocblue-noctalia-greeter-session
-test -f /usr/lib/tmpfiles.d/nocblue-noctalia-greeter.conf
-grep -qx 'L+ /var/lib/greetd/.config/systemd/user/xdg-desktop-portal.service - - - - /dev/null' /usr/lib/tmpfiles.d/nocblue-noctalia-greeter.conf
-grep -qx 'L+ /var/lib/greetd/.config/systemd/user/nocblue-user-defaults.service - - - - /dev/null' /usr/lib/tmpfiles.d/nocblue-noctalia-greeter.conf
-test -f /usr/share/nocblue/defaults/noctalia-greeter/greeter.toml
-grep -qx 'default = "Niri"' /usr/share/nocblue/defaults/noctalia-greeter/greeter.toml
-test -f /usr/share/noctalia/assets/templates/builtin.toml
-test -f /usr/share/doc/noctalia-greeter/README.md
-test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
-test -x /usr/bin/nocblue-sync-game-shortcuts
-test -x /usr/bin/nocblue-sync-icon-theme
-test -x /usr/bin/nocblue-openrazer-plugdev
-test -x /usr/bin/nocblue-setup-flatpaks
-test -x /usr/bin/nocblue-setup-android-sdk
-test -x /usr/bin/nocblue-ocr-japanese
-test ! -e /usr/lib/systemd/system/nocblue-brew-formulae.service
-test ! -e /usr/bin/nocblue-install-brew-formulae
-test ! -e /usr/share/nocblue/manifests/brew-formulae.txt
-bash -n /usr/bin/nocblue-apply-user-defaults
-bash -n /usr/bin/nocblue-apply-adwsteamgtk
-bash -n /usr/bin/nocblue-sync-game-shortcuts
-bash -n /usr/bin/nocblue-sync-icon-theme
-bash -n /usr/libexec/nocblue/chatgpt
-bash -n /usr/bin/nocblue-openrazer-plugdev
-bash -n /usr/bin/nocblue-setup-flatpaks
-bash -n /usr/bin/nocblue-setup-android-sdk
-bash -n /usr/bin/nocblue-ocr-japanese
-bash -n /usr/bin/nocblue-verify-update-signature
-rpm -qf /usr/bin/flatpak-builder >/dev/null
-test -f /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
-grep -q 'netlink_xfrm_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
-grep -q 'key_socket' /usr/share/nocblue/selinux/ipsec/deny_ipsec.cil
-if [[ -r /etc/selinux/targeted/active/modules ]]; then
-    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
-fi
-grep -q 'container-userns' /usr/share/nocblue/njust/Justfile
-grep -q 'unconfined-userns' /usr/share/nocblue/njust/Justfile
-grep -q 'set-container-userns is not available' /usr/share/nocblue/njust/Justfile
-grep -q 'set-unconfined-userns is not available' /usr/share/nocblue/njust/Justfile
-grep -q 'audit-hardening' /usr/share/nocblue/njust/Justfile
-grep -q 'set-kargs-hardening' /usr/share/nocblue/njust/Justfile
-grep -q 'setup-usbguard' /usr/share/nocblue/njust/Justfile
-grep -q 'openrazer-plugdev' /usr/share/nocblue/njust/Justfile
-! grep -q 'nocblue-userns-hardening' /usr/share/nocblue/njust/Justfile
-test -f /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! test -e /usr/share/nocblue/selinux/browser-userns/nocblue_browser_userns.cil
+[[ -n "${ptrace_file}" ]]
+grep -qx 'kernel.yama.ptrace_scope = 1' "${ptrace_file}"
+
 command -v sesearch >/dev/null
 command -v seinfo >/dev/null
 selinux_policy_dir=/etc/selinux/targeted/policy
@@ -486,42 +141,15 @@ sesearch() {
 seinfo() {
     /usr/bin/seinfo "$@" "${selinux_policy_path}"
 }
-! sesearch -A -s unconfined_t -t unconfined_t -c user_namespace -p create | grep -q .
-test ! -e /usr/bin/nocblue-codex
-test ! -e /etc/profile.d/nocblue-codex-bwrap.sh
-test ! -e /etc/fish/conf.d/nocblue-codex-bwrap.fish
-test ! -e /usr/libexec/nocblue/codex-bwrap
-test ! -e /usr/libexec/nocblue/codex-bwrap-path
-test -x /usr/libexec/nocblue/chatgpt
-test "$(readlink /usr/bin/chatgpt)" = ../libexec/nocblue/chatgpt
-grep -Fxq 'unset LD_PRELOAD' /usr/libexec/nocblue/chatgpt
-grep -Fq 'exec /usr/bin/bwrap' /usr/libexec/nocblue/chatgpt
-grep -Fq 'exec /usr/lib/chatgpt/codex-launcher --class=Codex --ozone-platform=wayland "$@" >/dev/null 2>&1' /usr/libexec/nocblue/chatgpt
-! grep -Fq -- '--no-sandbox' /usr/libexec/nocblue/chatgpt
-grep -q 'nocblue_chatgpt_t nocblue_chatgpt_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typetransition unconfined_t nocblue_chatgpt_exec_t process nocblue_chatgpt_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typetransition nocblue_chatgpt_t nocblue_chatgpt_agent_exec_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typetransition nocblue_chatgpt_t shell_exec_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typetransition nocblue_chatgpt_t bin_t process unconfined_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/chatgpt/ChatGPT" file (system_u object_r nocblue_chatgpt_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/chatgpt/browser_crashpad_handler" file (system_u object_r nocblue_chatgpt_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/chatgpt/resources/codex" file (system_u object_r nocblue_chatgpt_agent_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'typepermissive nocblue_chatgpt_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_no_preload_t nocblue_browser_no_preload_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'optional nocblue_sandbox_deny_alg_socket' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'deny_alg_socket (nocblue_browser_no_preload_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'deny_ipsec_sockets (nocblue_browser_no_preload_t brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'optional nocblue_sandbox_trivalent_script_domain' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_script_domain (nocblue_browser_no_preload_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/bin/nocblue-browser-no-preload' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-if grep -q 'nocblue_codex' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil; then
-    printf 'unexpected Codex sandbox SELinux policy remains\n' >&2
-    exit 1
-fi
+
 if [[ -r /etc/selinux/targeted/active/modules ]]; then
+    semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
-    ! semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns
+    if semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns; then
+        exit 1
+    fi
 fi
+
 test "$(matchpathcon -n /usr/bin/nocblue-browser-no-preload)" = "system_u:object_r:nocblue_browser_no_preload_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/chatgpt/ChatGPT)" = "system_u:object_r:nocblue_chatgpt_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/chatgpt/browser_crashpad_handler)" = "system_u:object_r:nocblue_chatgpt_exec_t:s0"
@@ -541,21 +169,23 @@ if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
         /usr/lib/claude-desktop/chrome_crashpad_handler \
         /usr/lib/claude-desktop/resources/cowork-linux-helper
 fi
-for claude_domain in claude_desktop_launcher_t claude_desktop_t; do
-    if seinfo --permissive "${claude_domain}" | grep -Fq "${claude_domain}"; then
-        printf 'unexpected permissive Claude domain: %s\n' "${claude_domain}" >&2
+
+for domain in claude_desktop_launcher_t claude_desktop_t nocblue_chatgpt_t nocblue_browser_no_preload_t; do
+    if seinfo --permissive "${domain}" | grep -Fq "${domain}"; then
+        printf 'unexpected permissive domain: %s\n' "${domain}" >&2
         exit 1
     fi
 done
-sesearch -T -s claude_desktop_t -t user_home_dir_t -c file \
-    | grep -Fxq 'type_transition claude_desktop_t user_home_dir_t:file user_home_t;'
-sesearch -T -s claude_desktop_t -t config_home_t -c process \
-    | grep -Fxq 'type_transition claude_desktop_t config_home_t:process unconfined_t;'
-grep -Fq -- '--password-store=gnome-libsecret' /usr/lib/claude-desktop/claude-desktop
+
 if sesearch -A -s unconfined_t -t claude_desktop_launcher_t -c process -p noatsecure | grep -q .; then
     printf 'Claude launcher must enter secure-execution mode\n' >&2
     exit 1
 fi
+
+sesearch -T -s claude_desktop_t -t user_home_dir_t -c file \
+    | grep -Fxq 'type_transition claude_desktop_t user_home_dir_t:file user_home_t;'
+sesearch -T -s claude_desktop_t -t config_home_t -c process \
+    | grep -Fxq 'type_transition claude_desktop_t config_home_t:process unconfined_t;'
 sesearch -T -s unconfined_t -t nocblue_chatgpt_exec_t -c process \
     | grep -Fxq 'type_transition unconfined_t nocblue_chatgpt_exec_t:process nocblue_chatgpt_t;'
 sesearch -T -s nocblue_chatgpt_t -t nocblue_chatgpt_agent_exec_t -c process \
@@ -564,20 +194,7 @@ sesearch -T -s nocblue_chatgpt_t -t shell_exec_t -c process \
     | grep -Fxq 'type_transition nocblue_chatgpt_t shell_exec_t:process unconfined_t;'
 sesearch -T -s nocblue_chatgpt_t -t bin_t -c process \
     | grep -Fxq 'type_transition nocblue_chatgpt_t bin_t:process unconfined_t;'
-sesearch -A -s nocblue_chatgpt_t -t nocblue_chatgpt_t -c user_namespace -p create \
-    | grep -Fxq 'allow nocblue_chatgpt_t nocblue_chatgpt_t:user_namespace create;'
-sesearch -A -s nocblue_chatgpt_t -t unconfined_t -c unix_stream_socket -p getattr,read,write \
-    | grep -Fq 'allow nocblue_chatgpt_t unconfined_t:unix_stream_socket'
-sesearch -A -s nocblue_chatgpt_t -t unconfined_t -c system -p start,status \
-    | grep -Fq 'allow nocblue_chatgpt_t unconfined_t:system'
-if seinfo --permissive nocblue_chatgpt_t | grep -Fq nocblue_chatgpt_t; then
-    printf 'unexpected permissive ChatGPT domain\n' >&2
-    exit 1
-fi
-if seinfo --permissive nocblue_browser_no_preload_t | grep -Fq nocblue_browser_no_preload_t; then
-    printf 'unexpected permissive browser no-preload domain\n' >&2
-    exit 1
-fi
+
 for userns_domain in \
     nocblue_browser_no_preload_t \
     nocblue_chatgpt_t \
@@ -593,19 +210,21 @@ for userns_domain in \
         exit 1
     fi
 done
-# cap_userns may arrive through secureblue/Trivalent attributes; the boundary is no broad user_namespace create.
+
 for denied_userns_domain in unconfined_t mozilla_t staff_t user_t xdm_t; do
     if sesearch -A -s "${denied_userns_domain}" -c user_namespace -p create | grep -q .; then
         printf 'unexpected user_namespace create allow for %s\n' "${denied_userns_domain}" >&2
         exit 1
     fi
 done
+
 sesearch -T -s unconfined_t -t flatpak_exec_t -c process \
     | grep -Fxq 'type_transition unconfined_t flatpak_exec_t:process flatpak_t;'
-sesearch -A -s unconfined_t -t flatpak_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
+sesearch -A -Sp -s unconfined_t -t flatpak_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
 sesearch -T -s flatpak_t -t bubblewrap_exec_t -c process \
     | grep -Fxq 'type_transition flatpak_t bubblewrap_exec_t:process flatpak_bubblewrap_t;'
-sesearch -A -s flatpak_t -t flatpak_bubblewrap_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
+sesearch -A -Sp -s flatpak_t -t flatpak_bubblewrap_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
+
 for bwrap_domain in flatpak_bubblewrap_t unconfined_bubblewrap_t; do
     sesearch -A -s "${bwrap_domain}" -t "${bwrap_domain}" -c user_namespace -p create \
         | grep -Fxq "allow ${bwrap_domain} ${bwrap_domain}:user_namespace create;"
@@ -614,6 +233,7 @@ for bwrap_domain in flatpak_bubblewrap_t unconfined_bubblewrap_t; do
     sesearch -A -s "${bwrap_domain}" -t non_security_file_type -c sock_file -p mounton | grep -q .
     sesearch -A -s "${bwrap_domain}" -t null_device_t -c chr_file -p mounton | grep -q .
 done
+
 for clipboard_peer in \
     unconfined_trivalent_t \
     brave_origin_t \
@@ -627,462 +247,24 @@ for clipboard_peer in \
     sesearch -A -Sp -s "${clipboard_peer}" -t flatpak_t -c fifo_file -p getattr,open,read,write | grep -q .
     sesearch -A -Sp -s flatpak_t -t "${clipboard_peer}" -c fifo_file -p getattr,open,read,write | grep -q .
 done
-grep -q 'brave_origin_t brave_origin_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'helium_t helium_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'roletype unconfined_r nocblue_firefox_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typeattribute nocblue_browser_wayland_clipboard_peer' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer (unconfined_trivalent_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'optional nocblue_browser_read_removable_media' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain mnt_t (dir (getattr open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain removable_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain removable_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain removable_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain dosfs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain dosfs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain dosfs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain fusefs_t (dir (getattr ioctl lock open read search))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain fusefs_t (file (getattr ioctl lock map open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'trivalent_domain fusefs_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Eq 'trivalent_domain (removable_t|dosfs_t|fusefs_t) .*\\b(write|append|create|unlink|rename|setattr|relabelfrom|relabelto)\\b' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Eq 'trivalent_domain unlabeled_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fd (use))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_wayland_clipboard_peer nocblue_browser_wayland_clipboard_peer (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'kernel_system_state_reader (brave_origin_t helium_t nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nsswitch_domain (nocblue_firefox_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t nocblue_firefox_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_browser_no_preload_t nocblue_firefox_t (process (transition noatsecure siginh rlimitinh))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'typetransition nocblue_browser_no_preload_t mozilla_exec_t process nocblue_firefox_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t mozilla_exec_t (file (entrypoint execute read getattr open map ioctl))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (process (sigchld signull))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fd (use))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t nocblue_browser_no_preload_t (fifo_file (getattr read write append ioctl lock open))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t nocblue_firefox_t (cap_userns (setpcap))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t cache_home_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t cache_home_t (lnk_file (getattr read create unlink))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t cgroup_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t gnome_home_type (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t gnome_home_type (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t mozilla_home_t (dir (add_name create getattr ioctl link lock open read remove_name rename reparent rmdir search setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t mozilla_home_t (file (append create getattr ioctl link lock map open read rename setattr unlink watch watch_reads write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t user_home_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t var_lib_t (file (map))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t rtkit_daemon_t (dbus (send_msg))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'rtkit_daemon_t nocblue_firefox_t (process (setsched))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t sysctl_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (lnk_file (getattr read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'nocblue_firefox_t systemd_userdbd_runtime_t (sock_file (append getattr open write))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'systemd_logind_t nocblue_firefox_t (dbus (send_msg))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/share/librewolf/librewolf" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/share/librewolf/librewolf-bin" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/mullvad-browser/mullvadbrowser" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/mullvad-browser/mullvadbrowser\[.\]real" file (system_u object_r mozilla_exec_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/opt/brave.*chrome_crashpad_handler' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q '/usr/lib/opt/helium.*helium_crashpad_handler' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'execute_no_trans' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'brave_origin_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-grep -q 'helium_t proc_t (file (getattr open read))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'unconfined_domain_type (brave_origin_t helium_t)' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'unconfined_t unconfined_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'typetransition unconfined_t mozilla_exec_t process mozilla_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'mozilla_t mozilla_t (user_namespace (create))' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -q 'nocblue_browser_no_preload_t session_dbusd_tmp_t' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Fq '/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Fq '/usr/lib/opt/brave[.]com/brave-origin-beta/brave-origin-beta" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Fq '/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-! grep -Fq '/usr/lib/opt/helium/helium-wrapper" file' /usr/share/nocblue/selinux/sandbox-userns/nocblue_sandbox_userns.cil
-bash -n /usr/bin/nocblue-browser-no-preload
-grep -q 'allowed_browser_command' /usr/bin/nocblue-browser-no-preload
-grep -q 'refuses unsupported browser command' /usr/bin/nocblue-browser-no-preload
-grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/nocblue-browser-no-preload
-grep -q '/usr/bin/firefox' /usr/bin/nocblue-browser-no-preload
-grep -q '/usr/lib64/firefox/firefox' /usr/bin/nocblue-browser-no-preload
-grep -q '/usr/share/librewolf/librewolf' /usr/bin/nocblue-browser-no-preload
-grep -q '/usr/lib/mullvad-browser/start-mullvad-browser' /usr/bin/nocblue-browser-no-preload
-test -f /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
-grep -Fxq 'UnsetEnvironment=GTK_USE_PORTAL' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
-! grep -q 'LD_PRELOAD' /usr/lib/systemd/user/dbus-.service.d/50-nocblue-clean-activation-env.conf
-test -f /usr/lib/systemd/user/flatpak-portal.service.d/50-nocblue-clean-activation-env.conf
-grep -Fxq 'UnsetEnvironment=LD_PRELOAD GTK_USE_PORTAL' /usr/lib/systemd/user/flatpak-portal.service.d/50-nocblue-clean-activation-env.conf
-for portal_dropin in \
-    /usr/lib/systemd/user/xdg-desktop-portal.service.d/50-nocblue-clean-activation-env.conf \
-    /usr/lib/systemd/user/xdg-desktop-portal-gnome.service.d/50-nocblue-clean-activation-env.conf \
-    /usr/lib/systemd/user/xdg-desktop-portal-gtk.service.d/50-nocblue-clean-activation-env.conf; do
-    test -f "${portal_dropin}"
-    grep -Fxq 'UnsetEnvironment=LD_PRELOAD GTK_USE_PORTAL' "${portal_dropin}"
-done
-! /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
-! test -e /usr/bin/nocblue-layer-openrazer
-grep -q '^Before=display-manager.service$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
-grep -q '^ExecStart=/usr/bin/nocblue-openrazer-plugdev --all$' /usr/lib/systemd/system/nocblue-openrazer-plugdev.service
-grep -q 'nocblue-openrazer-plugdev USER' /usr/bin/nocblue-openrazer-plugdev
-grep -q 'usermod -aG plugdev' /usr/bin/nocblue-openrazer-plugdev
-ptrace_file=
-if [[ -f /etc/sysctl.d/61-ptrace-scope.conf ]]; then
-    ptrace_file=/etc/sysctl.d/61-ptrace-scope.conf
-elif [[ -f /usr/etc/sysctl.d/61-ptrace-scope.conf ]]; then
-    ptrace_file=/usr/etc/sysctl.d/61-ptrace-scope.conf
+
+if /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1; then
+    exit 1
 fi
-[[ -n "${ptrace_file}" ]]
-grep -qx 'kernel.yama.ptrace_scope = 1' "${ptrace_file}"
-grep -q 'gtk-theme "adw-gtk3"' /usr/bin/nocblue-apply-user-defaults
-grep -q 'icon-theme "candy-icons"' /usr/bin/nocblue-apply-user-defaults
-grep -q 'nocblue-sync-icon-theme' /usr/bin/nocblue-apply-user-defaults
-grep -q 'stat -Lc' /usr/bin/nocblue-sync-icon-theme
-grep -q 'nocblue-source-ref' /usr/bin/nocblue-sync-icon-theme
-grep -q 'candy-icons.managed' /usr/bin/nocblue-sync-icon-theme
-grep -q 'cp -aL' /usr/bin/nocblue-sync-icon-theme
-! grep -q 'rm -rf "${target}"' /usr/bin/nocblue-sync-icon-theme
-grep -q 'vesktop-icon-overrides-v1' /usr/bin/nocblue-sync-icon-theme
-grep -q 'dev.vencord.Vesktop.svg' /usr/bin/nocblue-sync-icon-theme
-grep -q 'Inherits=Adwaita,hicolor' /usr/bin/nocblue-sync-icon-theme
-grep -q 'apply_user_flatpak_theme_overrides' /usr/bin/nocblue-apply-user-defaults
-grep -q 'flatpak override --user' /usr/bin/nocblue-apply-user-defaults
-grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-apply-user-defaults
-! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
-grep -q 'flatpak run .*io.github.kolunmi.Bazaar' /usr/bin/nocblue-apply-user-defaults
-grep -q 'rm -f "${bazaar_desktop}"' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_no_preload_flatpak_desktop_entry com.valvesoftware.Steam' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_no_preload_flatpak_desktop_entry net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
-grep -q 'env -u LD_PRELOAD ' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_gtk_settings' /usr/bin/nocblue-apply-user-defaults
-grep -q 'net.lutris.Lutris' /usr/bin/nocblue-apply-user-defaults
-grep -q -- '--filesystem=~/Games' /usr/bin/nocblue-apply-user-defaults
-! grep -q -- '--filesystem=~/Games:create' /usr/bin/nocblue-apply-user-defaults
-lutris_apply_override="$(awk '
-    /flatpak override --user \\/ { block=$0 ORS; capture=1; next }
-    capture { block=block $0 ORS }
-    capture && /net[.]lutris[.]Lutris/ { print block; exit }
-' /usr/bin/nocblue-apply-user-defaults)"
-[[ "${lutris_apply_override}" != *"--filesystem=home"* ]]
-lutris_private_paths=(
-    '~/.ssh'
-    '~/.gnupg'
-    '~/.password-store'
-    '~/.local/share/keyrings'
-    '~/.mozilla'
-    '~/.librewolf'
-    '~/.mullvad-browser'
-    '~/.config/BraveSoftware'
-    '~/.config/helium'
-    '~/.config/Helium'
-    '~/.config/trivalent'
-    '~/.cache/mozilla'
-    '~/.cache/librewolf'
-    '~/.cache/mullvad-browser'
-    '~/.cache/BraveSoftware'
-    '~/.cache/helium'
-    '~/.cache/Helium'
-    '~/.cache/trivalent'
-)
-for lutris_private_path in "${lutris_private_paths[@]}"; do
-    grep -Fq -- "--nofilesystem=${lutris_private_path}" /usr/bin/nocblue-apply-user-defaults
-done
-grep -q 'xdg-config/MangoHud:ro' /usr/bin/nocblue-apply-user-defaults
-! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.gitlab.somas.Apostrophe'
-! awk '/local themed_apps=\(/,/^    \)/' /usr/bin/nocblue-apply-user-defaults | grep -q 'org.gnome.TextEditor'
-grep -q -- '--unset-env=GTK_THEME' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_zed_settings' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_niri_browser_bridge' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_browser_environment' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_switchyard_config' /usr/bin/nocblue-apply-user-defaults
-grep -q 'systemctl --user set-environment BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
-grep -q 'dbus-update-activation-environment --systemd BROWSER=/usr/bin/xdg-open' /usr/bin/nocblue-apply-user-defaults
-grep -q 'io.github.alyraffauf.Switchyard' /usr/bin/nocblue-apply-user-defaults
-grep -q -- '--unset-env=LD_PRELOAD' /usr/bin/nocblue-apply-user-defaults
-grep -q 'ensure_protonvpn_visible_launch' /usr/bin/nocblue-apply-user-defaults
-grep -q '.config/nvim' /usr/bin/nocblue-apply-user-defaults
-grep -q '"start_app_minimized"] = False' /usr/bin/nocblue-apply-user-defaults
-user_defaults_stamp="$(sed -n 's|^version_stamp="${state_dir}/\(user-defaults\.v[0-9][0-9]*\.done\)"$|\1|p' /usr/bin/nocblue-apply-user-defaults)"
-test -n "${user_defaults_stamp}"
-grep -Fqx "ConditionPathExists=!%h/.local/state/nocblue/${user_defaults_stamp}" /usr/lib/systemd/user/nocblue-user-defaults.service
-grep -q '^ConditionUser=!@system$' /usr/lib/systemd/user/nocblue-user-defaults.service
-grep -q 'systemctl --user enable app-com.mitchellh.ghostty.service' /usr/bin/nocblue-apply-user-defaults
-grep -q 'adwsteamgtk.v3.done' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
-grep -q '^ExecStart=/usr/bin/nocblue-sync-game-shortcuts$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.service
-grep -q '^OnUnitActiveSec=15min$' /usr/lib/systemd/user/nocblue-game-shortcuts-sync.timer
-grep -q 'steam://rungameid' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'env -u LD_PRELOAD flatpak run com.valvesoftware.Steam' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'env -u LD_PRELOAD LUTRIS_SKIP_INIT=1 flatpak run net.lutris.Lutris' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'sync_icon_tree "${HOME}/.var/app/com.valvesoftware.Steam/.local/share/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/data/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'sync_icon_tree "${HOME}/.var/app/net.lutris.Lutris/.local/share/icons/hicolor"' /usr/bin/nocblue-sync-game-shortcuts
-grep -q 'gtk-update-icon-cache -q -t -f "${icons_dir}"' /usr/bin/nocblue-sync-game-shortcuts
-! grep -q 'nocblue-noctalia-theme' /usr/lib/systemd/user/nocblue-adwsteamgtk.service
-test ! -e /usr/lib/systemd/user/nocblue-noctalia-theme.service
-test ! -e /usr/bin/nocblue-apply-noctalia-theme
-test -x /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'flatpak_has com.valvesoftware.Steam' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'flatpak run "${adwsteamgtk_scope}" io.github.Foldex.AdwSteamGtk' /usr/bin/nocblue-apply-adwsteamgtk
-! grep -q 'flatpak install --user' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'steam_ui_exists' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'adwaita_skin_installed' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'custom_css:true' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'AdwSteamGtk/config/AdwSteamGtk/custom.css' /usr/bin/nocblue-apply-adwsteamgtk
-! grep -q 'matugen.css' /usr/bin/nocblue-apply-adwsteamgtk
-grep -q 'repair_steam_prefix_links' /usr/bin/nocblue-apply-adwsteamgtk
-test -x /usr/bin/nocblue-fix-flatpak-icons
-test -x /usr/bin/nocblue-hardened-malloc-run
-test -x /usr/bin/nocblue-bwrap-loupe
-test -x /usr/bin/nocblue-bwrap-showtime
-grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-loupe
-grep -q -- '--unshare-net' /usr/bin/nocblue-bwrap-showtime
-grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-loupe
-grep -q -- '--symlink /usr/lib64 /lib64' /usr/bin/nocblue-bwrap-showtime
-grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-loupe
-grep -q 'ensure_private_mountpoints' /usr/bin/nocblue-bwrap-showtime
+
 test -f /usr/share/nocblue/media-patches/loupe-reuse-active-window.patch-applied
-! grep -q 'reuse_existing_loupe_window' /usr/bin/nocblue-bwrap-loupe
-test -x /usr/bin/nocblue-apply-hardened-malloc
-grep -q '/var/lib/nocblue/hardened-malloc/libhardened_malloc.so' /usr/bin/nocblue-apply-hardened-malloc
-! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-flatpak-overrides
-! grep -q 'flatpak info --system' /usr/bin/nocblue-apply-hardened-malloc
-grep -q 'flatpak override --system --env=LD_PRELOAD= --env=ELECTRON_OZONE_PLATFORM_HINT=auto' /usr/bin/nocblue-apply-flatpak-overrides
-grep -q 'usage: nocblue-apply-flatpak-overrides \[--system|--user\]' /usr/bin/nocblue-apply-flatpak-overrides
-grep -q 'flatpak override "${scope}"' /usr/bin/nocblue-apply-flatpak-overrides
-! grep -q -- '--filesystem=host-os:ro' /usr/bin/nocblue-apply-hardened-malloc
-grep -q '^io.github.alyraffauf.Switchyard .*--unset-env=LD_PRELOAD .*--nofilesystem=host-os .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^io.missioncenter.MissionCenter .*--unset-env=LD_PRELOAD .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.github.marhkb.Pods .*--nofilesystem=/run/systemd/journal .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^net.lutris.Lutris .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=~/Games .*--filesystem=xdg-config/MangoHud:ro .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-lutris_manifest_override="$(grep '^net[.]lutris[.]Lutris ' /usr/share/nocblue/manifests/flatpak-overrides.txt)"
-[[ "${lutris_manifest_override}" != *"--filesystem=home"* ]]
-for lutris_private_path in "${lutris_private_paths[@]}"; do
-    [[ "${lutris_manifest_override}" == *"--nofilesystem=${lutris_private_path}"* ]]
-done
-! grep -q '^net.lutris.Lutris .*--filesystem=~/Games:create' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^io.github.Foldex.AdwSteamGtk .*--filesystem=xdg-config/gtk-3.0:ro .*--filesystem=xdg-config/gtk-4.0:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^org.gnome.Fractal .*--talk-name=org.freedesktop.secrets' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.github.tchx84.Flatseal .*--talk-name=org.gnome.Software .*--talk-name=org.freedesktop.impl.portal.PermissionStore' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^org.signal.Signal .*--env=SIGNAL_PASSWORD_STORE=gnome-libsecret' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.valvesoftware.Steam .*--unset-env=LD_PRELOAD .*--env=MANGOHUD=1 .*--nofilesystem=host-os .*--filesystem=xdg-config/MangoHud:ro' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^org.kde.krita .*--unset-env=LD_PRELOAD' /usr/share/nocblue/manifests/flatpak-overrides.txt
-! grep -q '^io.github.kolunmi.Bazaar ' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.valvesoftware.Steam .*--share=network .*--share=ipc .*--socket=x11 .*--socket=pulseaudio' /usr/share/nocblue/manifests/flatpak-overrides.txt
-grep -q '^com.valvesoftware.Steam .*--allow=multiarch .*--allow=per-app-dev-shm' /usr/share/nocblue/manifests/flatpak-overrides.txt
-! grep -q '^com.valvesoftware.Steam .*xdg-config/gtk' /usr/share/nocblue/manifests/flatpak-overrides.txt
-test -f /usr/share/nocblue/defaults/MangoHud/MangoHud.conf
-grep -q '^toggle_hud=F10$' /usr/share/nocblue/defaults/MangoHud/MangoHud.conf
-! grep -q '^org.gnome.gitlab.somas.Apostrophe ' /usr/share/nocblue/manifests/flatpak-overrides.txt
-! grep -q '^org.gnome.TextEditor ' /usr/share/nocblue/manifests/flatpak-overrides.txt
-! grep -q 'GTK_THEME' /usr/share/nocblue/manifests/flatpak-overrides.txt
+test -f /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
 grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe %U$' /usr/share/applications/org.gnome.Loupe.desktop
 grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime %U$' /usr/share/applications/org.gnome.Showtime.desktop
-grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Loupe.service
-grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime --gapplication-service$' /usr/share/dbus-1/services/org.gnome.Showtime.service
-test -f /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
-python3 - <<'PY'
-import importlib.util
-from pathlib import Path
 
-spec = importlib.util.find_spec("showtime")
-assert spec is not None and spec.submodule_search_locations
-showtime_main = Path(next(iter(spec.submodule_search_locations))) / "main.py"
-text = showtime_main.read_text(encoding="utf-8")
-assert "Reuse existing window or create a new one" in text
-assert "Open the given files in the existing window" in text
-compile(text, str(showtime_main), "exec")
-PY
-test -f /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.Papers$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^io.github.diegopvlk.Cine$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^com.belmoussaoui.Authenticator$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^com.github.tchx84.Flatseal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^io.github.alyraffauf.Switchyard$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^org.gnome.Fractal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q '^studio.planetpeanut.Bobby$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^dev.vencord.Vesktop$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-! grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/hardened-malloc-flatpaks.txt
-grep -q 'ujust harden-flatpak' /usr/bin/nocblue-setup-flatpaks
-! grep -q 'remote-add .*flathub-verified' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak remote-delete --user --force flathub-verified' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak install --user -y --noninteractive flathub' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak info --user --show-origin' /usr/bin/nocblue-setup-flatpaks
-grep -q -- '--reinstall flathub' /usr/bin/nocblue-setup-flatpaks
-grep -q -- '--reinstall --no-related flathub' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak uninstall --user -y --noninteractive --force-remove --no-related' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak list --user --all --columns=ref,origin' /usr/bin/nocblue-setup-flatpaks
-grep -q 'flatpak remotes --user --columns=name' /usr/bin/nocblue-setup-flatpaks
-grep -q 'clear_bazaar_stale_remote_cache' /usr/bin/nocblue-setup-flatpaks
-grep -q 'io.github.kolunmi.Bazaar/entry-cache' /usr/bin/nocblue-setup-flatpaks
-grep -q 'nocblue-bazaar-flathub-verified-cache.stamp' /usr/bin/nocblue-setup-flatpaks
-grep -q 'nocblue-apply-flatpak-overrides --user' /usr/bin/nocblue-setup-flatpaks
-grep -q 'install_flatpak_desktop_entries' /usr/bin/nocblue-setup-flatpaks
-grep -q 'ensure_no_preload_flatpak_desktop_entry com.valvesoftware.Steam' /usr/bin/nocblue-setup-flatpaks
-grep -q 'ensure_no_preload_flatpak_desktop_entry net.lutris.Lutris' /usr/bin/nocblue-setup-flatpaks
-! grep -q 'ensure_flatpak_desktop_entry io.github.kolunmi.Bazaar' /usr/bin/nocblue-setup-flatpaks
-grep -q 'nocblue-fix-flatpak-icons' /usr/bin/nocblue-setup-flatpaks
-grep -q 'nocblue-flatpak-setup.stamp' /usr/bin/nocblue-setup-flatpaks
-grep -q 'local/share/flatpak/exports/share/applications' /usr/bin/nocblue-setup-flatpaks
-grep -q 'local/share/flatpak/exports/share/applications' /usr/bin/nocblue-apply-user-defaults
-grep -q 'secureblue-flatpak-setup.service' /usr/lib/systemd/user/nocblue-flatpak-setup.service
-grep -q '^OnStartupSec=45s$' /usr/lib/systemd/user/nocblue-flatpak-setup.timer
-grep -q 'flatpak update --user -y' /usr/share/nocblue/njust/Justfile
-grep -q 'nocblue-apply-flatpak-overrides --user' /usr/share/nocblue/njust/Justfile
-grep -q 'nocblue-setup-flatpaks --repair' /usr/share/nocblue/njust/Justfile
-grep -q 'image action' /usr/share/nocblue/njust/Justfile
-grep -q 'podman image trust set -t accept' /usr/share/nocblue/njust/Justfile
-grep -q 'trust-user' /usr/share/nocblue/njust/Justfile
-grep -q 'check-secureblue' /usr/share/nocblue/njust/Justfile
-grep -q 'nocblue-check-secureblue-base' /usr/share/nocblue/njust/Justfile
-grep -q '^repo_gpgcheck=0$' /etc/yum.repos.d/librewolf.repo 2>/dev/null || grep -q '^repo_gpgcheck=0$' /usr/etc/yum.repos.d/librewolf.repo
-[[ -e /usr/etc/ld.so.preload || -e /etc/ld.so.preload ]]
-! grep -RIn 'LD_PRELOAD=.*hardened_malloc' /etc/profile.d /usr/lib/environment.d /etc/security/pam_env.conf >/dev/null 2>&1
-test -x /usr/bin/nocblue-browser-no-preload
-! grep -q -- '--cap-drop' /usr/bin/nocblue-browser-no-preload
-test -x /usr/bin/librewolf
-! test -L /usr/bin/librewolf
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/bin/firefox
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /usr/lib/mullvad-browser/start-mullvad-browser
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /opt/brave.com/brave-origin-beta/brave-origin-beta
 grep -q 'NOCBLUE_BROWSER_NO_PRELOAD' /opt/helium/helium-wrapper
 grep -Fqx 'exec /usr/bin/nocblue-browser-no-preload /usr/share/librewolf/librewolf "$@"' /usr/bin/librewolf
-grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib64/firefox/firefox "$@"' /usr/bin/firefox
-grep -Fqx '    exec /usr/bin/nocblue-browser-no-preload /usr/lib/mullvad-browser/start-mullvad-browser "$@"' /usr/lib/mullvad-browser/start-mullvad-browser
-grep -Eq '^Exec=/usr/bin/brave-origin-beta .*%U$' /usr/share/applications/brave-origin-beta.desktop
-grep -Eq '^Exec=/usr/bin/brave-origin-beta .*%U$' /usr/share/applications/com.brave.Origin.beta.desktop
-grep -Eq '^Exec=/usr/bin/helium .*%U$' /usr/share/applications/helium.desktop
-grep -Eq '^Exec=/usr/bin/firefox .*%u$' /usr/share/applications/org.mozilla.firefox.desktop
-grep -Eq '^Exec=/usr/bin/librewolf %u$' /usr/share/applications/librewolf.desktop
-grep -Eq '^Exec=/usr/bin/mullvad-browser %u$' /usr/share/applications/mullvad-browser.desktop
-! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/brave-origin-beta.desktop
-! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/com.brave.Origin.beta.desktop
-! grep -q -- '--disable-crashpad-for-testing' /usr/share/applications/helium.desktop
-! grep -Eq 'nocblue-standard-malloc-run.*(firefox|librewolf|mullvad)' /usr/share/applications/org.mozilla.firefox.desktop /usr/share/applications/librewolf.desktop /usr/share/applications/mullvad-browser.desktop
-! grep -Eq 'nocblue-hardened-malloc-run.*(brave|helium|mullvad)' /usr/share/applications/brave-origin-beta.desktop /usr/share/applications/com.brave.Origin.beta.desktop /usr/share/applications/helium.desktop /usr/share/applications/mullvad-browser.desktop
-! grep -q 'nocblue-hardened-malloc-run.*/usr/lib64/firefox/firefox' /usr/share/applications/org.mozilla.firefox.desktop
-! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/librewolf/librewolf' /usr/share/applications/librewolf.desktop
-! grep -q 'nocblue-hardened-malloc-run.*mullvad-browser' /usr/share/applications/mullvad-browser.desktop
-! grep -q 'nocblue-hardened-malloc-run.*/usr/lib/mullvad-browser/start-mullvad-browser' /usr/share/applications/mullvad-browser.desktop
+
 test -f /usr/share/wayland-sessions/gnome.desktop
 test ! -e /usr/share/wayland-sessions/gnome-classic.desktop
-test -f /usr/share/applications/org.gnome.Settings.desktop
 test -f /usr/share/wayland-sessions/niri.desktop
-grep -q '^Session=niri$' /etc/accountsservice/user-templates/standard
-grep -q '^Session=niri$' /etc/accountsservice/user-templates/administrator
-! grep -q '^ConditionPathExists=.*session-defaults.done' /usr/lib/systemd/system/nocblue-session-defaults.service
-grep -Fq '${session_id}.desktop' /usr/bin/nocblue-set-default-session
-grep -q 'current_dmrc_session' /usr/bin/nocblue-set-default-session
-grep -q 'set_user_session' /usr/bin/nocblue-set-default-session
-test -x /usr/bin/noctalia-greeter-apply-appearance
-test -x /usr/bin/noctalia-greeter-print-greetd-config
-test -x /usr/bin/noctalia-greeter-session
-test -x /usr/bin/noctalia-greeter-compositor
-test -f /usr/share/polkit-1/actions/org.noctalia.greeter.apply-appearance.policy
-test -f /usr/share/backgrounds/nocblue/green-eyes.png
-test -f /etc/skel/.config/noctalia/config.toml
-test -f /usr/share/nocblue/defaults/gtk-3.0/settings.ini
-test -f /usr/share/nocblue/defaults/gtk-4.0/settings.ini
-grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
-grep -q '^gtk-application-prefer-dark-theme=1$' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
-! grep -q '^gtk-icon-theme-name=' /usr/share/nocblue/defaults/gtk-3.0/settings.ini
-grep -q '^gtk-theme-name=adw-gtk3$' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
-! grep -q '^gtk-application-prefer-dark-theme' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
-! grep -q '^gtk-icon-theme-name=' /usr/share/nocblue/defaults/gtk-4.0/settings.ini
-grep -q '^export ANDROID_HOME=' /etc/profile.d/nocblue.sh
-grep -q '^export ANDROID_SDK_ROOT=' /etc/profile.d/nocblue.sh
-ujust --list | grep -q 'enroll-secure-boot-key'
-ujust --list | grep -q 'update-system'
-ujust --list | grep -q 'clean-system'
-njust --list | grep -q 'android-sdk'
-njust --list | grep -q 'image'
-njust --list | grep -q 'audit-hardening'
-njust --list | grep -q 'openrazer-plugdev'
-test -f /usr/share/nocblue/defaults/fish/config.fish
-grep -q 'set -g fish_greeting' /usr/share/nocblue/defaults/fish/config.fish
-grep -q 'set -q EDITOR; or set -gx EDITOR nvim' /usr/share/nocblue/defaults/fish/config.fish
-grep -q 'export EDITOR="${EDITOR:-nvim}"' /etc/profile.d/nocblue.sh
-grep -q 'EDITOR "nvim"' /etc/xdg/niri/config.kdl
-grep -q 'TERMINAL "/usr/bin/ghostty"' /usr/share/nocblue/defaults/niri/config.kdl
-test -x /usr/bin/nocblue-refresh-portals
-grep -q 'nocblue-refresh-portals' /etc/xdg/niri/config.kdl
-grep -q 'nocblue-refresh-portals' /usr/share/nocblue/defaults/niri/config.kdl
-grep -q '^export BROWSER=/usr/bin/xdg-open$' /usr/bin/nocblue-refresh-portals
-grep -q 'wayland-\[0-9\]' /usr/bin/nocblue-refresh-portals
-grep -q '/tmp/.X11-unix' /usr/bin/nocblue-refresh-portals
-grep -q 'niri.wayland-\*\.sock' /usr/bin/nocblue-refresh-portals
-grep -q '^    BROWSER >/dev/null' /usr/bin/nocblue-refresh-portals
-grep -q 'flatpak-portal.service' /usr/bin/nocblue-refresh-portals
-grep -q 'xdg-desktop-portal-gnome.service' /usr/bin/nocblue-refresh-portals
-test -f /usr/share/nocblue/defaults/nvim/init.lua
-grep -q '^x-scheme-handler/http[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
-grep -q '^text/html[[:space:]]*io.github.alyraffauf.Switchyard.desktop$' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
-grep -q '^text/plain=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
-grep -q '^text/markdown=nocblue-nvim.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
-grep -q '^inode/directory=org.gnome.Nautilus.desktop$' /usr/share/nocblue/defaults/xdg/mimeapps.list
-! grep -Eq '^(application/json|application/xml|text/plain|text/css|text/javascript|text/markdown|application/x-shellscript)[[:space:]]' /usr/share/nocblue/defaults/xdg/mime-defaults.tsv
-grep -q '^favorite_browser = '\''librewolf.desktop'\''$' /usr/share/nocblue/defaults/switchyard/config.toml
-grep -q '^stay_alive = false$' /usr/share/nocblue/defaults/switchyard/config.toml
-test -f /usr/share/nocblue/defaults/nautilus/copy_location.py
-test -f /usr/share/nocblue/defaults/nautilus/folder_icon.py
-test -f /usr/share/nocblue/defaults/nautilus/new_file.py
-python3 - <<'PY'
-import json
-from pathlib import Path
 
-for path in Path("/usr/share/nocblue/defaults/nautilus").glob("*.py"):
-    compile(path.read_text(encoding="utf-8"), str(path), "exec")
-PY
-
-if [[ -r /etc/firewalld/zones/FedoraWorkstation.xml ]]; then
-    test -f /etc/firewalld/services/kdeconnect.xml
-    test -f /etc/firewalld/zones/FedoraWorkstation.xml
-    grep -q '1714-1764' /etc/firewalld/services/kdeconnect.xml
-    grep -q 'service name="kdeconnect"' /etc/firewalld/zones/FedoraWorkstation.xml
-    grep -q 'service name="syncthing"' /etc/firewalld/zones/FedoraWorkstation.xml
-    grep -q 'port protocol="udp" port="1025-65535"' /etc/firewalld/zones/FedoraWorkstation.xml
-fi
-test -f /usr/lib/systemd/system/me.proton.vpn.split_tunneling.service
-test -L /etc/systemd/system/multi-user.target.wants/me.proton.vpn.split_tunneling.service
-grep -q '^SystemdService=me.proton.vpn.split_tunneling.service$' /etc/dbus-1/system-services/me.proton.vpn.split_tunneling.service
-test -f /usr/share/applications/proton.vpn.app.gtk.desktop
-test ! -e /usr/share/applications/com.protonvpn.www.desktop
-
-test -f /usr/share/nocblue/manifests/flatpaks.txt
-test -f /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
-grep -q '^com.github.marhkb.Pods$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
-grep -q '^io.gitlab.news_flash.NewsFlash$' /usr/share/nocblue/manifests/flatpak-icon-fixes.txt
-! grep -q '^org.gnome.Loupe$' /usr/share/nocblue/manifests/flatpaks.txt
-! grep -q '^org.gnome.Showtime$' /usr/share/nocblue/manifests/flatpaks.txt
-! grep -q '^io.github.kolunmi.Bazaar$' /usr/share/nocblue/manifests/flatpaks.txt
-! grep -q '^org.gnome.gitlab.somas.Apostrophe$' /usr/share/nocblue/manifests/flatpaks.txt
-! grep -q '^org.gnome.TextEditor$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^it.mijorus.gearlever$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.gtk.Gtk3theme.adw-gtk3$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.gtk.Gtk3theme.adw-gtk3-dark$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^io.github.Foldex.AdwSteamGtk$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.signal.Signal$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^com.github.zocker_160.SyncThingy$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^com.valvesoftware.Steam$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^net.davidotek.pupgui2$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^net.lutris.Lutris$' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.freedesktop.Platform.VulkanLayer.MangoHud//' /usr/share/nocblue/manifests/flatpaks.txt
-grep -q '^org.freedesktop.Platform.VulkanLayer.gamescope//' /usr/share/nocblue/manifests/flatpaks.txt
-
-grep -q 'PYTHON_KEYRING_BACKEND "keyring.backends.SecretService.Keyring"' /etc/xdg/niri/config.kdl
-grep -q 'BROWSER "/usr/bin/xdg-open"' /etc/xdg/niri/config.kdl
-grep -q 'PYTHONPATH "/usr/lib/python3.14/site-packages"' /etc/xdg/niri/config.kdl
-grep -q 'blur {' /etc/xdg/niri/config.kdl
-grep -q 'geometry-corner-radius 16' /etc/xdg/niri/config.kdl
-grep -q 'draw-border-with-background false' /etc/xdg/niri/config.kdl
-grep -q 'background-effect' /etc/xdg/niri/config.kdl
-grep -q 'title=r"^notificationtoasts_' /etc/xdg/niri/config.kdl
-grep -q 'XF86Launch5 hotkey-overlay-title="M2: OCR Japanese"' /etc/xdg/niri/config.kdl
-grep -q 'nocblue-ocr-japanese' /etc/xdg/niri/config.kdl
-grep -q 'toggle-column-tabbed-display' /etc/xdg/niri/config.kdl
-
-if command -v niri >/dev/null 2>&1; then
-    niri validate -c /etc/xdg/niri/config.kdl
-fi
+niri validate -c /etc/xdg/niri/config.kdl

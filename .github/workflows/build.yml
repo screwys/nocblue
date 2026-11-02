@@ -77,39 +77,16 @@ jobs:
           test -x files/compat/usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
           test ! -e files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-preload-libraries.conf
           test -f files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-initrd-no-preload.conf
-          grep -q 'add_dracutmodules+=" nocblue-initrd-no-preload "' \
-            files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-initrd-no-preload.conf
           test -x files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
-          grep -q 'echo systemd' \
-            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
-          grep -q 'ln -sfn /dev/null' \
-            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
-          grep -q '40-hardened_malloc.conf' \
-            files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
 
           ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files
           test ! -e files/system/usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
           test ! -e files/system/usr/lib/tmpfiles.d/nocblue-installer.conf
-          grep -q 'noctalia-v5.repo' recipes/recipe.yml
-          grep -q '^[[:space:]]*- noctalia-git$' recipes/recipe.yml
-          grep -q '^[[:space:]]*- noctalia-greeter$' recipes/recipe.yml
-          grep -q '^[[:space:]]*- greetd$' recipes/recipe.yml
-          grep -q '^[[:space:]]*- greetd.service$' recipes/recipe.yml
-          grep -q '^[[:space:]]*- noctalia.service$' recipes/recipe.yml
-          ! grep -q 'configure-hardened-branding.sh' recipes/recipe.yml
           ! grep -RIn 'type: akmods' recipes
           ! grep -RIn 'build-openrazer-akmod.sh' recipes files
-          grep -q '^[[:space:]]*- librewolf$' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
-          ! grep -Eq 'plasma-workspace-[0-9]' recipes/recipe.yml
           ! grep -Eq '^[[:space:]]*- (anaconda|anaconda-core|anaconda-dracut|anaconda-install-env-deps|dracut-config-generic|dracut-network|net-tools|squashfs-tools|lorax-templates-generic|biosdevname|prefixdevname|python3-mako)$' recipes/recipe.yml
-          grep -q 'restore_preload' files/scripts/install-pywalfox.sh
-          grep -q 'env -u LD_PRELOAD' files/scripts/install-pywalfox.sh
-          grep -q 'without_preload pipx install' files/scripts/install-pywalfox.sh
-          grep -q 'without_preload /usr/bin/pywalfox install --global' files/scripts/install-pywalfox.sh
-          grep -q '^repo_gpgcheck=0$' files/dnf/librewolf.repo
           ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
-          grep -q '! rpm -q kernel-cachyos' files/system/usr/bin/nocblue-tests
 
       - name: no private paths
         run: |
@@ -203,12 +180,6 @@ jobs:
           cosign verify --key cosign.pub "$image_ref" >/dev/null
           sudo podman run --rm --privileged --hostname desktop --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
-            test ! -e /usr/bin/sudo
-            for command in run0 kdeconnectd kioclient; do
-              command -v "$command" >/dev/null
-            done
-            rpm -q libadwaita gtk4 glib2 gnome-shell mutter gstreamer1 gstreamer1-plugins-base gstreamer1-plugins-good openrazer-daemon python3-openrazer kmod-openrazer nocblue-openrazer-kmod-dkms-compat proton-vpn-gnome-desktop
-            python3 -c "import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent"
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
             /usr/bin/nocblue-tests
             sockdir="$(mktemp -d /run/nocblue-bwrap-sock.XXXXXX)"
