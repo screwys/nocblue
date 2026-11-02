@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <zone>
   <short>Tailscale</short>
-  <description>Tailnet peers reach only the listed services, whatever the control server's ACLs allow.</description>
+  <description>Tailnet peers can reach the same workstation services as LAN peers.</description>
   <interface name="tailscale0"/>
-  <port protocol="tcp" port="8096"/>
+  <service name="dhcpv6-client"/>
+  <service name="ssh"/>
+  <service name="samba-client"/>
+  <service name="kdeconnect"/>
+  <service name="syncthing"/>
+  <port protocol="udp" port="1025-65535"/>
+  <port protocol="tcp" port="1025-5231"/>
+  <port protocol="tcp" port="5233-65535"/>
 </zone>
