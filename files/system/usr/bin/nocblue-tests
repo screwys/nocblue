@@ -142,7 +142,7 @@ seinfo() {
     /usr/bin/seinfo "$@" "${selinux_policy_path}"
 }
 
-if [[ -r /etc/selinux/targeted/active/modules ]]; then
+if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
     if semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns; then

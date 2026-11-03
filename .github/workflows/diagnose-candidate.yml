@@ -25,13 +25,20 @@ jobs:
           set -euo pipefail
           image_ref=ghcr.io/screwys/nocblue@sha256:cd5899c62701bee6e89fb07fbf6bf78cea84ea50218bc76734d9e6fdfaa4b7d1
           printf '%s' "$REGISTRY_TOKEN" | sudo podman login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          sudo podman run --rm --privileged --hostname desktop --entrypoint /usr/bin/bash "$image_ref" -c '
+          sudo podman run --rm --privileged --hostname desktop \
+            --volume "$PWD/files/system/usr/bin/nocblue-tests:/tests/nocblue-tests:ro" \
+            --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
             systemd-tmpfiles --create \
               /usr/lib/tmpfiles.d/rpm-ostree-0-integration-opt-usrlocal.conf \
               /usr/lib/tmpfiles.d/99-bluebuild-optfix-*.conf
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
-            PS4="+nocblue-tests:${LINENO}: " /usr/bin/bash -x /usr/bin/nocblue-tests
+            if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
+              printf "SELinux is enabled in the candidate container\n"
+            else
+              printf "SELinux is disabled in the candidate container\n"
+            fi
+            PS4="+nocblue-tests:${LINENO}: " /usr/bin/bash -x /tests/nocblue-tests
             sockdir="$(mktemp -d /run/nocblue-bwrap-sock.XXXXXX)"
             trap "rm -rf \"$sockdir\"" EXIT
             python3 -c "import socket, sys; s = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM); s.bind(sys.argv[1])" "$sockdir/socket"
