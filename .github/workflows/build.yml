@@ -180,6 +180,9 @@ jobs:
           cosign verify --key cosign.pub "$image_ref" >/dev/null
           sudo podman run --rm --privileged --hostname desktop --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
+            systemd-tmpfiles --create \
+              /usr/lib/tmpfiles.d/rpm-ostree-0-integration-opt-usrlocal.conf \
+              /usr/lib/tmpfiles.d/99-bluebuild-optfix-*.conf
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
             /usr/bin/nocblue-tests
             sockdir="$(mktemp -d /run/nocblue-bwrap-sock.XXXXXX)"
