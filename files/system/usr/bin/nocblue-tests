@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+trap 'status=$?; printf "nocblue-tests:%s: command failed (exit %s): %s\n" "$LINENO" "$status" "$BASH_COMMAND" >&2; exit "$status"' ERR
 
 test ! -e /usr/bin/sudo
 command -v run0 >/dev/null
