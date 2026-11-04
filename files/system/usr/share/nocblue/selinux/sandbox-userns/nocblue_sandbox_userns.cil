@@ -101,6 +101,17 @@
     (allow unconfined_t flatpak_t (process2 (nnp_transition nosuid_transition)))
 )
 
+; Switchyard launches host browsers through the Flatpak session helper.
+(optional nocblue_flatpak_browser_launcher
+    (allow flatpak_t nocblue_browser_no_preload_exec_t (file (getattr open read execute map)))
+    (allow flatpak_t nocblue_browser_no_preload_t (process (transition)))
+    (allow flatpak_t nocblue_browser_no_preload_t (process2 (nnp_transition nosuid_transition)))
+    (typetransition flatpak_t nocblue_browser_no_preload_exec_t process nocblue_browser_no_preload_t)
+    (allow nocblue_browser_no_preload_t flatpak_t (process (sigchld)))
+    (allow nocblue_browser_no_preload_t flatpak_t (fd (use)))
+    (allow nocblue_browser_no_preload_t flatpak_t (fifo_file (getattr read write append ioctl lock open)))
+)
+
 (typetransition unconfined_t nocblue_browser_no_preload_exec_t process nocblue_browser_no_preload_t)
 (typetransition unconfined_t brave_origin_exec_t process brave_origin_t)
 (typetransition unconfined_t helium_exec_t process helium_t)

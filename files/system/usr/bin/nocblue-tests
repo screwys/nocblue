@@ -238,6 +238,12 @@ sesearch -T -s flatpak_t -t bubblewrap_exec_t -c process \
     | grep -Fxq 'type_transition flatpak_t bubblewrap_exec_t:process flatpak_bubblewrap_t;'
 sesearch -A -Sp -s flatpak_t -t flatpak_bubblewrap_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
 
+# Flatpak host launches must enter the browser launcher before starting browsers.
+sesearch -T -s flatpak_t -t nocblue_browser_no_preload_exec_t -c process \
+    | grep -Fxq 'type_transition flatpak_t nocblue_browser_no_preload_exec_t:process nocblue_browser_no_preload_t;'
+sesearch -A -s flatpak_t -t nocblue_browser_no_preload_t -c process -p transition | grep -q .
+sesearch -A -Sp -s flatpak_t -t nocblue_browser_no_preload_t -c process2 -p nnp_transition,nosuid_transition | grep -q .
+
 for bwrap_domain in flatpak_bubblewrap_t unconfined_bubblewrap_t; do
     sesearch -A -s "${bwrap_domain}" -t "${bwrap_domain}" -c user_namespace -p create \
         | grep -Fxq "allow ${bwrap_domain} ${bwrap_domain}:user_namespace create;"
