@@ -9,7 +9,6 @@ semodule -X 300 -i \
 for path in \
     /var/lib/noctalia-greeter \
     /usr/bin/nocblue-browser-no-preload \
-    /usr/lib/chatgpt \
     /usr/lib/claude-desktop \
     /opt/brave.com/brave-origin-beta \
     /usr/lib/opt/brave.com/brave-origin-beta \

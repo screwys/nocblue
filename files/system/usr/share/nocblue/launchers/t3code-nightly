@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+set -euo pipefail
+
+export T3CODE_TELEMETRY_ENABLED=false
+export T3CODE_DESKTOP_LAUNCHER_PATH=/usr/bin/t3code-nightly
+# Keep the current AppImage's launch behavior under restricted user namespaces.
+exec /usr/bin/with-standard-malloc /usr/lib64/t3code-nightly/t3code --no-sandbox "$@"

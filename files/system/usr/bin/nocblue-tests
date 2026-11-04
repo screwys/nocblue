@@ -5,7 +5,7 @@ test ! -e /usr/bin/sudo
 command -v run0 >/dev/null
 command -v kioclient >/dev/null
 
-rpm -q kernel kernel-core kernel-modules-core xwayland-satellite >/dev/null
+rpm -q kernel kernel-core kernel-modules-core xwayland-satellite t3code-nightly >/dev/null
 if rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1; then
     exit 1
 fi
@@ -13,7 +13,7 @@ if find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | gre
     exit 1
 fi
 
-for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed chatgpt claude-desktop voxtype magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
+for cmd in niri noctalia noctalia-greeter noctalia-greeter-session noctalia-greeter-compositor nocblue-noctalia-greeter-session greetd gnome-control-center fish fastfetch wl-copy wl-paste wf-recorder wlsunset kdeconnectd firefox librewolf mullvad-browser trivalent brave-origin-beta helium zed t3code-nightly claude-desktop voxtype magick tesseract ujust njust loupe showtime bwrap xdg-dbus-proxy flatpak-builder patch pywalfox nm-connection-editor nmtui java javac go cargo rustc gcc g++ make cmake pkg-config curl unzip 7z ffmpeg docker podman podman-compose cosign openrazer-daemon nocblue-setup-android-sdk nocblue-ocr-japanese nocblue-check-secureblue-base nocblue-verify-update-signature xdg-open nix; do
     command -v "${cmd}" >/dev/null 2>&1 || {
         printf 'missing expected command: %s\n' "${cmd}" >&2
         exit 1
@@ -71,7 +71,7 @@ LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uvx --version >/dev/null
 if rpm -q protonvpn-stable-release >/dev/null 2>&1; then
     exit 1
 fi
-for pkg in docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
+for pkg in chatgpt docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
     if rpm -q "${pkg}" >/dev/null 2>&1; then
         printf 'removed package is still installed: %s\n' "${pkg}" >&2
         exit 1
@@ -151,9 +151,6 @@ if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
 fi
 
 test "$(matchpathcon -n /usr/bin/nocblue-browser-no-preload)" = "system_u:object_r:nocblue_browser_no_preload_exec_t:s0"
-test "$(matchpathcon -n /usr/lib/chatgpt/ChatGPT)" = "system_u:object_r:nocblue_chatgpt_exec_t:s0"
-test "$(matchpathcon -n /usr/lib/chatgpt/browser_crashpad_handler)" = "system_u:object_r:nocblue_chatgpt_exec_t:s0"
-test "$(matchpathcon -n /usr/lib/chatgpt/resources/codex)" = "system_u:object_r:nocblue_chatgpt_agent_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/claude-desktop)" = "system_u:object_r:claude_desktop_launcher_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/claude-desktop.bin)" = "system_u:object_r:claude_desktop_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/chrome_crashpad_handler)" = "system_u:object_r:claude_desktop_exec_t:s0"
@@ -161,16 +158,13 @@ test "$(matchpathcon -n /usr/lib/claude-desktop/resources/cowork-linux-helper)" 
 if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
     matchpathcon -V \
         /usr/bin/nocblue-browser-no-preload \
-        /usr/lib/chatgpt/ChatGPT \
-        /usr/lib/chatgpt/browser_crashpad_handler \
-        /usr/lib/chatgpt/resources/codex \
         /usr/lib/claude-desktop/claude-desktop \
         /usr/lib/claude-desktop/claude-desktop.bin \
         /usr/lib/claude-desktop/chrome_crashpad_handler \
         /usr/lib/claude-desktop/resources/cowork-linux-helper
 fi
 
-for domain in claude_desktop_launcher_t claude_desktop_t nocblue_chatgpt_t nocblue_browser_no_preload_t; do
+for domain in claude_desktop_launcher_t claude_desktop_t nocblue_browser_no_preload_t; do
     if seinfo --permissive "${domain}" | grep -Fq "${domain}"; then
         printf 'unexpected permissive domain: %s\n' "${domain}" >&2
         exit 1
@@ -186,18 +180,9 @@ sesearch -T -s claude_desktop_t -t user_home_dir_t -c file \
     | grep -Fxq 'type_transition claude_desktop_t user_home_dir_t:file user_home_t;'
 sesearch -T -s claude_desktop_t -t config_home_t -c process \
     | grep -Fxq 'type_transition claude_desktop_t config_home_t:process unconfined_t;'
-sesearch -T -s unconfined_t -t nocblue_chatgpt_exec_t -c process \
-    | grep -Fxq 'type_transition unconfined_t nocblue_chatgpt_exec_t:process nocblue_chatgpt_t;'
-sesearch -T -s nocblue_chatgpt_t -t nocblue_chatgpt_agent_exec_t -c process \
-    | grep -Fxq 'type_transition nocblue_chatgpt_t nocblue_chatgpt_agent_exec_t:process unconfined_t;'
-sesearch -T -s nocblue_chatgpt_t -t shell_exec_t -c process \
-    | grep -Fxq 'type_transition nocblue_chatgpt_t shell_exec_t:process unconfined_t;'
-sesearch -T -s nocblue_chatgpt_t -t bin_t -c process \
-    | grep -Fxq 'type_transition nocblue_chatgpt_t bin_t:process unconfined_t;'
 
 for userns_domain in \
     nocblue_browser_no_preload_t \
-    nocblue_chatgpt_t \
     claude_desktop_launcher_t \
     claude_desktop_t \
     brave_origin_t \
@@ -239,7 +224,6 @@ for clipboard_peer in \
     brave_origin_t \
     helium_t \
     nocblue_firefox_t \
-    nocblue_chatgpt_t \
     claude_desktop_t \
     flatpak_t; do
     sesearch -A -s "${clipboard_peer}" -t flatpak_t -c fd -p use | grep -q .
