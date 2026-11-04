@@ -1,7 +1,23 @@
-#!/usr/bin/bash
+#!/usr/bin/bash -p
 set -euo pipefail
 
+unset LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH
 export T3CODE_TELEMETRY_ENABLED=false
 export T3CODE_DESKTOP_LAUNCHER_PATH=/usr/bin/t3code-nightly
-# Keep the current AppImage's launch behavior under restricted user namespaces.
-exec /usr/bin/with-standard-malloc /usr/lib64/t3code-nightly/t3code --no-sandbox "$@"
+target=/usr/lib64/t3code-nightly/t3code.bin
+args=(--disable-setuid-sandbox)
+if [[ -n "${ELECTRON_RUN_AS_NODE:-}" ]]; then
+    target=/usr/lib64/t3code-nightly/t3code.node
+    args=()
+else
+    unset NODE_OPTIONS
+fi
+
+exec /usr/bin/bwrap \
+    --dev-bind / / \
+    --ro-bind-try /dev/null /etc/ld.so.preload \
+    --ro-bind-try /dev/null /usr/etc/ld.so.preload \
+    --unsetenv LD_PRELOAD \
+    --unsetenv LD_AUDIT \
+    --unsetenv LD_LIBRARY_PATH \
+    -- "${target}" "${args[@]}" "$@"

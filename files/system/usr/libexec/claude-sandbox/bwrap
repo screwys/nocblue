@@ -1,0 +1,25 @@
+#!/usr/bin/python3
+import os
+import re
+import sys
+
+# Claude passes its embedded helper on an inherited executable descriptor.
+# Use the image's separately labeled helper at that same descriptor.
+args = sys.argv[1:]
+helper_fds = {
+    int(match[1]) for arg in args
+    for match in re.finditer(r"ARGV0=['\"]?apply-seccomp['\"]?\s+['\"]?/proc/self/fd/(\d+)\b", arg)
+}
+if any(args[i:i + 3] == ["--setenv", "ARGV0", "apply-seccomp"] for i in range(len(args))):
+    command = args[args.index("--") + 1]
+    match = re.fullmatch(r"/proc/self/fd/(\d+)", command)
+    if match:
+        helper_fds.add(int(match[1]))
+for descriptor in sorted(helper_fds):
+    if descriptor < 3:
+        raise ValueError("Claude's sandbox helper requires a separate descriptor")
+    replacement = os.open("/usr/libexec/claude-sandbox/apply-seccomp", os.O_RDONLY)
+    os.dup2(replacement, descriptor, inheritable=True)
+    if replacement != descriptor:
+        os.close(replacement)
+os.execv("/usr/bin/bwrap", ["bwrap", *args])

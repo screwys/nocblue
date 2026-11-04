@@ -333,6 +333,7 @@ modules:
       - configure-standard-malloc-browsers.sh
       - configure-t3code.sh
       - install-claude-desktop.sh
+      - install-claude-sandbox.sh
       - configure-sandbox-userns-selinux.sh
       - install-protonvpn.sh
       - configure-nix.sh

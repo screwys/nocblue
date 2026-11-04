@@ -27,6 +27,11 @@ if rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'; then
 fi
 test ! -u /usr/lib/claude-desktop/chrome-sandbox
 test ! -g /usr/lib/claude-desktop/chrome-sandbox
+test ! -u /usr/lib64/t3code-nightly/chrome-sandbox
+test ! -g /usr/lib64/t3code-nightly/chrome-sandbox
+test -x /usr/lib64/t3code-nightly/t3code.node
+test -x /usr/libexec/claude-sandbox/apply-seccomp
+test -x /usr/libexec/claude-sandbox/bwrap
 voxtype --version >/dev/null
 test -r /usr/share/voxtype/models/ggml-base.bin
 python3 -c 'import openrazer_daemon; import openrazer.client; import proton.vpn.platform.local_agent'
@@ -151,6 +156,10 @@ if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
 fi
 
 test "$(matchpathcon -n /usr/bin/nocblue-browser-no-preload)" = "system_u:object_r:nocblue_browser_no_preload_exec_t:s0"
+test "$(matchpathcon -n /usr/lib64/t3code-nightly/t3code)" = "system_u:object_r:t3code_launcher_exec_t:s0"
+test "$(matchpathcon -n /usr/lib64/t3code-nightly/t3code.bin)" = "system_u:object_r:t3code_exec_t:s0"
+test "$(matchpathcon -n /usr/lib64/t3code-nightly/t3code.node)" = "system_u:object_r:bin_t:s0"
+test "$(matchpathcon -n /usr/libexec/claude-sandbox/apply-seccomp)" = "system_u:object_r:claude_sandbox_helper_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/claude-desktop)" = "system_u:object_r:claude_desktop_launcher_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/claude-desktop.bin)" = "system_u:object_r:claude_desktop_exec_t:s0"
 test "$(matchpathcon -n /usr/lib/claude-desktop/chrome_crashpad_handler)" = "system_u:object_r:claude_desktop_exec_t:s0"
@@ -158,13 +167,17 @@ test "$(matchpathcon -n /usr/lib/claude-desktop/resources/cowork-linux-helper)" 
 if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
     matchpathcon -V \
         /usr/bin/nocblue-browser-no-preload \
+        /usr/lib64/t3code-nightly/t3code \
+        /usr/lib64/t3code-nightly/t3code.bin \
+        /usr/lib64/t3code-nightly/t3code.node \
+        /usr/libexec/claude-sandbox/apply-seccomp \
         /usr/lib/claude-desktop/claude-desktop \
         /usr/lib/claude-desktop/claude-desktop.bin \
         /usr/lib/claude-desktop/chrome_crashpad_handler \
         /usr/lib/claude-desktop/resources/cowork-linux-helper
 fi
 
-for domain in claude_desktop_launcher_t claude_desktop_t nocblue_browser_no_preload_t; do
+for domain in claude_desktop_launcher_t claude_desktop_t t3code_launcher_t t3code_t claude_sandbox_helper_t nocblue_browser_no_preload_t; do
     if seinfo --permissive "${domain}" | grep -Fq "${domain}"; then
         printf 'unexpected permissive domain: %s\n' "${domain}" >&2
         exit 1
@@ -175,6 +188,18 @@ if sesearch -A -s unconfined_t -t claude_desktop_launcher_t -c process -p noatse
     printf 'Claude launcher must enter secure-execution mode\n' >&2
     exit 1
 fi
+if sesearch -A -s unconfined_t -t t3code_launcher_t -c process -p noatsecure | grep -q .; then
+    printf 'T3 launcher must enter secure-execution mode\n' >&2
+    exit 1
+fi
+if sesearch -A -s claude_sandbox_helper_t -c file -p execute_no_trans | grep -q .; then
+    printf 'Claude sandbox commands must leave the helper domain\n' >&2
+    exit 1
+fi
+sesearch -T -s t3code_launcher_t -t bin_t -c process \
+    | grep -Fxq 'type_transition t3code_launcher_t bin_t:process unconfined_t;'
+sesearch -T -s claude_sandbox_helper_t -t shell_exec_t -c process \
+    | grep -Fxq 'type_transition claude_sandbox_helper_t shell_exec_t:process unconfined_t;'
 
 sesearch -T -s claude_desktop_t -t user_home_dir_t -c file \
     | grep -Fxq 'type_transition claude_desktop_t user_home_dir_t:file user_home_t;'
@@ -185,6 +210,9 @@ for userns_domain in \
     nocblue_browser_no_preload_t \
     claude_desktop_launcher_t \
     claude_desktop_t \
+    t3code_launcher_t \
+    t3code_t \
+    claude_sandbox_helper_t \
     brave_origin_t \
     helium_t \
     nocblue_firefox_t; do
@@ -225,6 +253,7 @@ for clipboard_peer in \
     helium_t \
     nocblue_firefox_t \
     claude_desktop_t \
+    t3code_t \
     flatpak_t; do
     sesearch -A -s "${clipboard_peer}" -t flatpak_t -c fd -p use | grep -q .
     sesearch -A -s flatpak_t -t "${clipboard_peer}" -c fd -p use | grep -q .
