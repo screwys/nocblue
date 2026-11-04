@@ -8,9 +8,11 @@ command -v kioclient >/dev/null
 
 rpm -q kernel kernel-core kernel-modules-core xwayland-satellite t3code-nightly >/dev/null
 if rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1; then
+    printf 'CachyOS kernel packages must not replace the Fedora kernel\n' >&2
     exit 1
 fi
 if find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d -name '*cachyos*' | grep -q .; then
+    printf 'unexpected CachyOS kernel module directory\n' >&2
     exit 1
 fi
 
@@ -24,6 +26,7 @@ done
 rpm -q --whatprovides openrazer-kmod-common >/dev/null
 rpm -q --whatprovides openrazer-kernel-modules-dkms >/dev/null
 if rpm -qa --qf '%{NAME}\n' | grep -qx 'openrazer-kernel-modules-dkms'; then
+    printf 'OpenRazer must use signed kernel modules instead of DKMS\n' >&2
     exit 1
 fi
 test ! -u /usr/lib/claude-desktop/chrome-sandbox
@@ -75,6 +78,7 @@ LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uv --version >/dev/null
 LD_PRELOAD='libhardened_malloc.so libno_rlimit_as.so' uvx --version >/dev/null
 
 if rpm -q protonvpn-stable-release >/dev/null 2>&1; then
+    printf 'unexpected protonvpn-stable-release package\n' >&2
     exit 1
 fi
 for pkg in chatgpt docker-ce docker-ce-cli docker-ce-rootless-extras containerd.io docker-buildx-plugin docker-compose-plugin ptyxis gnome-terminal gnome-terminal-nautilus gnome-console kgx gnome-classic-session lxqt-policykit torbrowser-launcher temurin-17-jdk; do
@@ -152,6 +156,7 @@ if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx deny_ipsec
     semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_sandbox_userns
     if semodule -l 2>/dev/null | awk '{print $1}' | grep -qx nocblue_browser_userns; then
+        printf 'obsolete nocblue_browser_userns module is still installed\n' >&2
         exit 1
     fi
 fi
@@ -269,6 +274,7 @@ for clipboard_peer in \
 done
 
 if /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1; then
+    printf 'browser launcher accepted an unsupported command\n' >&2
     exit 1
 fi
 

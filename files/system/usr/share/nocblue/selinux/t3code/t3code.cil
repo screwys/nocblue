@@ -95,8 +95,9 @@
 (allow t3code_launcher_t dri_device_t (chr_file (read write)))
 (allow t3code_launcher_t tmpfs_t (file (read write)))
 
-(filecon "/usr/lib64/t3code-nightly/t3code" file (system_u object_r t3code_launcher_exec_t ((s0)(s0))))
-(filecon "/usr/lib64/t3code-nightly/t3code[.]bin" file (system_u object_r t3code_exec_t ((s0)(s0))))
-(filecon "/usr/lib64/t3code-nightly/chrome_crashpad_handler" file (system_u object_r t3code_exec_t ((s0)(s0))))
-(filecon "/usr/lib64/t3code-nightly/t3code[.]node" file (system_u object_r bin_t ((s0)(s0))))
-(filecon "/usr/lib64/t3code-nightly/resources/(browser-secret|resource-monitor|hyprland-capture|kde-capture)" file (system_u object_r bin_t ((s0)(s0))))
+; Fedora matches /usr/lib64 paths through the /usr/lib context alias.
+(filecon "/usr/lib/t3code-nightly/t3code" file (system_u object_r t3code_launcher_exec_t ((s0)(s0))))
+(filecon "/usr/lib/t3code-nightly/t3code[.]bin" file (system_u object_r t3code_exec_t ((s0)(s0))))
+(filecon "/usr/lib/t3code-nightly/chrome_crashpad_handler" file (system_u object_r t3code_exec_t ((s0)(s0))))
+(filecon "/usr/lib/t3code-nightly/t3code[.]node" file (system_u object_r bin_t ((s0)(s0))))
+(filecon "/usr/lib/t3code-nightly/resources/(browser-secret|resource-monitor|hyprland-capture|kde-capture)" file (system_u object_r bin_t ((s0)(s0))))

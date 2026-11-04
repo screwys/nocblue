@@ -27,12 +27,14 @@ jobs:
           printf '%s' "$REGISTRY_TOKEN" | sudo podman login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
           sudo podman run --rm --privileged --hostname desktop \
             --volume "$PWD/files/system/usr/bin/nocblue-tests:/tests/nocblue-tests:ro" \
+            --volume "$PWD/files/system/usr/share/nocblue/selinux/t3code/t3code.cil:/tests/t3code.cil:ro" \
             --entrypoint /usr/bin/bash "$image_ref" -c '
             set -euo pipefail
             systemd-tmpfiles --create \
               /usr/lib/tmpfiles.d/rpm-ostree-0-integration-opt-usrlocal.conf \
               /usr/lib/tmpfiles.d/99-bluebuild-optfix-*.conf
             /usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
+            semodule -X 300 -i /tests/t3code.cil
             if command -v selinuxenabled >/dev/null 2>&1 && selinuxenabled; then
               printf "SELinux is enabled in the candidate container\n"
             else
