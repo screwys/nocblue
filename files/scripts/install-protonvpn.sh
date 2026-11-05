@@ -2,7 +2,7 @@
 set -euo pipefail
 
 fedora_major="$(rpm -E %fedora)"
-proton_release="protonvpn-beta-release-1.0.3-1.noarch.rpm"
+proton_release="protonvpn-beta-release-1.0.5-1.noarch.rpm"
 curl -fsSLo "/tmp/${proton_release}" \
     "https://repo.protonvpn.com/fedora-${fedora_major}-unstable/protonvpn-beta-release/${proton_release}"
 
