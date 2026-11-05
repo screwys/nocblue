@@ -15,6 +15,14 @@ labels:
   org.opencontainers.image.source: https://github.com/screwys/nocblue
 
 modules:
+  # Secureblue supplies this repo with a runtime-only package filter.
+  # Nocblue also needs the full FFmpeg development packages.
+  - type: containerfile
+    snippets:
+      - >-
+        RUN dnf config-manager setopt --create-missing-dir
+        fedora-multimedia.enabled=1 fedora-multimedia.includepkgs=
+
   - type: dnf
     repos:
       files:
@@ -26,7 +34,6 @@ modules:
         - helium.repo
         - mullvad.repo
         - librewolf.repo
-        - fedora-multimedia.repo
     install:
       install-weak-deps: false
       allow-erasing: true
