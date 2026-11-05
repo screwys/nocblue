@@ -12,6 +12,10 @@ mv "${appdir}/t3code" "${appdir}/t3code.bin"
 install -m 0755 /usr/share/nocblue/launchers/t3code-nightly "${appdir}/t3code"
 chmod 0755 "${appdir}/chrome-sandbox"
 
+# Use T3's Wayland app ID for dock matching.
+desktop-file-edit --set-key=StartupWMClass --set-value=com.t3tools.T3Code \
+    /usr/share/applications/t3code-nightly.desktop
+
 npm install --prefix "$workdir" --cache "${workdir}/npm-cache" --ignore-scripts --no-audit --no-fund \
     @electron/asar@4.3.1 @electron/fuses@2.1.3
 node --input-type=module - "$workdir" "$appdir" <<'JS'
