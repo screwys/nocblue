@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-fedora_major="$(rpm -E %fedora)"
-proton_release="protonvpn-beta-release-1.0.5-1.noarch.rpm"
-curl -fsSLo "/tmp/${proton_release}" \
-    "https://repo.protonvpn.com/fedora-${fedora_major}-unstable/protonvpn-beta-release/${proton_release}"
-
-dnf -y install "/tmp/${proton_release}"
+proton_repo="https://repo.protonvpn.com/fedora-$(rpm -E %fedora)-unstable"
+dnf -y install \
+    --repofrompath="protonvpn-bootstrap,${proton_repo}" \
+    --setopt=protonvpn-bootstrap.gpgcheck=1 \
+    --setopt=protonvpn-bootstrap.gpgkey="${proton_repo}/public_key.asc" \
+    protonvpn-beta-release
 
 # The daemon package tries to start systemd services in scriptlets during image
 # builds. Install it without scriptlets; the recipe enables the daemon unit.
