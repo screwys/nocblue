@@ -277,6 +277,7 @@ modules:
         - "qt6-qtbase-devel"
         - "qt6-qtdeclarative-devel"
         - "strawberry"
+        - "golang-github-gohugoio-locales-devel"
     remove:
       auto-remove: false
       packages:
