@@ -103,7 +103,6 @@ modules:
         - hyperfine
         - tokei
         - ShellCheck
-        - shfmt
         - uv
         # Desktop and user tooling with native Fedora/Terra providers.
         - age
@@ -124,7 +123,6 @@ modules:
         - dmg2img
         - mingw32-nsis
         - pacman
-        - powershell
         - tracy
         - smartmontools
         - heaptrack

@@ -59,6 +59,8 @@
 (allow t3code_t unconfined_t (process2 (nnp_transition nosuid_transition)))
 (typetransition t3code_t shell_exec_t process unconfined_t)
 (typetransition t3code_t bin_t process unconfined_t)
+(allow t3code_t ssh_exec_t (file (getattr open read execute map)))
+(typetransition t3code_t ssh_exec_t process unconfined_t)
 (typetransition t3code_t t3code_launcher_exec_t process t3code_launcher_t)
 (allow t3code_t t3code_launcher_exec_t (file (getattr open read execute map)))
 (allow t3code_t t3code_launcher_t (process (transition)))
@@ -89,9 +91,11 @@
 (allow t3code_t systemd_userdbd_runtime_t (lnk_file (read)))
 (allow t3code_t systemd_userdbd_runtime_t (sock_file (write)))
 (allow t3code_t t3code_t (cap_userns (setpcap)))
-; The backend launcher inherits Electron's diagnostic and browser-control FDs.
+; Bootstrap, diagnostic, and browser-control descriptors are Unix sockets.
+; Preserve them when entering the launcher from the desktop or a user process.
 (allow t3code_launcher_t t3code_t (fifo_file (read write)))
-(allow t3code_launcher_t t3code_t (unix_stream_socket (ioctl)))
+(allow t3code_launcher_t t3code_t (unix_stream_socket (getattr read write ioctl)))
+(allow t3code_launcher_t unconfined_t (unix_stream_socket (getattr read write ioctl)))
 (allow t3code_launcher_t dri_device_t (chr_file (read write)))
 (allow t3code_launcher_t tmpfs_t (file (read write)))
 

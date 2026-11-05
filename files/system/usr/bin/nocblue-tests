@@ -5,6 +5,8 @@ trap 'status=$?; printf "nocblue-tests:%s: command failed (exit %s): %s\n" "$LIN
 test ! -e /usr/bin/sudo
 command -v run0 >/dev/null
 command -v kioclient >/dev/null
+command -v shfmt >/dev/null
+command -v pwsh >/dev/null
 
 rpm -q kernel kernel-core kernel-modules-core xwayland-satellite t3code-nightly >/dev/null
 if rpm -q kernel-cachyos kernel-cachyos-devel-matched cachyos-settings >/dev/null 2>&1; then
@@ -204,6 +206,14 @@ if sesearch -A -s claude_sandbox_helper_t -c file -p execute_no_trans | grep -q 
 fi
 sesearch -T -s t3code_launcher_t -t bin_t -c process \
     | grep -Fxq 'type_transition t3code_launcher_t bin_t:process unconfined_t;'
+for parent in unconfined_t t3code_t; do
+    if ! sesearch -A -Sp -s t3code_launcher_t -t "${parent}" -c unix_stream_socket -p read,write | grep -q .; then
+        printf 'T3 launcher cannot inherit Unix sockets from %s\n' "${parent}" >&2
+        exit 1
+    fi
+done
+sesearch -T -s t3code_t -t ssh_exec_t -c process \
+    | grep -Fxq 'type_transition t3code_t ssh_exec_t:process unconfined_t;'
 sesearch -T -s claude_sandbox_helper_t -t shell_exec_t -c process \
     | grep -Fxq 'type_transition claude_sandbox_helper_t shell_exec_t:process unconfined_t;'
 
