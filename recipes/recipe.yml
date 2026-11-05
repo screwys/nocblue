@@ -153,6 +153,7 @@ modules:
         - ninja-build
         - selinux-policy-devel
         - python3-setools
+        - python3-devel
         - pkgconf-pkg-config
         - libtalloc-devel
         - openssl
