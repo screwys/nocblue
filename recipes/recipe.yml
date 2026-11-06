@@ -192,6 +192,7 @@ modules:
 
         # Desktop apps and integration.
         - dbus-tools
+        - dbus-daemon
         - polkit
         - nautilus
         - nautilus-python
