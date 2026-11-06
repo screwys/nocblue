@@ -214,6 +214,7 @@ for parent in unconfined_t t3code_t; do
 done
 sesearch -T -s t3code_t -t ssh_exec_t -c process \
     | grep -Fxq 'type_transition t3code_t ssh_exec_t:process unconfined_t;'
+sesearch -A -s unconfined_t -t ssh_exec_t -c file -p entrypoint | grep -q .
 sesearch -T -s claude_sandbox_helper_t -t shell_exec_t -c process \
     | grep -Fxq 'type_transition claude_sandbox_helper_t shell_exec_t:process unconfined_t;'
 

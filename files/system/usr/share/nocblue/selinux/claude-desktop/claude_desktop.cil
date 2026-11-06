@@ -82,6 +82,8 @@
 (typetransition claude_desktop_t bin_t process unconfined_t)
 (allow claude_desktop_t ssh_exec_t (file (getattr open read execute map)))
 (typetransition claude_desktop_t ssh_exec_t process unconfined_t)
+; Direct SSH children need the same user domain as shell-launched SSH.
+(allow unconfined_t ssh_exec_t (file (entrypoint)))
 ; The Code tab runs the Claude Code binary it downloads under ~/.config/Claude.
 (allow claude_desktop_t config_home_t (file (execute)))
 (allow unconfined_t config_home_t (file (entrypoint)))

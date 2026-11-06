@@ -61,6 +61,8 @@
 (typetransition t3code_t bin_t process unconfined_t)
 (allow t3code_t ssh_exec_t (file (getattr open read execute map)))
 (typetransition t3code_t ssh_exec_t process unconfined_t)
+; Direct SSH children need the same user domain as shell-launched SSH.
+(allow unconfined_t ssh_exec_t (file (entrypoint)))
 (typetransition t3code_t t3code_launcher_exec_t process t3code_launcher_t)
 (allow t3code_t t3code_launcher_exec_t (file (getattr open read execute map)))
 (allow t3code_t t3code_launcher_t (process (transition)))
