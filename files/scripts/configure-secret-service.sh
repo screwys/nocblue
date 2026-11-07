@@ -4,8 +4,6 @@ set -euo pipefail
 # GDM pulls in Fedora's secret service and PAM module, including in Niri images.
 if (( $(rpm -E '%fedora') >= 45 )); then
     rpm -q oo7-daemon pam_oo7 oo7-portal
-    # oo7 needs to run before the login helper can deliver the keyring password.
-    systemctl --global enable oo7-daemon.service
 
     # Some apps still require the GNOME Keyring package. Keep their dependencies,
     # but let oo7 handle secrets even when D-Bus activates the provider first.

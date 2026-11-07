@@ -92,7 +92,9 @@ done
 
 if (( $(rpm -E '%fedora') >= 45 )); then
     rpm -q oo7-daemon pam_oo7 oo7-portal >/dev/null
-    systemctl --global is-enabled oo7-daemon.service >/dev/null
+    # pam_oo7 hands the login password to the daemon when it starts. Starting it
+    # earlier, such as from a lingering user manager, leaves the login keyring locked.
+    ! systemctl --global is-enabled --quiet oo7-daemon.service
 else
     rpm -q gnome-keyring gnome-keyring-pam >/dev/null
 fi
