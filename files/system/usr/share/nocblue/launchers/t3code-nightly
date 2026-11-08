@@ -13,11 +13,6 @@ else
     unset NODE_OPTIONS
 fi
 
-exec /usr/bin/bwrap \
-    --dev-bind / / \
-    --ro-bind-try /dev/null /etc/ld.so.preload \
-    --ro-bind-try /dev/null /usr/etc/ld.so.preload \
-    --unsetenv LD_PRELOAD \
-    --unsetenv LD_AUDIT \
-    --unsetenv LD_LIBRARY_PATH \
-    -- "${target}" "${args[@]}" "$@"
+# Use glibc without changing the user namespace inherited by SSH and agents.
+export LD_PRELOAD=/usr/lib64/libc.so.6
+exec "${target}" "${args[@]}" "$@"
