@@ -13,6 +13,17 @@ printf '%s  %s\n' \
     "$workdir/powershell.rpm" | sha256sum -c -
 dnf -y install --setopt=install_weak_deps=False "$workdir/powershell.rpm"
 
+# Luau has no Fedora or Terra package; upstream's Linux build needs only glibc and libstdc++.
+luau_version=0.745
+curl -fsSL --retry 3 -o "$workdir/luau.zip" \
+    "https://github.com/luau-lang/luau/releases/download/${luau_version}/luau-ubuntu.zip"
+printf '%s  %s\n' \
+    186e5ddaa2b048ebc7390c11ed1b00c04e7d3beaffed429250329e3575d2ece2 \
+    "$workdir/luau.zip" | sha256sum -c -
+unzip -q "$workdir/luau.zip" luau luau-analyze -d "$workdir/luau"
+install -m 0755 "$workdir/luau/luau" /usr/bin/luau
+install -m 0755 "$workdir/luau/luau-analyze" /usr/bin/luau-analyze
+
 GOBIN="$workdir/go-bin" GOMODCACHE="$workdir/go-mod" GOCACHE="$workdir/go-cache" \
     CGO_ENABLED=0 go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
 GOBIN="$workdir/go-bin" GOMODCACHE="$workdir/go-mod" GOCACHE="$workdir/go-cache" \
@@ -38,3 +49,5 @@ install -m 0755 "$workdir/rust/bin/kotofetch" /usr/bin/kotofetch
 /usr/bin/pwsh --version
 /usr/bin/ast-grep --version
 /usr/bin/kotofetch --version
+printf 'print(_VERSION)\n' >"$workdir/version.luau"
+/usr/bin/luau "$workdir/version.luau"
