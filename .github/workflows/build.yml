@@ -164,6 +164,6 @@ jobs:
           if [[ "$GITHUB_REF_NAME" != "$DEFAULT_BRANCH" ]]; then
             image_tag="br-${GITHUB_REF_NAME//\//_}-${FEDORA_RELEASE}"
           fi
-          printf '%s' "$REGISTRY_TOKEN" | skopeo login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
-          skopeo copy --all --preserve-digests \
-            "docker://${image_repo}@${IMAGE_DIGEST}" "docker://${image_repo}:${image_tag}"
+          printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          # Tags the verified index as it is, so the signed digest stays the same.
+          docker buildx imagetools create --tag "${image_repo}:${image_tag}" "${image_repo}@${IMAGE_DIGEST}"
