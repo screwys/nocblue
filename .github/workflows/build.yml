@@ -109,6 +109,8 @@ jobs:
           use_cache: false
           rechunk: false
           push: true
+          # zstd layers compress and unpack several times faster than gzip.
+          build_opts: --compression-format zstd
 
       - name: verify candidate image
         id: candidate
