@@ -1,0 +1,10 @@
+[copr:copr.fedorainfracloud.org:screwyy:nocblue]
+name=Copr repo for nocblue owned by screwyy
+baseurl=https://download.copr.fedorainfracloud.org/results/screwyy/nocblue/fedora-$releasever-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/screwyy/nocblue/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1

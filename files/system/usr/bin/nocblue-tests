@@ -294,7 +294,10 @@ if /usr/bin/nocblue-browser-no-preload /usr/bin/unshare -Ur true >/dev/null 2>&1
     exit 1
 fi
 
-test -f /usr/share/nocblue/media-patches/loupe-reuse-active-window.patch-applied
+if [[ "$(rpm -q --qf '%{VENDOR}' loupe)" != 'Fedora Copr - user screwyy' ]]; then
+    printf 'Loupe is not the window-reuse build; rebuild it: copr-cli build-package screwyy/nocblue --name loupe\n' >&2
+    exit 1
+fi
 test -f /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
 grep -q '^Exec=/usr/bin/nocblue-bwrap-loupe %U$' /usr/share/applications/org.gnome.Loupe.desktop
 grep -q '^Exec=/usr/bin/nocblue-bwrap-showtime %U$' /usr/share/applications/org.gnome.Showtime.desktop

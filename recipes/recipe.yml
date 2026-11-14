@@ -103,6 +103,7 @@ modules:
         - helium.repo
         - mullvad.repo
         - librewolf.repo
+        - nocblue-packages.repo
     install:
       install-weak-deps: false
       allow-erasing: true
@@ -256,6 +257,16 @@ modules:
         - gstreamer1-devel
         - gstreamer1-plugins-base-devel
         - gstreamer1-plugins-bad-free-devel
+        - gtk4-devel
+        - libadwaita-devel
+        - libgweather-devel
+        - lcms2-devel
+        - libseccomp-devel
+        - gettext-devel
+        - blueprint-compiler
+        - desktop-file-utils
+        - appstream
+        - yelp-tools
         - patch
         - no_rlimit_as
 
@@ -419,7 +430,6 @@ modules:
       - install-uv-launchers.sh
       - configure-anticheat-support.sh
       - configure-secure-boot.sh
-      - build-loupe-reuse-window.sh
       - patch-native-media-apps.sh
       - configure-secret-service.sh
 
