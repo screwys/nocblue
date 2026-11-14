@@ -35,13 +35,25 @@ install -m 0755 "$workdir/go-bin/templ" /usr/bin/templ
 install -m 0755 "$workdir/go-bin/shfmt" /usr/bin/shfmt
 install -D -m 0644 "$workdir/go-mod/mvdan.cc/sh/v3@v3.14.1/LICENSE" /usr/share/licenses/shfmt/LICENSE
 
-CARGO_HOME="$workdir/cargo-home" CARGO_TARGET_DIR="$workdir/cargo-target" \
-    cargo install --root "$workdir/rust" --locked --version 0.45.3 ast-grep
-CARGO_HOME="$workdir/cargo-home" CARGO_TARGET_DIR="$workdir/cargo-target" \
-    cargo install --root "$workdir/rust" --locked \
-    --git https://github.com/hxpe-dev/kotofetch --tag v0.2.23 kotofetch
-install -m 0755 "$workdir/rust/bin/ast-grep" /usr/bin/ast-grep
-install -m 0755 "$workdir/rust/bin/kotofetch" /usr/bin/kotofetch
+ast_grep_version=0.45.3
+curl -fsSL --retry 3 -o "$workdir/ast-grep.zip" \
+    "https://github.com/ast-grep/ast-grep/releases/download/${ast_grep_version}/app-x86_64-unknown-linux-gnu.zip"
+printf '%s  %s\n' \
+    f8ac830881339d1edee6b2652f54798c0f4da5a827f2db38a08ee31117783ce8 \
+    "$workdir/ast-grep.zip" | sha256sum -c -
+unzip -q "$workdir/ast-grep.zip" ast-grep -d "$workdir/ast-grep"
+install -m 0755 "$workdir/ast-grep/ast-grep" /usr/bin/ast-grep
+
+kotofetch_version=0.2.23
+curl -fsSL --retry 3 -o "$workdir/kotofetch.tar.gz" \
+    "https://github.com/hxpe-dev/kotofetch/releases/download/v${kotofetch_version}/kotofetch-v${kotofetch_version}-x86_64-unknown-linux-gnu.tar.gz"
+printf '%s  %s\n' \
+    6e7804f4a23e0aacae2cede7107682aaba7d4e660f0c8cb9222cd9afc90ac28c \
+    "$workdir/kotofetch.tar.gz" | sha256sum -c -
+mkdir "$workdir/kotofetch"
+tar -xzf "$workdir/kotofetch.tar.gz" -C "$workdir/kotofetch" --strip-components=1 \
+    x86_64-unknown-linux-gnu/kotofetch
+install -m 0755 "$workdir/kotofetch/kotofetch" /usr/bin/kotofetch
 
 /usr/bin/actionlint -version
 /usr/bin/templ version
