@@ -285,6 +285,8 @@ modules:
         - "qt6-qtdeclarative-devel"
         - "strawberry"
         - "hugo"
+        - "gstreamer1-plugins-base-tools"
+        - "gstreamer1-plugins-good-extras"
     remove:
       auto-remove: false
       packages:
