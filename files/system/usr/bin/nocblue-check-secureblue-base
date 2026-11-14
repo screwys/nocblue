@@ -64,7 +64,6 @@ def image_info(repo, ref):
 
 def main():
     nocblue = image_info("screwys/nocblue", "latest")
-    compatibility = image_info("screwys/nocblue-fedora-openrazer", nocblue["base"])
     upstream_tag = "latest"
     upstream = image_info("secureblue/silverblue-main-hardened", upstream_tag)
 
@@ -76,7 +75,7 @@ def main():
     print(f"  platform: {nocblue['platform']}")
     print(f"  base:     {nocblue['base_name']} @ {nocblue['base']}")
 
-    if compatibility["base"] in {upstream["platform"], upstream["index"]}:
+    if nocblue["base"] in {upstream["platform"], upstream["index"]}:
         print(f"status: nocblue was built from the current secureblue {upstream_tag} image")
         return 0
 

@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
   schedule:
     - cron: "17 18 * * *"
   workflow_dispatch:
@@ -38,40 +37,29 @@ jobs:
       - name: repository shape
         run: |
           test -f recipes/recipe.yml
-          test -f recipes/compat.yml
           test ! -e recipes/nocblue-hardened.yml
           test ! -e Containerfile
           test ! -d build_files
 
-          grep -q 'name: nocblue-fedora-openrazer$' recipes/compat.yml
-          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/compat.yml
-          grep -q 'image-version: latest' recipes/compat.yml
-          grep -q 'ghcr.io/ublue-os/akmods:main-' recipes/compat.yml
-          grep -q 'src=/kernel-rpms' recipes/compat.yml
-          grep -q 'src=/rpms' recipes/compat.yml
-          grep -q 'type: initramfs' recipes/compat.yml
-          grep -q 'validate-fedora-openrazer-compat.sh' recipes/compat.yml
-          # A blanket kernel* exclusion also blocks kernel-headers, which is
-          # required by glibc-devel and many development packages.
-          ! grep -RIn '^[[:space:]]*- "kernel\*"$' recipes
-          for recipe in recipes/compat.yml recipes/recipe.yml; do
-            grep -q '^[[:space:]]*- kernel$' "${recipe}"
-            grep -q '^[[:space:]]*- kernel-core$' "${recipe}"
-            grep -q '^[[:space:]]*- kernel-modules$' "${recipe}"
-            grep -q '^[[:space:]]*- kernel-modules-core$' "${recipe}"
-            grep -q '^[[:space:]]*- kernel-modules-extra$' "${recipe}"
-            grep -q '^[[:space:]]*- "kernel-uki\*"$' "${recipe}"
-          done
-
           grep -q 'name: nocblue$' recipes/recipe.yml
-          grep -q 'base-image: ghcr.io/screwys/nocblue-fedora-openrazer' recipes/recipe.yml
+          grep -q 'base-image: ghcr.io/secureblue/silverblue-main-hardened' recipes/recipe.yml
           grep -q 'image-version: latest' recipes/recipe.yml
+          grep -q 'ghcr.io/ublue-os/akmods:main-' recipes/recipe.yml
+          grep -q 'src=/kernel-rpms' recipes/recipe.yml
+          grep -q 'src=/rpms' recipes/recipe.yml
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
           grep -q 'type: initramfs' recipes/recipe.yml
           grep -q 'validate-fedora-openrazer-compat.sh' recipes/recipe.yml
-          ! grep -q 'ghcr.io/ublue-os/akmods:' recipes/recipe.yml
           ! grep -q 'ublue-akmods.repo' recipes/recipe.yml
-          ! grep -q 'openrazer.repo' recipes/recipe.yml
+          # A blanket kernel* exclusion also blocks kernel-headers, which is
+          # required by glibc-devel and many development packages.
+          ! grep -RIn '^[[:space:]]*- "kernel\*"$' recipes
+          grep -q '^[[:space:]]*- kernel$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- kernel-core$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- kernel-modules$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- kernel-modules-core$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- kernel-modules-extra$' recipes/recipe.yml
+          grep -q '^[[:space:]]*- "kernel-uki\*"$' recipes/recipe.yml
 
           test -x files/compat/usr/libexec/nocblue/install-fedora-openrazer-compat.sh
           test -x files/compat/usr/libexec/nocblue/validate-fedora-openrazer-compat.sh
@@ -93,11 +81,8 @@ jobs:
           ! grep -RInE '(/home/[[:alnum:]_.-]+/(\.config|Development|Server|Downloads|Documents|Pictures|Videos)|/mnt/[[:alnum:]_.-]+|wallpaperengine|workshop)' \
             recipes files manifests README.md
 
-  compatibility:
-    name: build Fedora/OpenRazer compatibility base
-    outputs:
-      fedora_release: ${{ steps.stable.outputs.fedora_release }}
-      compatibility_tag: ${{ steps.stable.outputs.compatibility_tag }}
+  bluebuild:
+    name: build nocblue image
     needs: static
     runs-on: ubuntu-latest
     permissions:
@@ -113,47 +98,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends skopeo python3-yaml
           python3 .github/scripts/prepare-stable-build.py
-      - name: build compatibility image
-        uses: blue-build/github-action@v1.13.0
-        with:
-          skip_checkout: true
-          recipe: compat-build.yml
-          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
-          registry_token: ${{ github.token }}
-          pr_event_number: ${{ github.event.number }}
-          maximize_build_space: true
-          use_cache: false
-          rechunk: false
-          push: ${{ github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
-
-  bluebuild:
-    name: build nocblue image
-    needs: compatibility
-    # Use the exact compatibility artifact from this run.
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
-    steps:
-      - name: checkout
-        uses: actions/checkout@v7
-      - name: select compatibility image
-        env:
-          COMPATIBILITY_TAG: ${{ needs.compatibility.outputs.compatibility_tag }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends python3-yaml
-          python3 - <<'PYRECIPE'
-          import os
-          from pathlib import Path
-          import yaml
-          recipe = yaml.safe_load(Path('recipes/recipe.yml').read_text())
-          recipe['image-version'] = os.environ['COMPATIBILITY_TAG']
-          recipe['alt-tags'] = [f"build-{os.environ['GITHUB_RUN_ID']}"]
-          Path('recipes/recipe-build.yml').write_text(yaml.safe_dump(recipe, sort_keys=False))
-          PYRECIPE
       - name: build custom image
         uses: blue-build/github-action@v1.13.0
         with:
@@ -169,7 +113,7 @@ jobs:
       - name: verify candidate image
         id: candidate
         env:
-          IMAGE_TAG: ${{ needs.compatibility.outputs.compatibility_tag }}
+          IMAGE_TAG: ${{ steps.stable.outputs.image_tag }}
         run: |
           set -euo pipefail
           image_repo="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/nocblue"
@@ -208,7 +152,7 @@ jobs:
       - name: publish verified image
         env:
           IMAGE_DIGEST: ${{ steps.candidate.outputs.digest }}
-          FEDORA_RELEASE: ${{ needs.compatibility.outputs.fedora_release }}
+          FEDORA_RELEASE: ${{ steps.stable.outputs.fedora_release }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           REGISTRY_TOKEN: ${{ github.token }}
         run: |

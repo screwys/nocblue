@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: Apache-2.0
 #
-# Build-time invariant checks for the Fedora kernel + OpenRazer compatibility
-# base and for every downstream nocblue image that rebuilds its initramfs.
+# Build-time invariant checks for the Fedora kernel + OpenRazer pairing and
+# the rebuilt initramfs.
 
 set -euo pipefail
 
