@@ -50,10 +50,10 @@ jobs:
           grep -q 'configure-nocblue-branding.sh' recipes/recipe.yml
           grep -q 'type: initramfs' recipes/recipe.yml
           grep -q 'validate-fedora-openrazer-compat.sh' recipes/recipe.yml
-          ! grep -q 'ublue-akmods.repo' recipes/recipe.yml
+          ! grep -q 'ublue-akmods.repo' recipes/recipe.yml || exit 1
           # A blanket kernel* exclusion also blocks kernel-headers, which is
           # required by glibc-devel and many development packages.
-          ! grep -RIn '^[[:space:]]*- "kernel\*"$' recipes
+          ! grep -RIn '^[[:space:]]*- "kernel\*"$' recipes || exit 1
           grep -q '^[[:space:]]*- kernel$' recipes/recipe.yml
           grep -q '^[[:space:]]*- kernel-core$' recipes/recipe.yml
           grep -q '^[[:space:]]*- kernel-modules$' recipes/recipe.yml
@@ -67,19 +67,19 @@ jobs:
           test -f files/compat/usr/lib/dracut/dracut.conf.d/98-nocblue-initrd-no-preload.conf
           test -x files/compat/usr/lib/dracut/modules.d/99nocblue-initrd-no-preload/module-setup.sh
 
-          ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files
+          ! grep -RIn '/usr/share/plymouth/themes/spinner/watermark.png' recipes files || exit 1
           test ! -e files/system/usr/lib/dracut/dracut.conf.d/99-nocblue-installer-tmpdir.conf
           test ! -e files/system/usr/lib/tmpfiles.d/nocblue-installer.conf
-          ! grep -RIn 'type: akmods' recipes
-          ! grep -RIn 'build-openrazer-akmod.sh' recipes files
-          ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml
-          ! grep -Eq '^[[:space:]]*- (anaconda|anaconda-core|anaconda-dracut|anaconda-install-env-deps|dracut-config-generic|dracut-network|net-tools|squashfs-tools|lorax-templates-generic|biosdevname|prefixdevname|python3-mako)$' recipes/recipe.yml
-          ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md
+          ! grep -RIn 'type: akmods' recipes || exit 1
+          ! grep -RIn 'build-openrazer-akmod.sh' recipes files || exit 1
+          ! grep -Eq '^[[:space:]]*- [^[:space:]#]+-[0-9][^[:space:]]*(\.(x86_64|noarch|aarch64|i686))?$' recipes/recipe.yml || exit 1
+          ! grep -Eq '^[[:space:]]*- (anaconda|anaconda-core|anaconda-dracut|anaconda-install-env-deps|dracut-config-generic|dracut-network|net-tools|squashfs-tools|lorax-templates-generic|biosdevname|prefixdevname|python3-mako)$' recipes/recipe.yml || exit 1
+          ! grep -RInE 'kernel-cachyos|cachyos-settings|dms|DankMaterialShell' recipes manifests README.md || exit 1
 
       - name: no private paths
         run: |
           ! grep -RInE '(/home/[[:alnum:]_.-]+/(\.config|Development|Server|Downloads|Documents|Pictures|Videos)|/mnt/[[:alnum:]_.-]+|wallpaperengine|workshop)' \
-            recipes files manifests README.md
+            recipes files manifests README.md || exit 1
 
   bluebuild:
     name: build nocblue image
