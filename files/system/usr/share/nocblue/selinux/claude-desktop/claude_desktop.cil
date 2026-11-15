@@ -37,11 +37,8 @@
 (typeattributeset application_exec_type (claude_desktop_launcher_exec_t))
 (typeattributeset non_auth_file_type (claude_desktop_launcher_exec_t))
 (typeattributeset non_security_file_type (claude_desktop_launcher_exec_t))
-(optional claude_desktop_launcher_userns_entrypoint
-    (typeattributeset userns_privileged_file_type (claude_desktop_launcher_exec_t))
-)
 
-; Enter the fixed launcher with AT_SECURE before granting namespace access.
+; Enter the fixed launcher with AT_SECURE so it scrubs the caller's loader variables.
 (allow unconfined_t claude_desktop_launcher_exec_t (file (getattr open read execute map)))
 (allow unconfined_t claude_desktop_launcher_t (process (transition)))
 (allow unconfined_t claude_desktop_launcher_t (process2 (nnp_transition nosuid_transition)))
@@ -50,7 +47,7 @@
 (allow unconfined_bubblewrap_t claude_desktop_launcher_t (process (transition)))
 (allow unconfined_bubblewrap_t claude_desktop_launcher_t (process2 (nnp_transition nosuid_transition)))
 (typetransition unconfined_bubblewrap_t claude_desktop_launcher_exec_t process claude_desktop_launcher_t)
-(allow claude_desktop_launcher_t claude_desktop_launcher_exec_t (file (entrypoint execute read getattr open map ioctl mounton)))
+(allow claude_desktop_launcher_t claude_desktop_launcher_exec_t (file (entrypoint execute read getattr open map ioctl)))
 ; Permit diagnostics through stdout or stderr redirected by the user.
 (allow claude_desktop_launcher_t user_home_t (file (write)))
 (allow claude_desktop_launcher_t unconfined_t (process (sigchld)))

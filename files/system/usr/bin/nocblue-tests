@@ -230,7 +230,6 @@ sesearch -T -s claude_desktop_t -t config_home_t -c process \
 
 for userns_domain in \
     nocblue_browser_no_preload_t \
-    claude_desktop_launcher_t \
     claude_desktop_t \
     t3code_launcher_t \
     t3code_t \
