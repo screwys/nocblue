@@ -217,6 +217,6 @@ EOF
     install -D -m 0644 /dev/null /usr/share/nocblue/media-patches/showtime-reuse-window.patch-applied
 }
 
-rpm -q loupe showtime >/dev/null
+rpm -q loupe-single-window showtime >/dev/null
 patch_showtime
 install_media_launchers
