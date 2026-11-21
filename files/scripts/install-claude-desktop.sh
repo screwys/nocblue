@@ -19,6 +19,13 @@ grep -Fxq '%attr(4755,root,root) %{_prefix}/lib/claude-desktop/chrome-sandbox' \
 sed -i 's|^%attr(4755,root,root) %{_prefix}/lib/claude-desktop/chrome-sandbox$|%attr(0755,root,root) %{_prefix}/lib/claude-desktop/chrome-sandbox|' \
     "${workdir}/build-official.sh"
 
+# Package the pixmap icon that newer official builds ship.
+cat >"${workdir}/pixmaps.sh" <<'EOF'
+[ ! -d "$WORK/payload/usr/share/pixmaps" ] || EXTRA_FILES+="/usr/share/pixmaps/*"$'\n'
+EOF
+grep -Fxq 'RB="$WORK/rpmbuild"' "${workdir}/build-official.sh"
+sed -i "/^RB=\"\$WORK\/rpmbuild\"\$/r ${workdir}/pixmaps.sh" "${workdir}/build-official.sh"
+
 dnf -y install --setopt=install_weak_deps=False \
     rpm-build binutils file gnupg2 xz \
     alsa-lib ca-certificates openssh-clients pipewire-libs gjs
