@@ -72,8 +72,9 @@
 (allow claude_desktop_t unconfined_t (fifo_file (getattr read write append ioctl lock open)))
 
 ; Shell and system commands keep the normal desktop user's permissions.
+; AT_SECURE drops the launcher's glibc LD_PRELOAD so they get hardened_malloc.
 (allow claude_desktop_t shell_exec_t (file (getattr open read execute map)))
-(allow claude_desktop_t unconfined_t (process (transition noatsecure siginh rlimitinh)))
+(allow claude_desktop_t unconfined_t (process (transition siginh rlimitinh)))
 (allow claude_desktop_t unconfined_t (process2 (nnp_transition nosuid_transition)))
 (typetransition claude_desktop_t shell_exec_t process unconfined_t)
 (typetransition claude_desktop_t bin_t process unconfined_t)

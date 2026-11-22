@@ -55,7 +55,8 @@
 (allow t3code_launcher_t unconfined_t (process (transition noatsecure siginh rlimitinh)))
 (allow t3code_launcher_t unconfined_t (process2 (nnp_transition nosuid_transition)))
 (typetransition t3code_launcher_t bin_t process unconfined_t)
-(allow t3code_t unconfined_t (process (transition noatsecure siginh rlimitinh signal sigkill signull)))
+; AT_SECURE drops the launcher's glibc LD_PRELOAD so user commands get hardened_malloc.
+(allow t3code_t unconfined_t (process (transition siginh rlimitinh signal sigkill signull)))
 (allow t3code_t unconfined_t (process2 (nnp_transition nosuid_transition)))
 (typetransition t3code_t shell_exec_t process unconfined_t)
 (typetransition t3code_t bin_t process unconfined_t)

@@ -205,6 +205,12 @@ if sesearch -A -s unconfined_t -t t3code_launcher_t -c process -p noatsecure | g
     printf 'T3 launcher must enter secure-execution mode\n' >&2
     exit 1
 fi
+for app_domain in claude_desktop_t t3code_t; do
+    if sesearch -A -s "${app_domain}" -t unconfined_t -c process -p noatsecure | grep -q .; then
+        printf '%s user commands must enter secure-execution mode\n' "${app_domain}" >&2
+        exit 1
+    fi
+done
 if sesearch -A -s claude_sandbox_helper_t -c file -p execute_no_trans | grep -q .; then
     printf 'Claude sandbox commands must leave the helper domain\n' >&2
     exit 1
