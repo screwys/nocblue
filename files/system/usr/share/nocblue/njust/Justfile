@@ -14,11 +14,11 @@ update:
 auto-update-status:
     systemctl status rpm-ostreed-automatic.timer rpm-ostreed-automatic.service --no-pager || true
     systemctl status bootc-fetch-apply-updates.timer --no-pager || true
-    systemctl status flatpak-system-update.timer --no-pager || true
-    systemctl --user status flatpak-user-update.timer --no-pager || true
-    systemctl --user status secureblue-flatpak-setup.timer nocblue-flatpak-setup.timer --no-pager || true
-    systemctl list-timers rpm-ostreed-automatic.timer bootc-fetch-apply-updates.timer flatpak-system-update.timer --no-pager || true
-    systemctl --user list-timers flatpak-user-update.timer secureblue-flatpak-setup.timer nocblue-flatpak-setup.timer --no-pager || true
+    systemctl --user status app-io.github.kolunmi.Bazaar@autostart.service --no-pager || true
+    systemctl --user status secureblue-flatpak-setup.timer secureblue-bazaar-setup.timer nocblue-flatpak-setup.timer --no-pager || true
+    flatpak run --command=gsettings io.github.kolunmi.Bazaar get io.github.kolunmi.Bazaar auto-update || true
+    systemctl list-timers rpm-ostreed-automatic.timer bootc-fetch-apply-updates.timer --no-pager || true
+    systemctl --user list-timers secureblue-flatpak-setup.timer secureblue-bazaar-setup.timer nocblue-flatpak-setup.timer --no-pager || true
 
 rollback:
     run0 rpm-ostree rollback

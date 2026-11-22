@@ -518,11 +518,6 @@ PY
 }
 
 install_flatpak_desktop_entries() {
-    local bazaar_desktop="${HOME}/.local/share/applications/io.github.kolunmi.Bazaar.desktop"
-    if [[ -f "${bazaar_desktop}" ]] && grep -q 'flatpak run .*io.github.kolunmi.Bazaar' "${bazaar_desktop}"; then
-        rm -f "${bazaar_desktop}"
-    fi
-
     ensure_flatpak_desktop_entry org.signal.Signal --ozone-platform=wayland
     ensure_flatpak_desktop_entry dev.vencord.Vesktop --ozone-platform=wayland
     ensure_no_preload_flatpak_desktop_entry com.valvesoftware.Steam

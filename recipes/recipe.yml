@@ -454,7 +454,7 @@ modules:
     user:
       enabled:
         - secureblue-flatpak-setup.timer
-        - flatpak-user-update.timer
+        - secureblue-bazaar-setup.timer
         - nocblue-flatpak-setup.timer
         - nocblue-adwsteamgtk.timer
         - nocblue-game-shortcuts-sync.timer
