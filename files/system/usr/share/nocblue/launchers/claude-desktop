@@ -4,7 +4,9 @@ set -euo pipefail
 # Scrub loader injection before entering the namespace-enabled application.
 unset LD_PRELOAD LD_AUDIT LD_LIBRARY_PATH
 # Use glibc without changing the user namespace inherited by SSH and agents.
-export LD_PRELOAD=/usr/lib64/libc.so.6
+# Keep RLIMIT_AS interposed ahead of libc: children such as glycin loaders
+# still get hardened_malloc from ld.so.preload and abort under that limit.
+export LD_PRELOAD='/usr/lib64/libno_rlimit_as.so /usr/lib64/libc.so.6'
 # Chromium only picks the Secret Service on desktops it recognizes, not Niri.
 exec /usr/lib/claude-desktop/claude-desktop.bin --disable-setuid-sandbox \
     --password-store=gnome-libsecret "$@"
