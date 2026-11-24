@@ -38,6 +38,7 @@ modules:
         - mokutil
         - rpm-build
         - sbsigntools
+        - "glab"
 
   - type: files
     files:
