@@ -40,6 +40,13 @@ modules:
         - sbsigntools
         - "glab"
         - "texlive"
+        - "mingw64-gstreamer1"
+        - "mingw64-gstreamer1-plugins-bad-free"
+        - "mingw64-gstreamer1-plugins-base"
+        - "mingw64-gstreamer1-plugins-good"
+        - "mingw64-gcc"
+        - "wine-core"
+        - "wine-pulseaudio"
 
   - type: files
     files:
