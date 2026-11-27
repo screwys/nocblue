@@ -472,10 +472,13 @@ modules:
 
   # The kernel was replaced and preload libraries may have been updated above,
   # so regenerate and validate the initramfs as the last mutable
-  # boot-related operation.
+  # boot-related operation. Development packages can upgrade libzstd without
+  # the zstd CLI, which refuses a different library version; dracut needs it.
   - type: containerfile
     snippets:
-      - RUN ldconfig && glib-compile-schemas /usr/share/glib-2.0/schemas
+      - >-
+        RUN dnf -y install "zstd-$(rpm -q --qf '%{VERSION}-%{RELEASE}' libzstd.x86_64)" &&
+        ldconfig && glib-compile-schemas /usr/share/glib-2.0/schemas
 
   - type: initramfs
 
