@@ -39,6 +39,7 @@ modules:
         - rpm-build
         - sbsigntools
         - "glab"
+        - "texlive"
 
   - type: files
     files:
