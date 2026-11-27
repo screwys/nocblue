@@ -3,6 +3,9 @@ import json
 import os
 import re
 import subprocess
+import sys
+import tarfile
+import tempfile
 from pathlib import Path
 
 import yaml
@@ -14,11 +17,43 @@ def inspect(reference):
     ], text=True))
 
 
+def has_openrazer(reference):
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run([
+            'skopeo', 'copy', '-q', '--override-arch', 'amd64',
+            f'docker://{reference}', f'dir:{tmp}',
+        ], check=True, stdout=subprocess.DEVNULL)
+        manifest = json.loads(Path(tmp, 'manifest.json').read_text())
+        names = set()
+        for layer in manifest['layers']:
+            with tarfile.open(Path(tmp, layer['digest'].split(':', 1)[1]), 'r|*') as tar:
+                names.update(member.name for member in tar)
+    return (any(n.startswith('rpms/common/openrazer-') for n in names)
+            and any(n.startswith('rpms/kmods/kmod-openrazer-') for n in names))
+
+
 base = 'ghcr.io/secureblue/silverblue-main-hardened'
 image = inspect(f'{base}:latest')
 release = image['Labels']['org.opencontainers.image.version'].split('.')[0]
-akmods = inspect(f'ghcr.io/ublue-os/akmods:main-{release}')
-kernel_image = f"ghcr.io/ublue-os/akmods@{akmods['Digest']}"
+
+# Universal Blue skips OpenRazer when it fails to build for a kernel, so take
+# the newest kernel whose akmods image still carries the signed OpenRazer pair.
+akmods_repo = 'ghcr.io/ublue-os/akmods'
+kernel_tag = re.compile(rf'main-{release}-(\d[\w.]*-\d[\w.]*\.fc{release})')
+kernel_tags = sorted(
+    (m.group(0) for tag in inspect(f'{akmods_repo}:main-{release}')['RepoTags']
+     if (m := kernel_tag.fullmatch(tag))),
+    key=lambda tag: [int(n) for n in re.findall(r'\d+', kernel_tag.fullmatch(tag).group(1))],
+    reverse=True,
+)
+for tag in kernel_tags:
+    kernel_image = f"{akmods_repo}@{inspect(f'{akmods_repo}:{tag}')['Digest']}"
+    if has_openrazer(kernel_image):
+        print(f'Using {tag} ({kernel_image})', file=sys.stderr)
+        break
+    print(f'Skipping {tag}: no OpenRazer RPMs', file=sys.stderr)
+else:
+    sys.exit(f'No {akmods_repo}:main-{release} kernel image carries OpenRazer')
 build_tag = f"build-{os.environ['GITHUB_RUN_ID']}"
 event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text())
 branch = os.environ['GITHUB_REF_NAME'].replace('/', '_')
